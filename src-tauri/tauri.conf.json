@@ -1,0 +1,44 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Marginalia",
+  "mainBinaryName": "marginalia",
+  "identifier": "app.marginalia.reader",
+  "version": "0.1.0",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Marginalia",
+        "width": 900,
+        "height": 700,
+        "minWidth": 400,
+        "minHeight": 300
+      }
+    ],
+    "security": {
+      "capabilities": ["main-capability"],
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": {
+          "allow": ["$RESOURCE/**"],
+          "deny": []
+        }
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+    "resources": [],
+    "category": "Productivity",
+    "shortDescription": "EPUB reader with AI",
+    "longDescription": "Local-first desktop EPUB reader with a seamlessly integrated AI panel."
+  }
+}
