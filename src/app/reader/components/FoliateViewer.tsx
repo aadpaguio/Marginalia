@@ -18,9 +18,9 @@ import { getReaderStyles, type ReaderTheme } from "../utils/readerStyles";
 import { useInstantAnnotation } from "../hooks/useInstantAnnotation";
 import { useAIPanel, type AIPanelSelection } from "../hooks/useAIPanel";
 import Annotator from "./annotator/Annotator";
-import type { BookNote } from "@/types/book";
+import type { BookNote, Highlight } from "@/types/book";
 import AIPanel from "@/components/AIPanel/AIPanel";
-import { Bookmark, SlidersHorizontal } from "lucide-react";
+import { Bookmark, ChevronDown, Plus, SlidersHorizontal } from "lucide-react";
 
 export interface BookConfig {
   location?: string;
@@ -37,11 +37,13 @@ function uniqueId(): string {
 type Props = {
   bookKey: string;
   bookDoc: BookDoc;
+  bookId: string | null;
   config?: BookConfig;
   insets?: { top: number; left: number; right: number; bottom: number };
-  notes?: BookNote[];
-  onAddNote?: (note: BookNote) => void;
-  onUpdateNote?: (note: BookNote) => void;
+  highlights?: Highlight[];
+  onAddHighlight?: (highlight: Highlight) => void;
+  onUpdateHighlight?: (highlight: Highlight) => void;
+  onDeleteHighlight?: (id: string) => void;
   jumpToCfi?: string | null;
   onJumpHandled?: () => void;
   deleteNoteCfi?: string | null;
@@ -61,6 +63,19 @@ type Props = {
     fraction: number;
   }) => void;
   onOpenNoteFromHighlight?: (cfi: string) => void;
+  /** Add selection to a thread: pass threadId to add to that thread, or null for new thread. */
+  onOpenAiPanel?: (
+    selection: { cfi: string; selectedText: string; chapterLabel?: string; chapterHref?: string },
+    targetThreadId: string | null
+  ) => void;
+  /** Threads for the current book (for dropdown). */
+  threads?: Array<{ id: string; title?: string }>;
+  /** Called when view is ready so parent can get current chapter text (pass tocHref to get that chapter only). */
+  onRegisterGetSectionText?: (fn: ((tocHref?: string) => string) | null) => void;
+  /** When AI panel completes a user/assistant pair (thread mode), persist to thread and auto-name. */
+  onMessagePair?: (userContent: string, assistantContent: string) => void;
+  /** Thread context for thread-aware AI (Phase 25). When set, panel uses askClaudeThread. */
+  threadContext?: import("@/components/AIPanel/AIPanel").ThreadContext | null;
   theme?: ReaderTheme;
   onThemeChange?: (theme: ReaderTheme) => void;
   isCurrentBookmarked?: boolean;
@@ -78,11 +93,13 @@ type ToolbarSelection = AIPanelSelection & {
 export default function FoliateViewer({
   bookKey,
   bookDoc,
+  bookId = null,
   config = {},
   insets = defaultInsets,
-  notes = [],
-  onAddNote,
-  onUpdateNote,
+  highlights = [],
+  onAddHighlight,
+  onUpdateHighlight,
+  onDeleteHighlight,
   jumpToCfi,
   onJumpHandled,
   deleteNoteCfi,
@@ -90,6 +107,11 @@ export default function FoliateViewer({
   onRelocate,
   onTocNavigateComplete,
   onOpenNoteFromHighlight,
+  onOpenAiPanel,
+  threads = [],
+  onRegisterGetSectionText,
+  onMessagePair,
+  threadContext = null,
   theme = "light",
   onThemeChange,
   isCurrentBookmarked = false,
@@ -104,8 +126,8 @@ export default function FoliateViewer({
   const selectionToolbarRef = useRef<HTMLDivElement | null>(null);
   const displayMenuRef = useRef<HTMLDivElement | null>(null);
   const doubleClickDisabled = useRef(true);
-  const notesRef = useRef<BookNote[]>(notes);
-  notesRef.current = notes;
+  const highlightsRef = useRef<Highlight[]>(highlights);
+  highlightsRef.current = highlights;
   const themeRef = useRef<ReaderTheme>(theme);
   themeRef.current = theme;
   const locationRef = useRef<{
@@ -120,6 +142,7 @@ export default function FoliateViewer({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [view, setViewState] = useState<FoliateView | null>(null);
   const [pendingSelection, setPendingSelection] = useState<ToolbarSelection | null>(null);
+  const [addToThreadDropdownOpen, setAddToThreadDropdownOpen] = useState(false);
   const [hoveredNote, setHoveredNote] = useState<ToolbarSelection | null>(null);
   const [isDisplayMenuOpen, setIsDisplayMenuOpen] = useState(false);
   const { isOpen, currentSelection, openPanel, closePanel } = useAIPanel();
@@ -207,63 +230,65 @@ export default function FoliateViewer({
     []
   );
 
-  const handleAskAiFromSelection = useCallback(() => {
-    if (!pendingSelection) return;
-    openPanel({ selectedText: pendingSelection.selectedText, cfi: pendingSelection.cfi });
-    setPendingSelection(null);
-  }, [openPanel, pendingSelection]);
+  const selectionPayload = pendingSelection
+    ? {
+        cfi: pendingSelection.cfi,
+        selectedText: pendingSelection.selectedText,
+        chapterLabel: locationRef.current.tocLabel,
+        chapterHref: locationRef.current.tocHref,
+      }
+    : null;
+
+  const handleAddToThread = useCallback(
+    (targetThreadId: string | null) => {
+      if (!selectionPayload || !onOpenAiPanel) return;
+      onOpenAiPanel(selectionPayload, targetThreadId);
+      setAddToThreadDropdownOpen(false);
+      setPendingSelection(null);
+    },
+    [onOpenAiPanel, selectionPayload]
+  );
 
   const handleQuickHighlight = useCallback(
     async (color: string) => {
       const selection = pendingSelection;
       const v = viewRef.current;
-      if (!selection || !onAddNote) return;
-      const existing = notesRef.current.find((n) => n.cfi === selection.cfi && n.type === "annotation");
+      if (!selection || !bookId) return;
+      const existing = highlightsRef.current.find((h) => h.cfi === selection.cfi);
 
       if (existing) {
-        const updated: BookNote = {
+        if (!onUpdateHighlight) return;
+        const updated: Highlight = {
           ...existing,
           color,
           chapterLabel: existing.chapterLabel ?? locationRef.current.tocLabel,
           chapterHref: existing.chapterHref ?? locationRef.current.tocHref,
-          pageLabel: locationRef.current.pageLabel ?? existing.pageLabel,
-          pageHref: locationRef.current.pageHref ?? existing.pageHref,
-          pageCurrent: locationRef.current.pageCurrent ?? existing.pageCurrent,
-          pageTotal: locationRef.current.pageTotal ?? existing.pageTotal,
-          updatedAt: Date.now(),
         };
-        onUpdateNote?.(updated);
+        onUpdateHighlight(updated);
         if (v?.addAnnotation) {
           await v.addAnnotation({ ...existing, value: existing.cfi }, true);
           await v.addAnnotation({ ...updated, value: updated.cfi });
         }
       } else {
-        const note: BookNote = {
+        if (!onAddHighlight) return;
+        const highlight: Highlight = {
           id: uniqueId(),
-          type: "annotation",
+          bookId,
           cfi: selection.cfi,
-          chapterLabel: locationRef.current.tocLabel,
-          chapterHref: locationRef.current.tocHref,
-          pageLabel: locationRef.current.pageLabel,
-          pageHref: locationRef.current.pageHref,
-          pageCurrent: locationRef.current.pageCurrent,
-          pageTotal: locationRef.current.pageTotal,
           selectedText: selection.selectedText,
-          text: selection.selectedText,
-          style: "highlight",
           color,
-          note: "",
+          chapterLabel: locationRef.current.tocLabel ?? undefined,
+          chapterHref: locationRef.current.tocHref ?? undefined,
           createdAt: Date.now(),
-          updatedAt: Date.now(),
         };
-        onAddNote(note);
+        onAddHighlight(highlight);
         if (v?.addAnnotation) {
-          await v.addAnnotation({ ...note, value: note.cfi });
+          await v.addAnnotation({ ...highlight, value: highlight.cfi });
         }
       }
       setPendingSelection(null);
     },
-    [onAddNote, onUpdateNote, pendingSelection]
+    [bookId, onAddHighlight, onUpdateHighlight, pendingSelection]
   );
 
   const getToolbarPosition = useCallback((selection: ToolbarSelection) => {
@@ -329,54 +354,61 @@ export default function FoliateViewer({
     return { left, top };
   }, []);
 
-  const getCurrentSectionText = useCallback((_cfi: string): string => {
+  /** Get text for the current chapter (if tocHref matches a loaded doc) or all loaded sections. */
+  const getCurrentSectionText = useCallback((tocHref?: string): string => {
     const v = viewRef.current;
-    const docs = v?.renderer?.getContents?.() ?? [];
-    const text = docs
+    const contents = v?.renderer?.getContents?.() ?? [];
+    if (contents.length === 0) return "";
+    if (tocHref?.trim()) {
+      const doc = contents.find((entry) => {
+        const uri = (entry.doc as Document & { documentURI?: string })?.documentURI ?? "";
+        return uri.includes(tocHref) || uri.endsWith(tocHref.replace(/^\.\//, ""));
+      });
+      if (doc?.doc?.body?.innerText) {
+        return doc.doc.body.innerText.trim().slice(0, 50000);
+      }
+    }
+    const text = contents
       .map((entry) => entry.doc?.body?.innerText?.trim() ?? "")
       .filter(Boolean)
       .join("\n\n");
-    // Keep a large stable context block for Claude prompt caching (Haiku 4.5 needs 4096+ cacheable tokens).
     return text.slice(0, 50000);
   }, []);
+
+  useEffect(() => {
+    if (view && onRegisterGetSectionText) {
+      onRegisterGetSectionText(getCurrentSectionText);
+    }
+    return () => {
+      onRegisterGetSectionText?.(null);
+    };
+  }, [view, onRegisterGetSectionText, getCurrentSectionText]);
 
   const handleSaveAiNote = useCallback(
     (note: BookNote) => {
       const v = viewRef.current;
-      if (!onAddNote) return;
-      const existing = notesRef.current.find((n) => n.cfi === note.cfi && n.type === "annotation");
+      if (!bookId) return;
+      const existing = highlightsRef.current.find((h) => h.cfi === note.cfi);
+      const highlight: Highlight = {
+        id: existing?.id ?? note.id,
+        bookId,
+        cfi: note.cfi,
+        selectedText: note.selectedText ?? note.text ?? "",
+        color: (note.color as Highlight["color"]) ?? "yellow",
+        chapterLabel: note.chapterLabel ?? locationRef.current.tocLabel ?? undefined,
+        chapterHref: note.chapterHref ?? locationRef.current.tocHref ?? undefined,
+        createdAt: existing?.createdAt ?? note.createdAt ?? Date.now(),
+      };
       if (existing) {
-        const merged: BookNote = {
-          ...existing,
-          ...note,
-          id: existing.id,
-          color: note.color ?? existing.color,
-          chapterLabel:
-            note.chapterLabel ?? existing.chapterLabel ?? locationRef.current.tocLabel,
-          chapterHref: note.chapterHref ?? existing.chapterHref ?? locationRef.current.tocHref,
-          pageLabel: note.pageLabel ?? locationRef.current.pageLabel ?? existing.pageLabel,
-          pageHref: note.pageHref ?? locationRef.current.pageHref ?? existing.pageHref,
-          pageCurrent: note.pageCurrent ?? locationRef.current.pageCurrent ?? existing.pageCurrent,
-          pageTotal: note.pageTotal ?? locationRef.current.pageTotal ?? existing.pageTotal,
-          updatedAt: Date.now(),
-        };
-        onUpdateNote?.(merged);
+        onUpdateHighlight?.(highlight);
       } else {
-        onAddNote({
-          ...note,
-          chapterLabel: note.chapterLabel ?? locationRef.current.tocLabel,
-          chapterHref: note.chapterHref ?? locationRef.current.tocHref,
-          pageLabel: note.pageLabel ?? locationRef.current.pageLabel,
-          pageHref: note.pageHref ?? locationRef.current.pageHref,
-          pageCurrent: note.pageCurrent ?? locationRef.current.pageCurrent,
-          pageTotal: note.pageTotal ?? locationRef.current.pageTotal,
-        });
+        onAddHighlight?.(highlight);
       }
       if (v?.addAnnotation) {
-        void v.addAnnotation({ ...note, value: note.cfi });
+        void v.addAnnotation({ ...highlight, value: highlight.cfi });
       }
     },
-    [onAddNote, onUpdateNote]
+    [bookId, onAddHighlight, onUpdateHighlight]
   );
 
   const {
@@ -445,13 +477,11 @@ export default function FoliateViewer({
       if (view?.renderer?.setStyles) {
         view.renderer.setStyles(css);
       }
-      // Re-add all notes so highlights appear on this section when navigating
-      const currentNotes = notesRef.current;
-      if (view?.addAnnotation && currentNotes.length > 0) {
-        currentNotes.forEach((n) => {
-          if (!n.deletedAt && n.type === "annotation") {
-            void view.addAnnotation!({ ...n, value: n.cfi });
-          }
+      // Re-add all highlights so they appear on this section when navigating
+      const currentHighlights = highlightsRef.current;
+      if (view?.addAnnotation && currentHighlights.length > 0) {
+        currentHighlights.forEach((h) => {
+          void view.addAnnotation!({ ...h, value: h.cfi });
         });
       }
     },
@@ -468,11 +498,9 @@ export default function FoliateViewer({
   const handleRelocate = useCallback((event?: Event) => {
     const v = viewRef.current;
     if (!v?.addAnnotation) return;
-    const currentNotes = notesRef.current;
-    currentNotes.forEach((n) => {
-      if (!n.deletedAt && n.type === "annotation") {
-        void v.addAnnotation!({ ...n, value: n.cfi });
-      }
+    const currentHighlights = highlightsRef.current;
+    currentHighlights.forEach((h) => {
+      void v.addAnnotation!({ ...h, value: h.cfi });
     });
     const detail = (event as CustomEvent | undefined)?.detail as
       | {
@@ -510,16 +538,16 @@ export default function FoliateViewer({
     const detail = (event as CustomEvent).detail as { value?: string; range?: Range };
     const cfi = detail?.value;
     if (!cfi) return;
-    const existing = notesRef.current.find((n) => n.cfi === cfi && n.type === "annotation");
+    const existing = highlightsRef.current.find((h) => h.cfi === cfi);
     if (!existing) return;
     const rect = detail.range?.getBoundingClientRect();
     setHoveredNote({
-      selectedText: existing.selectedText ?? existing.text ?? "",
+      selectedText: existing.selectedText ?? "",
       cfi,
       anchorX: rect ? rect.left + rect.width / 2 : window.innerWidth / 2,
       anchorY: rect ? rect.top : 80,
       selectedColor: typeof existing.color === "string" ? existing.color : "yellow",
-      isAiNote: (existing.aiConversation?.length ?? 0) > 0,
+      isAiNote: false,
     });
   }, []);
 
@@ -537,22 +565,18 @@ export default function FoliateViewer({
 
   const removeHighlightFromHover = useCallback(async () => {
     if (!hoveredNote) return;
-    const existing = notesRef.current.find((n) => n.cfi === hoveredNote.cfi && n.type === "annotation");
+    const existing = highlightsRef.current.find((h) => h.cfi === hoveredNote.cfi);
     if (!existing) {
       setHoveredNote(null);
       return;
     }
-    onUpdateNote?.({
-      ...existing,
-      deletedAt: Date.now(),
-      updatedAt: Date.now(),
-    });
+    onDeleteHighlight?.(existing.id);
     const v = viewRef.current;
     if (v?.addAnnotation) {
       await v.addAnnotation({ ...existing, value: existing.cfi }, true);
     }
     setHoveredNote(null);
-  }, [hoveredNote, onUpdateNote]);
+  }, [hoveredNote, onDeleteHighlight]);
 
   useEffect(() => {
     if (!hoveredNote && !pendingSelection) return;
@@ -633,7 +657,7 @@ export default function FoliateViewer({
       onDeleteNoteCfiHandled?.();
       return;
     }
-    const existing = notesRef.current.find((n) => n.cfi === deleteNoteCfi && n.type === "annotation");
+    const existing = highlightsRef.current.find((h) => h.cfi === deleteNoteCfi);
     if (existing) {
       void v.addAnnotation({ ...existing, value: existing.cfi }, true);
     }
@@ -815,7 +839,7 @@ export default function FoliateViewer({
         interactionBlocked ? undefined : (onTouchEnd as (e: React.TouchEvent<HTMLDivElement>) => void)
       }
     >
-      <Annotator view={view} notes={notes} />
+      <Annotator view={view} highlights={highlights} />
       {/* Chrome overlay: inside viewer so it stacks above foliate-view and receives clicks */}
       {onClose != null && (
         <div
@@ -1044,6 +1068,8 @@ export default function FoliateViewer({
           getContext={getCurrentSectionText}
           onSave={handleSaveAiNote}
           onDismiss={closePanel}
+          onMessagePair={onMessagePair}
+          threadContext={threadContext}
         />
       )}
       {hoveredNote && !pendingSelection && !isOpen && (
@@ -1178,20 +1204,98 @@ export default function FoliateViewer({
               );
             })}
             <div style={{ width: 1, height: 20, background: "rgba(0,0,0,0.12)" }} />
-            <button
-              type="button"
-              onClick={handleAskAiFromSelection}
-              style={{
-                border: "1px solid rgba(0,0,0,0.12)",
-                borderRadius: 999,
-                padding: "4px 10px",
-                fontSize: 12,
-                background: "#fff",
-                cursor: "pointer",
-              }}
-            >
-              Ask AI
-            </button>
+            <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 4 }}>
+              <button
+                type="button"
+                onClick={() => setAddToThreadDropdownOpen((o) => !o)}
+                aria-label="Add to thread"
+                aria-expanded={addToThreadDropdownOpen}
+                style={{
+                  border: "1px solid rgba(0,0,0,0.12)",
+                  borderRadius: 999,
+                  padding: "4px 8px 4px 10px",
+                  fontSize: 12,
+                  background: "#fff",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                }}
+              >
+                Add to thread
+                <ChevronDown size={14} style={{ opacity: addToThreadDropdownOpen ? 0.7 : 0.5 }} />
+              </button>
+              {addToThreadDropdownOpen && (
+                <div
+                  role="menu"
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    top: "100%",
+                    marginTop: 4,
+                    minWidth: 160,
+                    maxHeight: 200,
+                    overflow: "auto",
+                    borderRadius: 8,
+                    border: "1px solid rgba(0,0,0,0.12)",
+                    background: "rgba(255,255,255,0.98)",
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+                    padding: 4,
+                    zIndex: 130,
+                  }}
+                >
+                  {threads.length === 0 ? (
+                    <div style={{ padding: "8px 10px", fontSize: 12, color: "#666" }}>
+                      No threads yet
+                    </div>
+                  ) : (
+                    threads.map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => handleAddToThread(t.id)}
+                        style={{
+                          width: "100%",
+                          textAlign: "left",
+                          padding: "6px 10px",
+                          border: "none",
+                          borderRadius: 6,
+                          background: "transparent",
+                          fontSize: 12,
+                          cursor: "pointer",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "rgba(0,0,0,0.06)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "transparent";
+                        }}
+                      >
+                        {t.title?.trim() || "New thread"}
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => handleAddToThread(null)}
+                aria-label="New thread"
+                style={{
+                  border: "1px solid rgba(0,0,0,0.12)",
+                  borderRadius: 999,
+                  padding: 4,
+                  background: "#fff",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Plus size={16} />
+              </button>
+            </div>
           </div>
         </>
       )}

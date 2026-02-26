@@ -5,19 +5,19 @@
 import React, { useEffect, useCallback } from "react";
 import { Overlayer } from "foliate-js/overlayer.js";
 import type { FoliateView } from "@/types/view";
-import type { BookNote } from "@/types/book";
+import type { Highlight } from "@/types/book";
 import { getHighlightColorHex } from "../../utils/annotatorUtil";
 
 type Props = {
   view: FoliateView | null;
-  notes: BookNote[];
+  highlights: Highlight[];
 };
 
-export default function Annotator({ view, notes: _notes }: Props) {
+export default function Annotator({ view, highlights: _highlights }: Props) {
   const onDrawAnnotation = useCallback((event: Event) => {
     const detail = (event as CustomEvent).detail as {
       draw: (fn: (rects: unknown[], opts?: object) => SVGElement, opts?: object) => void;
-      annotation: BookNote & { value?: string };
+      annotation: Highlight & { value?: string };
       doc: Document;
       range: Range;
     };

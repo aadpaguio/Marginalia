@@ -1,9 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { askClaude } from "@/services/claude";
-import type { BookNote } from "@/types/book";
+import { askClaude, askClaudeThread, type ClaudeResponse } from "@/services/claude";
+import { memoryReadBook, memoryReadReader } from "@/services/db";
+import type { BookNote, Highlight, ThreadMessage } from "@/types/book";
 import type { AIPanelSelection } from "@/app/reader/hooks/useAIPanel";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+
+export interface ThreadContext {
+  threadId: string;
+  messages: ThreadMessage[];
+  highlights: Highlight[];
+  bookId: string;
+}
 
 type Props = {
   selection: AIPanelSelection | null;
@@ -12,6 +20,10 @@ type Props = {
   getContext: (cfi: string) => string;
   onSave: (note: BookNote) => void;
   onDismiss: () => void;
+  /** When a user/assistant pair is completed (thread mode), persist to thread and optionally auto-name. */
+  onMessagePair?: (userContent: string, assistantContent: string) => void;
+  /** When set, use thread-aware context assembly and askClaudeThread. */
+  threadContext?: ThreadContext | null;
 };
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
@@ -37,6 +49,8 @@ export default function AIPanel({
   getContext,
   onSave,
   onDismiss,
+  onMessagePair,
+  threadContext,
 }: Props) {
   const [isVisible, setIsVisible] = useState(false);
   const [message, setMessage] = useState("");
@@ -178,17 +192,43 @@ export default function AIPanel({
       });
 
     try {
-      const result = await askClaude({
-        selectedText: selection.selectedText,
-        surroundingContext: frozenContext,
-        bookTitle,
-        author,
-        userMessage: submittedMessage,
-        conversationHistory: priorMessages,
-      });
+      let result: ClaudeResponse;
+      if (threadContext) {
+        const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+        if (!apiKey) throw new Error("Missing VITE_ANTHROPIC_API_KEY");
+        const [bookMemory, readerProfile] = await Promise.all([
+          memoryReadBook(threadContext.bookId),
+          memoryReadReader(),
+        ]);
+        result = await askClaudeThread(
+          {
+            threadId: threadContext.threadId,
+            messages: threadContext.messages,
+            attachedHighlights: threadContext.highlights,
+            currentPassage: frozenContext,
+            userMessage: submittedMessage,
+            bookTitle,
+            author,
+            bookId: threadContext.bookId,
+            bookMemory: bookMemory ?? undefined,
+            readerProfile: readerProfile ?? undefined,
+          },
+          apiKey
+        );
+      } else {
+        result = await askClaude({
+          selectedText: selection.selectedText,
+          surroundingContext: frozenContext,
+          bookTitle,
+          author,
+          userMessage: submittedMessage,
+          conversationHistory: priorMessages,
+        });
+      }
       await revealAssistantMessage(result.answer ?? "");
       setLastUsage(result.usage ?? null);
       setMessage("");
+      onMessagePair?.(submittedMessage, result.answer ?? "");
     } catch (err) {
       setMessages((prev) => {
         const copy = [...prev];

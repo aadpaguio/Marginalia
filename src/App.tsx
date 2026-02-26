@@ -1,28 +1,51 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
+import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { exists } from "@tauri-apps/plugin-fs";
 import { DocumentLoader } from "@/libs/document";
 import type { BookDoc, TOCItem } from "@/libs/document";
-import type { BookNote } from "@/types/book";
+import type { Highlight, Thread, ThreadMessage } from "@/types/book";
 import type { ReaderTheme } from "@/app/reader/utils/readerStyles";
 import FoliateViewer from "@/app/reader/components/FoliateViewer";
 import Library from "@/components/Library";
 import {
+  dbArchiveThread,
+  dbAttachHighlightToThread,
+  dbCreateThread,
+  dbGetHighlightsForThread,
+  dbGetStandaloneHighlights,
+  dbGetThreadMessages,
+  dbGetThreads,
+  dbSaveThreadMessage,
+  dbUpdateThreadTitle,
   dbDeleteBook,
   dbDeleteBookmark,
-  dbDeleteNote,
+  dbDeleteHighlight,
   dbGetAllBooks,
   dbGetBook,
   dbGetBookmarks,
-  dbGetNotes,
+  dbGetHighlights,
   dbUpdateReadingProgress,
   dbUpsertBookmark,
   dbUpsertBook,
-  dbUpsertNote,
+  dbUpsertHighlight,
+  memoryEnsureDirs,
+  memoryListBooks,
+  memoryReadBook,
+  memoryReadReader,
+  memoryWriteBook,
+  memoryWriteReader,
   type StoredBookmark,
   type StoredBook,
 } from "@/services/db";
+import {
+  compactThreadToJournal,
+  extractReaderProfile,
+  formatReaderMd,
+  parseReaderMd,
+} from "@/services/compaction";
+import { askClaudeThread, generateThreadTitle } from "@/services/claude";
 import { BookOpenText, NotepadText } from "lucide-react";
 
 function base64ToFile(base64: string, filename: string): File {
@@ -112,7 +135,12 @@ function App() {
     Array<StoredBook & { coverDataUrl?: string | null; isMissingFile?: boolean }>
   >([]);
   const [openingBookId, setOpeningBookId] = useState<string | null>(null);
-  const [notes, setNotes] = useState<BookNote[]>([]);
+  const [highlights, setHighlights] = useState<Highlight[]>([]);
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
+  const [activeThreadMessages, setActiveThreadMessages] = useState<ThreadMessage[]>([]);
+  const [activeThreadHighlights, setActiveThreadHighlights] = useState<Highlight[]>([]);
+  const [standaloneHighlights, setStandaloneHighlights] = useState<Highlight[]>([]);
   const [bookmarks, setBookmarks] = useState<StoredBookmark[]>([]);
   const [panelTab, setPanelTab] = useState<PanelTab>("notes");
   const [notesFilter, setNotesFilter] = useState<NotesFilter>("all");
@@ -120,7 +148,7 @@ function App() {
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [isTocOpen, setIsTocOpen] = useState(false);
   const [jumpToCfi, setJumpToCfi] = useState<string | null>(null);
-  const [deleteNoteCfi, setDeleteNoteCfi] = useState<string | null>(null);
+  const [deleteHighlightCfi, setDeleteHighlightCfi] = useState<string | null>(null);
   const [currentCfi, setCurrentCfi] = useState<string | null>(null);
   const [scrollToNoteCfi, setScrollToNoteCfi] = useState<string | null>(null);
   const [currentTocHref, setCurrentTocHref] = useState<string | null>(null);
@@ -130,7 +158,16 @@ function App() {
   const [currentPageTotal, setCurrentPageTotal] = useState<number | null>(null);
   const [theme, setTheme] = useState<ReaderTheme>("light");
   const [error, setError] = useState<string | null>(null);
-  const noteRefs = useRef<Record<string, HTMLDetailsElement | null>>({});
+  const [threadChatInput, setThreadChatInput] = useState("");
+  const [threadChatAsking, setThreadChatAsking] = useState(false);
+  const [threadChatError, setThreadChatError] = useState<string | null>(null);
+  const threadChatInputRef = useRef<HTMLInputElement | null>(null);
+  const [savingSession, setSavingSession] = useState(false);
+  const [archivingThreadId, setArchivingThreadId] = useState<string | null>(null);
+  const [archiveToast, setArchiveToast] = useState<string | null>(null);
+  const archiveToastTimeoutRef = useRef<number | null>(null);
+  const getSectionTextRef = useRef<((tocHref?: string) => string) | null>(null);
+  const highlightRefs = useRef<Record<string, HTMLDetailsElement | null>>({});
   const progressLastWriteAtRef = useRef(0);
   const progressTimeoutRef = useRef<number | null>(null);
   const pendingProgressRef = useRef<{ bookId: string; cfi: string; fraction: number } | null>(null);
@@ -226,7 +263,12 @@ function App() {
     await flushPendingProgressWrite();
     setError(null);
     setBookDoc(null);
-    setNotes([]);
+    setHighlights([]);
+    setThreads([]);
+    setActiveThreadId(null);
+    setActiveThreadMessages([]);
+    setActiveThreadHighlights([]);
+    setStandaloneHighlights([]);
     setBookmarks([]);
     setIsNotesOpen(false);
     setIsTocOpen(false);
@@ -240,11 +282,21 @@ function App() {
 
     const bookId = preferredBookId ?? (await hashString(path));
     setOpeningBookId(bookId);
+    const OPEN_BOOK_TIMEOUT_MS = 120_000; // 2 minutes for large EPUBs
     try {
-      const base64 = await invoke<string>("read_file_base64", { path });
+      console.log("[OpenBook] Starting open", { path: path.slice(-60), bookId });
+      const readWithTimeout = invoke<string>("read_file_base64", { path });
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error("Opening book timed out (2 min). The file may be very large or on a slow drive.")), OPEN_BOOK_TIMEOUT_MS);
+      });
+      const base64 = await Promise.race([readWithTimeout, timeoutPromise]);
+      const sizeBytes = Math.round((base64.length * 3) / 4);
+      console.log("[OpenBook] File read", { sizeBytes, base64Length: base64.length });
       const filename = path.split(/[/\\]/).pop() ?? "book.epub";
       const file = base64ToFile(base64, filename);
+      console.log("[OpenBook] Parsing EPUB…");
       const { book } = await new DocumentLoader(file).open();
+      console.log("[OpenBook] EPUB parsed", { sectionCount: book.sections?.length ?? 0 });
       const normalizedTitle = toDisplayString(book.metadata.title, filename);
       const normalizedAuthor = toDisplayString(book.metadata.author, "Unknown");
 
@@ -280,14 +332,28 @@ function App() {
       progressWriteBlockRef.current = { bookId, untilMs: Date.now() + 3000 };
       setEpubPath(path);
       setJumpToCfi(existing?.lastReadCfi ?? null);
-      const loadedNotes = await dbGetNotes(bookId);
-      const loadedBookmarks = await dbGetBookmarks(bookId);
-      setNotes(loadedNotes);
-      setBookmarks(loadedBookmarks);
+      const [loadedHighlights, loadedThreads, loadedStandalone] = await Promise.all([
+        dbGetHighlights(bookId),
+        dbGetThreads(bookId),
+        dbGetStandaloneHighlights(bookId),
+      ]);
+      setHighlights(loadedHighlights);
+      setThreads(loadedThreads);
+      setStandaloneHighlights(loadedStandalone);
+      setActiveThreadId(loadedThreads[0]?.id ?? null);
+      setBookmarks(await dbGetBookmarks(bookId));
       setBookDoc(book);
+      console.log("[OpenBook] Done");
       await refreshLibrary();
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      console.error("[OpenBook] Error", e);
+      const msg = e instanceof Error ? e.message : String(e);
+      const isTimeout = /timed out|os error 60|ETIMEDOUT/i.test(msg);
+      setError(
+        isTimeout
+          ? "Opening the file timed out. If it’s in iCloud or a network folder, copy it to a local folder (e.g. Desktop) and try again."
+          : msg
+      );
     } finally {
       setOpeningBookId(null);
     }
@@ -309,6 +375,27 @@ function App() {
   }, []);
 
   useEffect(() => {
+    void memoryEnsureDirs();
+  }, []);
+
+  useEffect(() => {
+    if (!activeThreadId || !currentBookId) {
+      setActiveThreadMessages([]);
+      setActiveThreadHighlights([]);
+      setThreadChatError(null);
+      return;
+    }
+    setThreadChatError(null);
+    Promise.all([
+      dbGetThreadMessages(activeThreadId),
+      dbGetHighlightsForThread(activeThreadId),
+    ]).then(([messages, threadHighlights]) => {
+      setActiveThreadMessages(messages);
+      setActiveThreadHighlights(threadHighlights);
+    });
+  }, [activeThreadId, currentBookId]);
+
+  useEffect(() => {
     return () => {
       if (relocateDebounceTimerRef.current != null) {
         window.clearTimeout(relocateDebounceTimerRef.current);
@@ -322,37 +409,71 @@ function App() {
       if (progressTimeoutRef.current != null) {
         window.clearTimeout(progressTimeoutRef.current);
       }
+      if (archiveToastTimeoutRef.current != null) {
+        window.clearTimeout(archiveToastTimeoutRef.current);
+        archiveToastTimeoutRef.current = null;
+      }
     };
   }, []);
 
   useEffect(() => {
+    const unlistenPromise = listen("marginalia-prepare-close", async () => {
+      if (
+        activeThreadId &&
+        currentBookId &&
+        bookDoc &&
+        activeThreadMessages.length >= 3
+      ) {
+        setSavingSession(true);
+        const thread = threads.find((t) => t.id === activeThreadId);
+        try {
+          await runCompactionForThread({
+            threadId: activeThreadId,
+            threadTitle: thread?.title ?? "Discussion",
+            threadMessages: activeThreadMessages,
+            bookId: currentBookId,
+            bookTitle: bookDoc.metadata?.title ?? "Book",
+            author: bookDoc.metadata?.author ?? "",
+          });
+        } finally {
+          setSavingSession(false);
+        }
+      }
+      await invoke("allow_window_close");
+    });
+    return () => {
+      void unlistenPromise.then((u) => u());
+    };
+  }, [
+    activeThreadId,
+    activeThreadMessages,
+    bookDoc,
+    currentBookId,
+    threads,
+  ]);
+
+  useEffect(() => {
     if (!scrollToNoteCfi || !isNotesOpen) return;
-    const node = noteRefs.current[scrollToNoteCfi];
+    const node = highlightRefs.current[scrollToNoteCfi];
     if (node) {
       node.open = true;
       node.scrollIntoView({ behavior: "smooth", block: "center" });
       setScrollToNoteCfi(null);
     }
-  }, [scrollToNoteCfi, isNotesOpen, notes]);
+  }, [scrollToNoteCfi, isNotesOpen, highlights]);
 
   const tocEntries = useMemo(() => bookDoc?.toc ?? [], [bookDoc?.toc]);
-  const activeNotes = useMemo(() => notes.filter((note) => !note.deletedAt), [notes]);
-  const filteredNotes = useMemo(() => {
-    const isAiNote = (note: BookNote) => (note.aiConversation?.length ?? 0) > 0;
+  const filteredHighlights = useMemo(() => {
     const normalizeColor = (color: string | undefined): Exclude<HighlightColorFilter, "all"> => {
       if (color === "blue" || color === "green" || color === "pink") return color;
       return "yellow";
     };
-    const applyColorFilter = (note: BookNote) =>
-      highlightColorFilter === "all" || normalizeColor(note.color) === highlightColorFilter;
-
-    if (notesFilter === "highlights") {
-      return activeNotes.filter((note) => !isAiNote(note) && applyColorFilter(note));
-    }
-    if (notesFilter === "ai") return activeNotes.filter((note) => isAiNote(note));
-    // In "All", keep AI notes visible and filter only highlight notes by color.
-    return activeNotes.filter((note) => isAiNote(note) || applyColorFilter(note));
-  }, [activeNotes, notesFilter, highlightColorFilter]);
+    const applyColorFilter = (h: Highlight) =>
+      highlightColorFilter === "all" || normalizeColor(h.color) === highlightColorFilter;
+    if (notesFilter === "highlights") return highlights.filter(applyColorFilter);
+    if (notesFilter === "ai") return []; // No per-highlight AI in Phase 23; threads in Phase 24
+    return highlights.filter(applyColorFilter);
+  }, [highlights, notesFilter, highlightColorFilter]);
   const isCurrentBookmarked = useMemo(
     () => !!currentCfi && bookmarks.some((bookmark) => bookmark.cfi === currentCfi),
     [bookmarks, currentCfi]
@@ -393,31 +514,277 @@ function App() {
     }, delay);
   };
 
-  const handleAddNote = (note: BookNote) => {
-    setNotes((prev) => [...prev, note]);
-    if (currentBookId) {
-      void dbUpsertNote(currentBookId, note);
-    }
+  const handleAddHighlight = (highlight: Highlight) => {
+    setHighlights((prev) => [...prev, highlight]);
+    setStandaloneHighlights((prev) => [...prev, highlight]);
+    void dbUpsertHighlight(highlight);
   };
 
-  const handleUpdateNote = (note: BookNote) => {
-    setNotes((prev) => prev.map((n) => (n.id === note.id ? note : n)));
-    if (currentBookId) {
-      if (note.deletedAt) {
-        void dbDeleteNote(note.id);
-      } else {
-        void dbUpsertNote(currentBookId, note);
-      }
-    }
+  const handleUpdateHighlight = (highlight: Highlight) => {
+    setHighlights((prev) => prev.map((h) => (h.id === highlight.id ? highlight : h)));
+    void dbUpsertHighlight(highlight);
   };
 
-  const handleDeleteNoteFromPanel = (note: BookNote) => {
-    setDeleteNoteCfi(note.cfi);
-    handleUpdateNote({
-      ...note,
-      deletedAt: Date.now(),
-      updatedAt: Date.now(),
+  const handleDeleteHighlightFromPanel = (highlight: Highlight) => {
+    setHighlights((prev) => prev.filter((h) => h.id !== highlight.id));
+    setStandaloneHighlights((prev) => prev.filter((h) => h.id !== highlight.id));
+    void dbDeleteHighlight(highlight.id);
+    setDeleteHighlightCfi(highlight.cfi);
+  };
+
+  const newThreadId = () =>
+    `thread-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+
+  const createNewThread = (): Thread | undefined => {
+    if (!currentBookId) return undefined;
+    const now = Date.now();
+    const thread: Thread = {
+      id: newThreadId(),
+      bookId: currentBookId,
+      title: undefined,
+      createdAt: now,
+      updatedAt: now,
+      archived: false,
+    };
+    void dbCreateThread(thread).then(() => {
+      setThreads((prev) => [thread, ...prev]);
+      setActiveThreadId(thread.id);
+      setActiveThreadMessages([]);
+      setActiveThreadHighlights([]);
     });
+    return thread;
+  };
+
+  const handleOpenAiPanel = (
+    selection: { cfi: string; selectedText: string; chapterLabel?: string; chapterHref?: string },
+    targetThreadId: string | null
+  ) => {
+    if (!currentBookId) return;
+    const highlight: Highlight = {
+      id: `hl-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+      bookId: currentBookId,
+      cfi: selection.cfi,
+      selectedText: selection.selectedText,
+      color: "yellow",
+      chapterLabel: selection.chapterLabel,
+      chapterHref: selection.chapterHref,
+      createdAt: Date.now(),
+    };
+    setHighlights((prev) => [...prev, highlight]);
+    void dbUpsertHighlight(highlight);
+    const threadId = targetThreadId === null ? createNewThread()?.id : targetThreadId;
+    if (!threadId) return;
+    setIsNotesOpen(true);
+    setActiveThreadId(threadId);
+    void dbAttachHighlightToThread(threadId, highlight.id).then(() => {
+      setStandaloneHighlights((prev) => prev.filter((h) => h.id !== highlight.id));
+      dbGetHighlightsForThread(threadId).then(setActiveThreadHighlights);
+    });
+  };
+
+  const handleMessagePair = (userContent: string, assistantContent: string) => {
+    const threadId = activeThreadId;
+    if (!threadId) return;
+    const now = Date.now();
+    const userMsg: ThreadMessage = {
+      id: `msg-${now}-u`,
+      threadId,
+      role: "user",
+      content: userContent,
+      createdAt: now,
+    };
+    const assistantMsg: ThreadMessage = {
+      id: `msg-${now}-a`,
+      threadId,
+      role: "assistant",
+      content: assistantContent,
+      createdAt: now,
+    };
+    void dbSaveThreadMessage(userMsg).then(() =>
+      dbSaveThreadMessage(assistantMsg).then(async () => {
+        const newMessages = [...activeThreadMessages, userMsg, assistantMsg];
+        setActiveThreadMessages(newMessages);
+        const wasFirst = activeThreadMessages.length === 0;
+        if (wasFirst && bookDoc) {
+          const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+          if (apiKey) {
+            generateThreadTitle(userContent.slice(0, 300), apiKey).then((raw) => {
+              const firstLine = raw.split(/\n/)[0].trim();
+              const words = firstLine.split(/\s+/).filter(Boolean);
+              const looksLikeTitle =
+                firstLine.length > 0 &&
+                firstLine.length <= 60 &&
+                words.length <= 10 &&
+                !firstLine.endsWith("?") &&
+                !/^(I |Could you|Would you|Please|I'd be)/i.test(firstLine);
+              const fallbackWords = userContent.trim().split(/\s+/).filter(Boolean).slice(0, 6).join(" ");
+              const title = looksLikeTitle ? firstLine : (fallbackWords && fallbackWords.length <= 50 ? fallbackWords : "Discussion");
+              if (title) {
+                void dbUpdateThreadTitle(threadId, title);
+                setThreads((prev) =>
+                  prev.map((t) => (t.id === threadId ? { ...t, title } : t))
+                );
+              }
+            });
+          }
+        }
+        if (currentBookId && bookDoc && newMessages.length >= 40) {
+          const thread = threads.find((t) => t.id === threadId);
+          await runCompactionForThread({
+            threadId,
+            threadTitle: thread?.title ?? "Discussion",
+            threadMessages: newMessages,
+            bookId: currentBookId,
+            bookTitle: bookDoc.metadata?.title ?? "Book",
+            author: bookDoc.metadata?.author ?? "",
+          });
+        }
+      })
+    );
+  };
+
+  const runCompactionForThread = async (params: {
+    threadId: string;
+    threadTitle: string;
+    threadMessages: ThreadMessage[];
+    bookId: string;
+    bookTitle: string;
+    author: string;
+  }) => {
+    const { threadId, threadTitle, threadMessages, bookId, bookTitle, author } = params;
+    if (threadMessages.length === 0) return;
+    try {
+      const currentBook = (await memoryReadBook(bookId)) ?? "";
+      const entry = await compactThreadToJournal({
+        bookTitle,
+        author,
+        threadTitle: threadTitle ?? "Discussion",
+        threadDate: new Date().toISOString().slice(0, 10),
+        threadMessages,
+        existingMemory: currentBook || null,
+      });
+      if (!entry) return;
+      const newSection = `\n\n## ${threadTitle ?? "Discussion"} — ${new Date().toISOString().slice(0, 10)}\n${entry}`;
+      await memoryWriteBook(bookId, currentBook + newSection);
+
+      const readerContent = (await memoryReadReader()) ?? "";
+      const { threadsClosed, body } = parseReaderMd(readerContent);
+      const nextClosed = threadsClosed + 1;
+      if (nextClosed % 5 === 0) {
+        const bookIds = await memoryListBooks();
+        const journalsByTitle = await Promise.all(
+          bookIds.map(async (id) => {
+            const content = await memoryReadBook(id);
+            const book = libraryBooks.find((b) => b.id === id);
+            return { title: book?.title ?? id, content: content ?? "" };
+          })
+        );
+        const newProfile = await extractReaderProfile({
+          journalsByTitle,
+          existingProfile: body,
+        });
+        await memoryWriteReader(formatReaderMd({ threadsClosed: nextClosed, body: newProfile }));
+      } else {
+        await memoryWriteReader(formatReaderMd({ threadsClosed: nextClosed, body }));
+      }
+    } catch (e) {
+      console.error("[Compaction]", e);
+    }
+  };
+
+  const handleArchiveThread = async (threadId: string) => {
+    setArchivingThreadId(threadId);
+    if (archiveToastTimeoutRef.current != null) {
+      window.clearTimeout(archiveToastTimeoutRef.current);
+      archiveToastTimeoutRef.current = null;
+    }
+    try {
+      const thread = threads.find((t) => t.id === threadId);
+      if (thread && currentBookId && bookDoc) {
+        const [msgs, _highlights] = await Promise.all([
+          dbGetThreadMessages(threadId),
+          dbGetHighlightsForThread(threadId),
+        ]);
+        await runCompactionForThread({
+          threadId,
+          threadTitle: thread.title ?? "Discussion",
+          threadMessages: msgs,
+          bookId: currentBookId,
+          bookTitle: bookDoc.metadata?.title ?? "Book",
+          author: bookDoc.metadata?.author ?? "",
+        });
+      }
+      await dbArchiveThread(threadId);
+      setThreads((prev) => prev.filter((t) => t.id !== threadId));
+      if (activeThreadId === threadId) setActiveThreadId(null);
+      setArchiveToast("Thread archived");
+      archiveToastTimeoutRef.current = window.setTimeout(() => {
+        setArchiveToast(null);
+        archiveToastTimeoutRef.current = null;
+      }, 2500);
+    } catch (e) {
+      console.error("[Archive]", e);
+      setArchiveToast("Archive failed");
+      archiveToastTimeoutRef.current = window.setTimeout(() => {
+        setArchiveToast(null);
+        archiveToastTimeoutRef.current = null;
+      }, 3000);
+    } finally {
+      setArchivingThreadId(null);
+    }
+  };
+
+  const handleUpdateThreadTitle = (threadId: string, title: string) => {
+    setThreads((prev) =>
+      prev.map((t) => (t.id === threadId ? { ...t, title } : t))
+    );
+    void dbUpdateThreadTitle(threadId, title);
+  };
+
+  const handleThreadChatSend = async () => {
+    const userMessage = threadChatInput.trim() || "What can you tell me about the passages I've highlighted?";
+    if (!activeThreadId || !currentBookId || !bookDoc || threadChatAsking) return;
+    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      setThreadChatError("Add VITE_ANTHROPIC_API_KEY to .env and restart.");
+      return;
+    }
+    setThreadChatAsking(true);
+    setThreadChatError(null);
+    setThreadChatInput("");
+    try {
+      const [bookMemory, readerProfile] = await Promise.all([
+        memoryReadBook(currentBookId),
+        memoryReadReader(),
+      ]);
+      const chapterText = getSectionTextRef.current?.(currentTocHref ?? undefined)?.trim() ?? "";
+      const currentPassage =
+        chapterText ||
+        (activeThreadHighlights.length > 0
+          ? activeThreadHighlights[activeThreadHighlights.length - 1].selectedText
+          : "");
+      const result = await askClaudeThread(
+        {
+          threadId: activeThreadId,
+          messages: activeThreadMessages,
+          attachedHighlights: activeThreadHighlights,
+          currentPassage,
+          userMessage,
+          bookTitle: bookDoc.metadata?.title ?? "Book",
+          author: bookDoc.metadata?.author ?? "",
+          bookId: currentBookId,
+          bookMemory: bookMemory ?? undefined,
+          readerProfile: readerProfile ?? undefined,
+        },
+        apiKey
+      );
+      handleMessagePair(userMessage, result.answer ?? "");
+    } catch (e) {
+      setThreadChatError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setThreadChatAsking(false);
+      threadChatInputRef.current?.focus();
+    }
   };
 
   const handleToggleBookmark = () => {
@@ -458,22 +825,62 @@ function App() {
           color: chrome.appFg,
         }}
       >
+        {savingSession && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 9999,
+              padding: "12px 16px",
+              background: chrome.panelBg,
+              borderBottom: `1px solid ${chrome.panelBorder}`,
+              textAlign: "center",
+              fontSize: 13,
+              color: chrome.appFg,
+            }}
+          >
+            Saving your reading session…
+          </div>
+        )}
         <FoliateViewer
           bookKey={epubPath ?? "current"}
           bookDoc={bookDoc}
+          bookId={currentBookId}
           config={{}}
-          notes={notes}
-          onAddNote={handleAddNote}
-          onUpdateNote={handleUpdateNote}
+          highlights={highlights}
+          onAddHighlight={handleAddHighlight}
+          onUpdateHighlight={handleUpdateHighlight}
+          onDeleteHighlight={(id) => {
+            const h = highlights.find((x) => x.id === id);
+            if (h) handleDeleteHighlightFromPanel(h);
+          }}
           jumpToCfi={jumpToCfi}
           onJumpHandled={() => setJumpToCfi(null)}
-          deleteNoteCfi={deleteNoteCfi}
-          onDeleteNoteCfiHandled={() => setDeleteNoteCfi(null)}
+          deleteNoteCfi={deleteHighlightCfi}
+          onDeleteNoteCfiHandled={() => setDeleteHighlightCfi(null)}
           onOpenNoteFromHighlight={(cfi) => {
             setIsNotesOpen(true);
             setNotesFilter("all");
             setScrollToNoteCfi(cfi);
           }}
+          onOpenAiPanel={handleOpenAiPanel}
+          threads={threads}
+          onRegisterGetSectionText={(fn) => {
+            getSectionTextRef.current = fn;
+          }}
+          onMessagePair={handleMessagePair}
+          threadContext={
+            activeThreadId && currentBookId
+              ? {
+                  threadId: activeThreadId,
+                  messages: activeThreadMessages,
+                  highlights: activeThreadHighlights,
+                  bookId: currentBookId,
+                }
+              : null
+          }
           onTocNavigateComplete={(payload) => {
             if (!currentBookId || !payload) return;
             if (relocateDebounceTimerRef.current != null) {
@@ -533,7 +940,7 @@ function App() {
             progressWriteBlockRef.current = null;
             setBookDoc(null);
             setCurrentBookId(null);
-            setNotes([]);
+            setHighlights([]);
             setBookmarks([]);
             setCurrentCfi(null);
             void refreshLibrary();
@@ -613,7 +1020,7 @@ function App() {
               color: chrome.controlFg,
             }}
           >
-            {activeNotes.length}
+            {highlights.length}
           </span>
         </div>
         {isNotesOpen && (
@@ -667,7 +1074,7 @@ function App() {
                 <span>
                   {panelTab === "bookmarks"
                     ? `Bookmarks (${bookmarks.length})`
-                    : `Notes (${activeNotes.length})`}
+                    : `Highlights (${highlights.length})`}
                 </span>
                 <button
                   type="button"
@@ -696,7 +1103,7 @@ function App() {
               >
                 {(
                   [
-                    { key: "notes", label: `Notes (${activeNotes.length})` },
+                    { key: "notes", label: `Highlights (${highlights.length})` },
                     { key: "bookmarks", label: `Bookmarks (${bookmarks.length})` },
                   ] as const
                 ).map((tab) => {
@@ -728,89 +1135,86 @@ function App() {
                     padding: "8px 10px",
                     borderBottom: `1px solid ${chrome.panelBorder}`,
                     display: "flex",
-                    gap: 6,
-                    flexWrap: "wrap",
+                    alignItems: "center",
+                    gap: 8,
                   }}
                 >
-                {(
-                  [
-                    { key: "all", label: "All" },
-                    { key: "highlights", label: "Highlights" },
-                    { key: "ai", label: "AI Notes" },
-                  ] as const
-                ).map((option) => {
-                  const active = notesFilter === option.key;
-                  return (
-                    <button
-                      key={option.key}
-                      type="button"
-                      onClick={() => setNotesFilter(option.key)}
-                      style={{
-                        border: `1px solid ${chrome.controlBorder}`,
-                        borderRadius: 999,
-                        padding: "3px 10px",
-                        background: active ? "rgba(31,111,235,0.16)" : chrome.controlBg,
-                        color: active ? "#0b4fb3" : chrome.controlFg,
-                        fontSize: 12,
-                        fontWeight: active ? 600 : 500,
-                        cursor: "pointer",
-                      }}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
-                {(notesFilter === "all" || notesFilter === "highlights") && (
-                  <>
-                    <span style={{ color: chrome.muted, fontSize: 12, margin: "4px 2px 0 6px" }}>|</span>
-                    {(
-                      ["all", "yellow", "blue", "green", "pink"] as const satisfies HighlightColorFilter[]
-                    ).map((colorFilter) => {
-                      const active = highlightColorFilter === colorFilter;
-                      const isAll = colorFilter === "all";
-                      return (
-                        <button
-                          key={colorFilter}
-                          type="button"
-                          onClick={() => setHighlightColorFilter(colorFilter)}
-                          title={isAll ? "Any highlight color" : `Only ${colorFilter} highlights`}
-                          style={{
-                            border: `1px solid ${chrome.controlBorder}`,
-                            borderRadius: 999,
-                            padding: isAll ? "3px 10px" : "3px 8px",
-                            minWidth: isAll ? undefined : 24,
-                            height: 24,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            background: active ? "rgba(31,111,235,0.16)" : chrome.controlBg,
-                            color: active ? "#0b4fb3" : chrome.controlFg,
-                            fontSize: 12,
-                            fontWeight: active ? 600 : 500,
-                            cursor: "pointer",
-                          }}
-                        >
-                          {isAll ? (
-                            "Any color"
-                          ) : (
-                            <span
-                              style={{
-                                width: 10,
-                                height: 10,
-                                borderRadius: "999px",
-                                background: HIGHLIGHT_COLOR_HEX[colorFilter],
-                                border: "1px solid rgba(0,0,0,0.2)",
-                              }}
-                            />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </>
-                )}
+                  {activeThreadId ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setActiveThreadId(null)}
+                        aria-label="Back to threads"
+                        style={{
+                          border: `1px solid ${chrome.controlBorder}`,
+                          borderRadius: 6,
+                          padding: "4px 8px",
+                          background: chrome.controlBg,
+                          color: chrome.controlFg,
+                          cursor: "pointer",
+                          fontSize: 12,
+                        }}
+                      >
+                        ← Back
+                      </button>
+                      <span
+                        style={{
+                          flex: 1,
+                          fontWeight: 600,
+                          fontSize: 13,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                        title={threads.find((t) => t.id === activeThreadId)?.title ?? "New thread"}
+                      >
+                        {threads.find((t) => t.id === activeThreadId)?.title ?? "New thread"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => activeThreadId && void handleArchiveThread(activeThreadId)}
+                        disabled={!!archivingThreadId}
+                        aria-label={archivingThreadId ? "Archiving…" : "Archive thread"}
+                        style={{
+                          border: `1px solid ${chrome.controlBorder}`,
+                          borderRadius: 6,
+                          padding: "4px 8px",
+                          background: chrome.controlBg,
+                          color: chrome.controlFg,
+                          cursor: archivingThreadId ? "wait" : "pointer",
+                          fontSize: 12,
+                          opacity: archivingThreadId ? 0.8 : 1,
+                        }}
+                      >
+                        {archivingThreadId === activeThreadId ? "Archiving…" : "Archive"}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ flex: 1, fontWeight: 600, fontSize: 13 }}>Threads</span>
+                      <button
+                        type="button"
+                        onClick={createNewThread}
+                        style={{
+                          border: `1px solid ${chrome.controlBorder}`,
+                          borderRadius: 6,
+                          padding: "4px 10px",
+                          background: chrome.controlBg,
+                          color: chrome.controlFg,
+                          cursor: "pointer",
+                          fontSize: 12,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                      >
+                        <NotepadText size={14} /> New thread
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
-              <div style={{ padding: 10, overflow: "auto", fontSize: 13, lineHeight: 1.45 }}>
+              <div style={{ flex: 1, minHeight: 0, padding: 10, overflow: "auto", fontSize: 13, lineHeight: 1.45, display: "flex", flexDirection: "column" }}>
                 {panelTab === "bookmarks" ? (
                   bookmarks.length === 0 ? (
                     <p style={{ margin: 0, color: chrome.muted }}>No bookmarks yet.</p>
@@ -878,205 +1282,175 @@ function App() {
                       </div>
                     ))
                   )
-                ) : filteredNotes.length === 0 ? (
-                  <p style={{ margin: 0, color: chrome.muted }}>
-                    {activeNotes.length === 0
-                      ? 'No saved notes yet. Select text and click "Save as note" in the AI panel.'
-                      : "No notes in this filter."}
-                  </p>
-                ) : (
-                  filteredNotes
-                    .slice()
-                    .reverse()
-                    .map((note) => {
-                      const isAiNote = (note.aiConversation?.length ?? 0) > 0;
-                      const noteColor =
-                        note.color === "blue" || note.color === "green" || note.color === "pink"
-                          ? note.color
-                          : "yellow";
-                      const highlightHex = HIGHLIGHT_COLOR_HEX[noteColor];
-                      return (
-                        <details
-                          key={note.id}
-                          ref={(el) => {
-                            noteRefs.current[note.cfi] = el;
-                          }}
-                          style={{
-                            marginBottom: 8,
-                            border: `1px solid ${isAiNote ? "rgba(31,111,235,0.32)" : chrome.panelBorder}`,
-                            borderRadius: 8,
-                            padding: "8px 10px",
-                            background: isAiNote
-                              ? theme === "dark"
-                                ? "rgba(31,111,235,0.1)"
-                                : "rgba(31,111,235,0.06)"
-                              : theme === "dark"
-                                ? "rgba(255,255,255,0.02)"
-                                : chrome.cardBg,
-                          }}
-                        >
-                          <summary
+                ) : panelTab === "notes" && activeThreadId ? (
+                  <>
+                    <div style={{ marginBottom: 8, fontWeight: 600, fontSize: 12, color: chrome.muted }}>Messages</div>
+                    {activeThreadMessages.length === 0 ? (
+                      <p style={{ margin: 0, color: chrome.muted, fontSize: 12 }}>No messages yet. Type below to start the conversation, or select text and use Add to thread to attach a passage.</p>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {activeThreadMessages.map((m) => (
+                          <div
+                            key={m.id}
                             style={{
-                              cursor: "pointer",
-                              fontWeight: 600,
-                              display: "flex",
-                              alignItems: "flex-start",
-                              justifyContent: "space-between",
-                              gap: 8,
+                              alignSelf: m.role === "user" ? "flex-end" : "flex-start",
+                              maxWidth: "95%",
+                              padding: "6px 8px",
+                              borderRadius: 8,
+                              background: m.role === "user" ? "rgba(31,111,235,0.12)" : (theme === "dark" ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.04)"),
                             }}
                           >
-                            <span style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
-                              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                <span
-                                  aria-hidden="true"
-                                  style={{
-                                    width: 9,
-                                    height: 9,
-                                    borderRadius: "999px",
-                                    flexShrink: 0,
-                                    background: isAiNote ? "#1f6feb" : highlightHex,
-                                    border: "1px solid rgba(0,0,0,0.25)",
-                                  }}
-                                />
-                                <span>{(note.selectedText ?? note.text ?? "Untitled note").slice(0, 90)}</span>
-                              </span>
-                              <span
-                                style={{
-                                  display: "flex",
-                                  gap: 6,
-                                  flexWrap: "wrap",
-                                  fontWeight: 500,
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    fontSize: 11,
-                                    borderRadius: 999,
-                                    padding: "2px 8px",
-                                    background:
-                                      theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)",
-                                    color: chrome.muted,
-                                  }}
-                                >
-                                  {`Chapter: ${note.chapterLabel ?? "Unknown"}`}
-                                </span>
-                                <span
-                                  style={{
-                                    fontSize: 11,
-                                    borderRadius: 999,
-                                    padding: "2px 8px",
-                                    background:
-                                      theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)",
-                                    color: chrome.muted,
-                                  }}
-                                >
-                                  {`Page: ${
-                                    note.pageLabel ??
-                                    (note.pageCurrent != null && note.pageTotal != null
-                                      ? `${note.pageCurrent + 1}/${note.pageTotal}`
-                                      : "—")
-                                  }`}
-                                </span>
-                              </span>
-                            </span>
-                            <span
+                            <div style={{ fontSize: 11, color: chrome.muted, marginBottom: 2 }}>{m.role === "user" ? "You" : "Claude"}</div>
+                            <div style={{ whiteSpace: "pre-wrap" }}>{m.content}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {activeThreadHighlights.length > 0 && (
+                      <div style={{ marginTop: 16, marginBottom: 12 }}>
+                        <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 6, color: chrome.muted }}>Excerpts in this thread</div>
+                        {activeThreadHighlights.map((h) => {
+                          const colorHex = HIGHLIGHT_COLOR_HEX[h.color === "blue" || h.color === "green" || h.color === "pink" ? h.color : "yellow"];
+                          return (
+                            <blockquote
+                              key={h.id}
                               style={{
-                                flexShrink: 0,
-                                borderRadius: 999,
-                                padding: "2px 8px",
-                                fontSize: 11,
-                                fontWeight: 700,
-                                background: isAiNote
-                                  ? "rgba(31,111,235,0.18)"
-                                  : `${highlightHex}${theme === "dark" ? "44" : "33"}`,
-                                color: isAiNote ? "#0b4fb3" : theme === "dark" ? "#f3f3f3" : "#7a5d00",
-                              }}
-                            >
-                              {isAiNote ? "AI Note" : "Highlight"}
-                            </span>
-                          </summary>
-                          <div style={{ marginTop: 8, whiteSpace: "pre-wrap" }}>
-                            <div
-                              style={{
+                                margin: "0 0 8px 0",
                                 padding: "6px 8px",
-                                borderLeft: `3px solid ${isAiNote ? "#1f6feb" : highlightHex}`,
-                                background:
-                                  theme === "dark" ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.03)",
-                                marginBottom: 8,
+                                borderLeft: `3px solid ${colorHex}`,
+                                background: theme === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+                                borderRadius: 4,
+                                fontSize: 12,
                               }}
                             >
-                              {note.selectedText ?? note.text ?? "(no selected text)"}
-                            </div>
-                            {isAiNote ? (
-                              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                {note.aiConversation?.map((m, idx) => (
-                                  <div
-                                    key={`${note.id}-${idx}`}
-                                    style={{
-                                      alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-                                      maxWidth: "95%",
-                                      padding: "6px 8px",
-                                      borderRadius: 8,
-                                      background:
-                                        m.role === "user" ? "rgba(31,111,235,0.12)" : "rgba(0,0,0,0.05)",
-                                    }}
-                                  >
-                                    <div style={{ fontSize: 11, color: chrome.muted, marginBottom: 2 }}>
-                                      {m.role === "user" ? "You" : "Claude"}
-                                    </div>
-                                    <div>{m.content}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <div>{note.note || "(highlight only — no AI response saved)"}</div>
-                            )}
-                            <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  setJumpToCfi(note.cfi);
-                                }}
-                                style={{
-                                  padding: "5px 8px",
-                                  fontSize: 12,
-                                  border: "1px solid rgba(0,0,0,0.12)",
-                                  borderRadius: 6,
-                                  background: chrome.controlBg,
-                                  color: chrome.controlFg,
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Go to highlight
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  handleDeleteNoteFromPanel(note);
-                                }}
-                                style={{
-                                  padding: "5px 8px",
-                                  fontSize: 12,
-                                  border: "1px solid rgba(0,0,0,0.12)",
-                                  borderRadius: 6,
-                                  background: chrome.controlBg,
-                                  color: "#b42318",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                {isAiNote ? "Delete AI note" : "Delete highlight"}
-                              </button>
+                              {h.selectedText}
+                            </blockquote>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                ) : panelTab === "notes" && !activeThreadId ? (
+                  <>
+                    <div style={{ marginBottom: 12 }}>
+                      {threads.length === 0 ? (
+                        <p style={{ margin: 0, color: chrome.muted, fontSize: 12 }}>No threads yet. Create one or select text and use Add to thread.</p>
+                      ) : (
+                        threads.map((thread) => (
+                          <div
+                            key={thread.id}
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => setActiveThreadId(thread.id)}
+                            onKeyDown={(e) => e.key === "Enter" && setActiveThreadId(thread.id)}
+                            style={{
+                              marginBottom: 8,
+                              padding: "8px 10px",
+                              border: `1px solid ${chrome.panelBorder}`,
+                              borderRadius: 8,
+                              background: chrome.cardBg,
+                              cursor: "pointer",
+                            }}
+                          >
+                            <div style={{ fontWeight: 600, fontSize: 13 }}>{thread.title ?? "New thread"}</div>
+                            <div style={{ fontSize: 11, color: chrome.muted, marginTop: 2 }}>
+                              {new Date(thread.updatedAt).toLocaleDateString()}
                             </div>
                           </div>
-                        </details>
-                      );
-                    })
-                )}
+                        ))
+                      )}
+                    </div>
+                    <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 6, color: chrome.muted }}>Highlights</div>
+                    {standaloneHighlights.length === 0 ? (
+                      <p style={{ margin: 0, color: chrome.muted, fontSize: 12 }}>No standalone highlights.</p>
+                    ) : (
+                      standaloneHighlights.map((h) => {
+                        const colorHex = HIGHLIGHT_COLOR_HEX[h.color === "blue" || h.color === "green" || h.color === "pink" ? h.color : "yellow"];
+                        return (
+                          <div
+                            key={h.id}
+                            style={{
+                              marginBottom: 8,
+                              padding: "6px 8px",
+                              borderLeft: `3px solid ${colorHex}`,
+                              background: theme === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+                              borderRadius: 4,
+                              fontSize: 12,
+                            }}
+                          >
+                            {h.selectedText.slice(0, 80)}{h.selectedText.length > 80 ? "…" : ""}
+                            <button
+                              type="button"
+                              onClick={() => setJumpToCfi(h.cfi)}
+                              style={{ marginLeft: 8, fontSize: 11, padding: "2px 6px" }}
+                            >
+                              Go to
+                            </button>
+                          </div>
+                        );
+                      })
+                    )}
+                  </>
+                ) : null}
               </div>
+              {panelTab === "notes" && activeThreadId && (
+                <div
+                  style={{
+                    padding: "10px 12px",
+                    borderTop: `1px solid ${chrome.panelBorder}`,
+                    background: chrome.panelBg,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                  }}
+                >
+                  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    <input
+                      ref={threadChatInputRef}
+                      type="text"
+                      value={threadChatInput}
+                      onChange={(e) => setThreadChatInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          void handleThreadChatSend();
+                        }
+                      }}
+                      placeholder="Ask about this thread or your highlights..."
+                      disabled={threadChatAsking}
+                      style={{
+                        flex: 1,
+                        padding: "10px 12px",
+                        borderRadius: 8,
+                        border: `1px solid ${chrome.controlBorder}`,
+                        background: chrome.controlBg,
+                        color: chrome.controlFg,
+                        fontSize: 13,
+                        outline: "none",
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void handleThreadChatSend()}
+                      disabled={threadChatAsking}
+                      style={{
+                        borderRadius: 8,
+                        border: `1px solid ${chrome.controlBorder}`,
+                        background: threadChatAsking ? chrome.muted : "#1f6feb",
+                        color: "#fff",
+                        padding: "10px 14px",
+                        fontSize: 13,
+                        cursor: threadChatAsking ? "wait" : "pointer",
+                      }}
+                    >
+                      {threadChatAsking ? "…" : "Send"}
+                    </button>
+                  </div>
+                  {threadChatError && (
+                    <div style={{ fontSize: 12, color: "#b42318" }}>{threadChatError}</div>
+                  )}
+                </div>
+              )}
             </aside>
           </>
         )}
@@ -1171,6 +1545,29 @@ function App() {
             )}
           </aside>
         )}
+        {archiveToast && (
+          <div
+            aria-live="polite"
+            style={{
+              position: "absolute",
+              left: "50%",
+              bottom: 44,
+              transform: "translateX(-50%)",
+              zIndex: 121,
+              padding: "8px 14px",
+              borderRadius: 8,
+              border: `1px solid ${chrome.panelBorder}`,
+              background: chrome.panelBg,
+              color: chrome.appFg,
+              fontSize: 13,
+              fontWeight: 500,
+              boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
+              pointerEvents: "none",
+            }}
+          >
+            {archiveToast}
+          </div>
+        )}
         <div
           aria-live="polite"
           style={{
@@ -1210,6 +1607,36 @@ function App() {
         }}
         openingBookId={openingBookId}
       />
+      {openingBookId && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9998,
+            background: "rgba(255,255,255,0.92)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 16,
+          }}
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              border: "3px solid rgba(0,0,0,0.12)",
+              borderTopColor: "#1f6feb",
+              borderRadius: "50%",
+              animation: "spin 0.8s linear infinite",
+            }}
+          />
+          <p style={{ margin: 0, fontSize: 15, color: "#333" }}>Opening book…</p>
+          <p style={{ margin: 0, fontSize: 12, color: "#666" }}>Large files may take a minute</p>
+        </div>
+      )}
       {error && (
         <p
           style={{

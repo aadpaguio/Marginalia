@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { BookNote } from "@/types/book";
+import type { Highlight, Thread, ThreadMessage } from "@/types/book";
 
 export interface StoredBook {
   id: string;
@@ -37,100 +37,114 @@ export async function dbDeleteBook(id: string): Promise<void> {
   await invoke("db_delete_book", { id });
 }
 
-interface StoredNoteRow {
-  id: string;
-  bookId: string;
-  cfi: string;
-  selectedText?: string | null;
-  text?: string | null;
-  style?: string | null;
-  color?: string | null;
-  note: string;
-  noteKind: "highlight" | "ai_note";
-  aiConversation?: string | null;
-  chapterLabel?: string | null;
-  chapterHref?: string | null;
-  pageLabel?: string | null;
-  pageHref?: string | null;
-  pageCurrent?: number | null;
-  pageTotal?: number | null;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt?: number | null;
+// Highlights
+export async function dbGetHighlights(bookId: string): Promise<Highlight[]> {
+  return invoke<Highlight[]>("db_get_highlights", { bookId });
 }
 
-function mapRowToNote(row: StoredNoteRow): BookNote {
-  let aiConversation: BookNote["aiConversation"] = [];
-  if (row.aiConversation) {
-    try {
-      const parsed = JSON.parse(row.aiConversation) as BookNote["aiConversation"];
-      aiConversation = Array.isArray(parsed) ? parsed : [];
-    } catch {
-      aiConversation = [];
-    }
-  }
-  return {
-    id: row.id,
-    type: "annotation",
-    bookId: row.bookId,
-    cfi: row.cfi,
-    selectedText: row.selectedText ?? undefined,
-    text: row.text ?? undefined,
-    style: (row.style as BookNote["style"]) ?? "highlight",
-    color: row.color ?? "yellow",
-    note: row.note ?? "",
-    aiConversation,
-    chapterLabel: row.chapterLabel ?? undefined,
-    chapterHref: row.chapterHref ?? undefined,
-    pageLabel: row.pageLabel ?? undefined,
-    pageHref: row.pageHref ?? undefined,
-    pageCurrent: row.pageCurrent ?? undefined,
-    pageTotal: row.pageTotal ?? undefined,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-    deletedAt: row.deletedAt ?? undefined,
-  };
+export async function dbUpsertHighlight(highlight: Highlight): Promise<void> {
+  await invoke("db_upsert_highlight", {
+    highlight: {
+      id: highlight.id,
+      bookId: highlight.bookId,
+      cfi: highlight.cfi,
+      selectedText: highlight.selectedText,
+      color: highlight.color ?? "yellow",
+      chapterLabel: highlight.chapterLabel ?? null,
+      chapterHref: highlight.chapterHref ?? null,
+      createdAt: highlight.createdAt,
+    },
+  });
 }
 
-function mapNoteToRow(note: BookNote, bookId: string): StoredNoteRow {
-  const aiConversation = note.aiConversation && note.aiConversation.length > 0
-    ? JSON.stringify(note.aiConversation)
-    : null;
-  return {
-    id: note.id,
-    bookId,
-    cfi: note.cfi,
-    selectedText: note.selectedText ?? null,
-    text: note.text ?? null,
-    style: note.style ?? "highlight",
-    color: note.color ?? "yellow",
-    note: note.note ?? "",
-    noteKind: aiConversation ? "ai_note" : "highlight",
-    aiConversation,
-    chapterLabel: note.chapterLabel ?? null,
-    chapterHref: note.chapterHref ?? null,
-    pageLabel: note.pageLabel ?? null,
-    pageHref: note.pageHref ?? null,
-    pageCurrent: note.pageCurrent ?? null,
-    pageTotal: note.pageTotal ?? null,
-    createdAt: note.createdAt,
-    updatedAt: note.updatedAt,
-    deletedAt: note.deletedAt ?? null,
-  };
+export async function dbDeleteHighlight(id: string): Promise<void> {
+  await invoke("db_delete_highlight", { id });
 }
 
-export async function dbGetNotes(bookId: string): Promise<BookNote[]> {
-  const rows = await invoke<StoredNoteRow[]>("db_get_notes", { bookId });
-  return rows.map(mapRowToNote);
+export async function dbGetStandaloneHighlights(bookId: string): Promise<Highlight[]> {
+  return invoke<Highlight[]>("db_get_standalone_highlights", { bookId });
 }
 
-export async function dbUpsertNote(bookId: string, note: BookNote): Promise<void> {
-  const row = mapNoteToRow(note, bookId);
-  await invoke("db_upsert_note", { note: row });
+export async function dbGetHighlightsForThread(threadId: string): Promise<Highlight[]> {
+  return invoke<Highlight[]>("db_get_highlights_for_thread", { threadId });
 }
 
-export async function dbDeleteNote(id: string): Promise<void> {
-  await invoke("db_delete_note", { id });
+// Threads (Rust returns archived as 0/1)
+interface DbThreadRow extends Omit<Thread, "archived"> {
+  archived: number;
+}
+export async function dbGetThreads(bookId: string): Promise<Thread[]> {
+  const rows = await invoke<DbThreadRow[]>("db_get_threads", { bookId });
+  return rows.map((t) => ({ ...t, archived: t.archived !== 0 }));
+}
+
+export async function dbCreateThread(thread: Thread): Promise<void> {
+  await invoke("db_create_thread", {
+    thread: {
+      id: thread.id,
+      bookId: thread.bookId,
+      title: thread.title ?? null,
+      createdAt: thread.createdAt,
+      updatedAt: thread.updatedAt,
+      archived: thread.archived ? 1 : 0,
+    },
+  });
+}
+
+export async function dbUpdateThreadTitle(threadId: string, title: string): Promise<void> {
+  await invoke("db_update_thread_title", { id: threadId, title });
+}
+
+export async function dbArchiveThread(threadId: string): Promise<void> {
+  await invoke("db_archive_thread", { id: threadId });
+}
+
+export async function dbGetThreadMessages(threadId: string): Promise<ThreadMessage[]> {
+  return invoke<ThreadMessage[]>("db_get_thread_messages", { threadId });
+}
+
+export async function dbSaveThreadMessage(message: ThreadMessage): Promise<void> {
+  await invoke("db_save_thread_message", {
+    message: {
+      id: message.id,
+      threadId: message.threadId,
+      role: message.role,
+      content: message.content,
+      createdAt: message.createdAt,
+    },
+  });
+}
+
+export async function dbAttachHighlightToThread(
+  threadId: string,
+  highlightId: string
+): Promise<void> {
+  await invoke("db_attach_highlight_to_thread", { threadId, highlightId });
+}
+
+// Memory (file-based)
+export async function memoryEnsureDirs(): Promise<void> {
+  await invoke("memory_ensure_dirs");
+}
+
+export async function memoryListBooks(): Promise<string[]> {
+  return invoke<string[]>("memory_list_books");
+}
+
+export async function memoryReadBook(bookId: string): Promise<string | null> {
+  return invoke<string | null>("memory_read_book", { bookId });
+}
+
+export async function memoryWriteBook(bookId: string, content: string): Promise<void> {
+  await invoke("memory_write_book", { bookId, content });
+}
+
+export async function memoryReadReader(): Promise<string | null> {
+  return invoke<string | null>("memory_read_reader");
+}
+
+export async function memoryWriteReader(content: string): Promise<void> {
+  await invoke("memory_write_reader", { content });
 }
 
 export interface StoredBookmark {
