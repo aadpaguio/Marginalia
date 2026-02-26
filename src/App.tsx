@@ -119,7 +119,7 @@ function buildBookmarkLocationLabel(args: {
 }
 
 function App() {
-  type PanelTab = "notes" | "bookmarks";
+  type PanelTab = "threads" | "highlights" | "bookmarks";
   type NotesFilter = "all" | "highlights" | "ai";
   type HighlightColorFilter = "all" | "yellow" | "blue" | "green" | "pink";
   const HIGHLIGHT_COLOR_HEX: Record<Exclude<HighlightColorFilter, "all">, string> = {
@@ -142,7 +142,7 @@ function App() {
   const [activeThreadHighlights, setActiveThreadHighlights] = useState<Highlight[]>([]);
   const [standaloneHighlights, setStandaloneHighlights] = useState<Highlight[]>([]);
   const [bookmarks, setBookmarks] = useState<StoredBookmark[]>([]);
-  const [panelTab, setPanelTab] = useState<PanelTab>("notes");
+  const [panelTab, setPanelTab] = useState<PanelTab>("threads");
   const [notesFilter, setNotesFilter] = useState<NotesFilter>("all");
   const [highlightColorFilter, setHighlightColorFilter] = useState<HighlightColorFilter>("all");
   const [isNotesOpen, setIsNotesOpen] = useState(false);
@@ -596,6 +596,7 @@ function App() {
       chapter: selection.chapterLabel ?? null,
       color: "yellow",
     });
+    setPanelTab("threads");
   };
 
   const handleMessagePair = (
@@ -1123,7 +1124,9 @@ function App() {
                 <span>
                   {panelTab === "bookmarks"
                     ? `Bookmarks (${bookmarks.length})`
-                    : `Highlights (${highlights.length})`}
+                    : panelTab === "highlights"
+                      ? `Highlights (${standaloneHighlights.length})`
+                      : "Threads"}
                 </span>
                 <button
                   type="button"
@@ -1152,7 +1155,8 @@ function App() {
               >
                 {(
                   [
-                    { key: "notes", label: `Highlights (${highlights.length})` },
+                    { key: "threads", label: "Threads" },
+                    { key: "highlights", label: `Highlights (${standaloneHighlights.length})` },
                     { key: "bookmarks", label: `Bookmarks (${bookmarks.length})` },
                   ] as const
                 ).map((tab) => {
@@ -1178,7 +1182,7 @@ function App() {
                   );
                 })}
               </div>
-              {panelTab === "notes" && (
+              {panelTab === "threads" && (
                 <div
                   style={{
                     padding: "8px 10px",
@@ -1331,7 +1335,7 @@ function App() {
                       </div>
                     ))
                   )
-                ) : panelTab === "notes" && activeThreadId ? (
+                ) : panelTab === "threads" && activeThreadId ? (
                   <>
                     <div style={{ marginBottom: 8, fontWeight: 600, fontSize: 12, color: chrome.muted }}>Messages</div>
                     {activeThreadMessages.length === 0 ? (
@@ -1417,39 +1421,40 @@ function App() {
                       </div>
                     )}
                   </>
-                ) : panelTab === "notes" && !activeThreadId ? (
-                  <>
-                    <div style={{ marginBottom: 12 }}>
-                      {threads.length === 0 ? (
-                        <p style={{ margin: 0, color: chrome.muted, fontSize: 12 }}>No threads yet. Create one or select text and use Add to thread.</p>
-                      ) : (
-                        threads.map((thread) => (
-                          <div
-                            key={thread.id}
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => setActiveThreadId(thread.id)}
-                            onKeyDown={(e) => e.key === "Enter" && setActiveThreadId(thread.id)}
-                            style={{
-                              marginBottom: 8,
-                              padding: "8px 10px",
-                              border: `1px solid ${chrome.panelBorder}`,
-                              borderRadius: 8,
-                              background: chrome.cardBg,
-                              cursor: "pointer",
-                            }}
-                          >
-                            <div style={{ fontWeight: 600, fontSize: 13 }}>{thread.title ?? "New thread"}</div>
-                            <div style={{ fontSize: 11, color: chrome.muted, marginTop: 2 }}>
-                              {new Date(thread.updatedAt).toLocaleDateString()}
-                            </div>
+                ) : panelTab === "threads" && !activeThreadId ? (
+                  <div style={{ marginBottom: 12 }}>
+                    {threads.length === 0 ? (
+                      <p style={{ margin: 0, color: chrome.muted, fontSize: 12 }}>No threads yet. Create one or select text and use Add to thread.</p>
+                    ) : (
+                      threads.map((thread) => (
+                        <div
+                          key={thread.id}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setActiveThreadId(thread.id)}
+                          onKeyDown={(e) => e.key === "Enter" && setActiveThreadId(thread.id)}
+                          style={{
+                            marginBottom: 8,
+                            padding: "8px 10px",
+                            border: `1px solid ${chrome.panelBorder}`,
+                            borderRadius: 8,
+                            background: chrome.cardBg,
+                            cursor: "pointer",
+                          }}
+                        >
+                          <div style={{ fontWeight: 600, fontSize: 13 }}>{thread.title ?? "New thread"}</div>
+                          <div style={{ fontSize: 11, color: chrome.muted, marginTop: 2 }}>
+                            {new Date(thread.updatedAt).toLocaleDateString()}
                           </div>
-                        ))
-                      )}
-                    </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                ) : panelTab === "highlights" ? (
+                  <>
                     <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 6, color: chrome.muted }}>Highlights</div>
                     {standaloneHighlights.length === 0 ? (
-                      <p style={{ margin: 0, color: chrome.muted, fontSize: 12 }}>No standalone highlights.</p>
+                      <p style={{ margin: 0, color: chrome.muted, fontSize: 12 }}>No standalone highlights. Select text in the book and highlight it, or add a passage to a thread with Add to thread.</p>
                     ) : (
                       standaloneHighlights.map((h) => {
                         const colorHex = HIGHLIGHT_COLOR_HEX[h.color === "blue" || h.color === "green" || h.color === "pink" ? h.color : "yellow"];
@@ -1480,7 +1485,7 @@ function App() {
                   </>
                 ) : null}
               </div>
-              {panelTab === "notes" && activeThreadId && (
+              {panelTab === "threads" && activeThreadId && (
                 <div
                   style={{
                     padding: "10px 12px",
