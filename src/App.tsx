@@ -166,6 +166,15 @@ function App() {
   const [archivingThreadId, setArchivingThreadId] = useState<string | null>(null);
   const [archiveToast, setArchiveToast] = useState<string | null>(null);
   const archiveToastTimeoutRef = useRef<number | null>(null);
+  /** Excerpt to attach to the very next user message (set when user clicks "Add to thread"). */
+  const [pendingMessageExcerpt, setPendingMessageExcerpt] = useState<{
+    text: string;
+    cfi: string;
+    chapter: string | null;
+    color: string;
+  } | null>(null);
+  /** Message IDs whose excerpt card is expanded (click toggles). */
+  const [excerptExpandedIds, setExcerptExpandedIds] = useState<Set<string>>(new Set());
   const getSectionTextRef = useRef<((tocHref?: string) => string) | null>(null);
   const highlightRefs = useRef<Record<string, HTMLDetailsElement | null>>({});
   const progressLastWriteAtRef = useRef(0);
@@ -379,6 +388,7 @@ function App() {
   }, []);
 
   useEffect(() => {
+    setPendingMessageExcerpt(null);
     if (!activeThreadId || !currentBookId) {
       setActiveThreadMessages([]);
       setActiveThreadHighlights([]);
@@ -580,9 +590,19 @@ function App() {
       setStandaloneHighlights((prev) => prev.filter((h) => h.id !== highlight.id));
       dbGetHighlightsForThread(threadId).then(setActiveThreadHighlights);
     });
+    setPendingMessageExcerpt({
+      text: selection.selectedText,
+      cfi: selection.cfi,
+      chapter: selection.chapterLabel ?? null,
+      color: "yellow",
+    });
   };
 
-  const handleMessagePair = (userContent: string, assistantContent: string) => {
+  const handleMessagePair = (
+    userContent: string,
+    assistantContent: string,
+    excerpt?: { text: string; cfi: string | null; chapter: string | null; color: string }
+  ) => {
     const threadId = activeThreadId;
     if (!threadId) return;
     const now = Date.now();
@@ -592,6 +612,14 @@ function App() {
       role: "user",
       content: userContent,
       createdAt: now,
+      ...(excerpt?.text
+        ? {
+            excerptText: excerpt.text,
+            excerptCfi: excerpt.cfi ?? null,
+            excerptChapter: excerpt.chapter ?? null,
+            excerptColor: excerpt.color ?? "yellow",
+          }
+        : {}),
     };
     const assistantMsg: ThreadMessage = {
       id: `msg-${now}-a`,
@@ -763,12 +791,13 @@ function App() {
         (activeThreadHighlights.length > 0
           ? activeThreadHighlights[activeThreadHighlights.length - 1].selectedText
           : "");
+      const passageForThisMessage = pendingMessageExcerpt?.text ?? currentPassage;
       const result = await askClaudeThread(
         {
           threadId: activeThreadId,
           messages: activeThreadMessages,
           attachedHighlights: activeThreadHighlights,
-          currentPassage,
+          currentPassage: passageForThisMessage,
           userMessage,
           bookTitle: bookDoc.metadata?.title ?? "Book",
           author: bookDoc.metadata?.author ?? "",
@@ -778,7 +807,27 @@ function App() {
         },
         apiKey
       );
-      handleMessagePair(userMessage, result.answer ?? "");
+      const lastHighlight = activeThreadHighlights[activeThreadHighlights.length - 1];
+      const excerpt = (() => {
+        if (pendingMessageExcerpt)
+          return {
+            text: pendingMessageExcerpt.text,
+            cfi: pendingMessageExcerpt.cfi,
+            chapter: pendingMessageExcerpt.chapter,
+            color: pendingMessageExcerpt.color,
+          };
+        if (!passageForThisMessage) return undefined;
+        return passageForThisMessage === chapterText
+          ? { text: passageForThisMessage, cfi: currentCfi ?? null, chapter: currentTocLabel ?? null, color: "yellow" as const }
+          : {
+              text: passageForThisMessage,
+              cfi: currentCfi ?? lastHighlight?.cfi ?? null,
+              chapter: currentTocLabel ?? lastHighlight?.chapterLabel ?? null,
+              color: (lastHighlight?.color === "blue" || lastHighlight?.color === "green" || lastHighlight?.color === "pink" ? lastHighlight.color : "yellow") as string,
+            };
+      })();
+      setPendingMessageExcerpt(null);
+      handleMessagePair(userMessage, result.answer ?? "", excerpt);
     } catch (e) {
       setThreadChatError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -1286,45 +1335,83 @@ function App() {
                   <>
                     <div style={{ marginBottom: 8, fontWeight: 600, fontSize: 12, color: chrome.muted }}>Messages</div>
                     {activeThreadMessages.length === 0 ? (
-                      <p style={{ margin: 0, color: chrome.muted, fontSize: 12 }}>No messages yet. Type below to start the conversation, or select text and use Add to thread to attach a passage.</p>
+                      <p style={{ margin: 0, color: chrome.muted, fontSize: 12 }}>
+                        {pendingMessageExcerpt ? "Type your question below — the passage will be attached to your message." : "No messages yet. Type below to start the conversation, or select text and use Add to thread to attach a passage."}
+                      </p>
                     ) : (
                       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                        {activeThreadMessages.map((m) => (
-                          <div
-                            key={m.id}
-                            style={{
-                              alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-                              maxWidth: "95%",
-                              padding: "6px 8px",
-                              borderRadius: 8,
-                              background: m.role === "user" ? "rgba(31,111,235,0.12)" : (theme === "dark" ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.04)"),
-                            }}
-                          >
-                            <div style={{ fontSize: 11, color: chrome.muted, marginBottom: 2 }}>{m.role === "user" ? "You" : "Claude"}</div>
-                            <div style={{ whiteSpace: "pre-wrap" }}>{m.content}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    {activeThreadHighlights.length > 0 && (
-                      <div style={{ marginTop: 16, marginBottom: 12 }}>
-                        <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 6, color: chrome.muted }}>Excerpts in this thread</div>
-                        {activeThreadHighlights.map((h) => {
-                          const colorHex = HIGHLIGHT_COLOR_HEX[h.color === "blue" || h.color === "green" || h.color === "pink" ? h.color : "yellow"];
+                        {activeThreadMessages.map((m) => {
+                          const isUser = m.role === "user";
+                          const excerptColorKey = (m.excerptColor === "blue" || m.excerptColor === "green" || m.excerptColor === "pink" ? m.excerptColor : "yellow") as keyof typeof HIGHLIGHT_COLOR_HEX;
+                          const excerptHex = m.excerptText ? HIGHLIGHT_COLOR_HEX[excerptColorKey] ?? HIGHLIGHT_COLOR_HEX.yellow : null;
+                          const excerptPreview =
+                            m.excerptText &&
+                            (() => {
+                              const lines = m.excerptText!.split(/\n/).filter(Boolean);
+                              const three = lines.slice(0, 3).join(" ");
+                              return three.length > 180 ? three.slice(0, 180).trim() + "…" : three;
+                            })();
+                          const excerptExpanded = excerptExpandedIds.has(m.id);
+                          const excerptDisplayText = m.excerptText && (excerptExpanded ? m.excerptText : excerptPreview);
                           return (
-                            <blockquote
-                              key={h.id}
+                            <div
+                              key={m.id}
                               style={{
-                                margin: "0 0 8px 0",
+                                alignSelf: isUser ? "flex-end" : "flex-start",
+                                maxWidth: "95%",
                                 padding: "6px 8px",
-                                borderLeft: `3px solid ${colorHex}`,
-                                background: theme === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
-                                borderRadius: 4,
-                                fontSize: 12,
+                                borderRadius: 8,
+                                background: isUser ? "rgba(31,111,235,0.12)" : (theme === "dark" ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.04)"),
                               }}
                             >
-                              {h.selectedText}
-                            </blockquote>
+                              <div style={{ fontSize: 11, color: chrome.muted, marginBottom: 2 }}>{isUser ? "You" : "Claude"}</div>
+                              {isUser && excerptDisplayText && excerptHex && (
+                                <div
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={() =>
+                                    setExcerptExpandedIds((prev) => {
+                                      const next = new Set(prev);
+                                      if (next.has(m.id)) next.delete(m.id);
+                                      else next.add(m.id);
+                                      return next;
+                                    })
+                                  }
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                      e.preventDefault();
+                                      setExcerptExpandedIds((prev) => {
+                                        const next = new Set(prev);
+                                        if (next.has(m.id)) next.delete(m.id);
+                                        else next.add(m.id);
+                                        return next;
+                                      });
+                                    }
+                                  }}
+                                  style={{
+                                    marginBottom: 8,
+                                    padding: "8px 10px",
+                                    borderRadius: 6,
+                                    background: theme === "dark" ? `rgba(0,0,0,0.25)` : `rgba(0,0,0,0.06)`,
+                                    borderLeft: `3px solid ${excerptHex}`,
+                                    boxShadow: "inset 0 1px 2px rgba(0,0,0,0.06)",
+                                    fontSize: 12,
+                                    lineHeight: 1.4,
+                                    color: theme === "dark" ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.85)",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  <div style={{ fontStyle: "italic", whiteSpace: "pre-wrap" }}>"{excerptDisplayText}"</div>
+                                  {m.excerptChapter && (
+                                    <div style={{ fontSize: 11, color: chrome.muted, marginTop: 4 }}>{m.excerptChapter}</div>
+                                  )}
+                                  <div style={{ fontSize: 10, color: chrome.muted, marginTop: 4 }}>
+                                    {excerptExpanded ? "Click to collapse" : "Click to expand"}
+                                  </div>
+                                </div>
+                              )}
+                              <div style={{ whiteSpace: "pre-wrap" }}>{m.content}</div>
+                            </div>
                           );
                         })}
                       </div>
@@ -1404,6 +1491,28 @@ function App() {
                     gap: 6,
                   }}
                 >
+                  {pendingMessageExcerpt && (
+                    <div
+                      style={{
+                        padding: "8px 10px",
+                        borderRadius: 6,
+                        background: theme === "dark" ? "rgba(0,0,0,0.25)" : "rgba(0,0,0,0.06)",
+                        borderLeft: "3px solid #e0d26c",
+                        boxShadow: "inset 0 1px 2px rgba(0,0,0,0.06)",
+                        fontSize: 12,
+                        lineHeight: 1.4,
+                        color: theme === "dark" ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.85)",
+                      }}
+                    >
+                      <div style={{ fontSize: 10, color: chrome.muted, marginBottom: 4 }}>Attached to next message</div>
+                      <div style={{ fontStyle: "italic", whiteSpace: "pre-wrap" }}>
+                        "{pendingMessageExcerpt.text.length > 200 ? pendingMessageExcerpt.text.slice(0, 200).trim() + "…" : pendingMessageExcerpt.text}"
+                      </div>
+                      {pendingMessageExcerpt.chapter && (
+                        <div style={{ fontSize: 11, color: chrome.muted, marginTop: 4 }}>{pendingMessageExcerpt.chapter}</div>
+                      )}
+                    </div>
+                  )}
                   <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                     <input
                       ref={threadChatInputRef}

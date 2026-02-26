@@ -33,3 +33,44 @@ export interface BookNote {
   updatedAt: number;
   deletedAt?: number | null;
 }
+
+/** Highlight (threads schema): persisted highlight, can be attached to a thread. */
+export type HighlightColorName = "yellow" | "blue" | "green" | "pink" | "red" | "violet";
+
+export interface Highlight {
+  id: string;
+  bookId: string;
+  cfi: string;
+  selectedText: string;
+  color: HighlightColorName | string;
+  chapterLabel?: string;
+  chapterHref?: string;
+  createdAt: number;
+}
+
+export interface Thread {
+  id: string;
+  bookId: string;
+  title?: string;
+  createdAt: number;
+  updatedAt: number;
+  archived: boolean;
+}
+
+export interface ThreadMessage {
+  id: string;
+  threadId: string;
+  role: "user" | "assistant";
+  content: string;
+  createdAt: number;
+  /** Set only on role=user when message has an attached passage. */
+  excerptText?: string | null;
+  excerptCfi?: string | null;
+  excerptChapter?: string | null;
+  excerptColor?: string | null;
+}
+
+export interface ThreadWithMessages extends Thread {
+  messages: ThreadMessage[];
+  highlights: Highlight[];
+}

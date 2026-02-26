@@ -111,6 +111,10 @@ export async function dbSaveThreadMessage(message: ThreadMessage): Promise<void>
       role: message.role,
       content: message.content,
       createdAt: message.createdAt,
+      excerptText: message.excerptText ?? null,
+      excerptCfi: message.excerptCfi ?? null,
+      excerptChapter: message.excerptChapter ?? null,
+      excerptColor: message.excerptColor ?? null,
     },
   });
 }
