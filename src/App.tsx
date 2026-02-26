@@ -46,7 +46,7 @@ import {
   parseReaderMd,
 } from "@/services/compaction";
 import { askClaudeThread, generateThreadTitle } from "@/services/claude";
-import { BookOpenText, NotepadText } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpenText, NotepadText } from "lucide-react";
 
 function base64ToFile(base64: string, filename: string): File {
   const binary = atob(base64);
@@ -148,6 +148,8 @@ function App() {
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [isTocOpen, setIsTocOpen] = useState(false);
   const [jumpToCfi, setJumpToCfi] = useState<string | null>(null);
+  const [backCfi, setBackCfi] = useState<string | null>(null);
+  const currentCfiRef = useRef<string | null>(null);
   const [deleteHighlightCfi, setDeleteHighlightCfi] = useState<string | null>(null);
   const [currentCfi, setCurrentCfi] = useState<string | null>(null);
   const [scrollToNoteCfi, setScrollToNoteCfi] = useState<string | null>(null);
@@ -172,6 +174,7 @@ function App() {
     cfi: string;
     chapter: string | null;
     color: string;
+    page: string | null;
   } | null>(null);
   /** Message IDs whose excerpt card is expanded (click toggles). */
   const [excerptExpandedIds, setExcerptExpandedIds] = useState<Set<string>>(new Set());
@@ -282,6 +285,8 @@ function App() {
     setIsNotesOpen(false);
     setIsTocOpen(false);
     setJumpToCfi(null);
+    setBackCfi(null);
+    currentCfiRef.current = null;
     setCurrentTocHref(null);
     setCurrentTocLabel(null);
     setCurrentPageLabel(null);
@@ -378,6 +383,10 @@ function App() {
     const path = typeof selected === "string" ? selected : (selected as { path: string }).path;
     await openBookFromPath(path);
   };
+
+  useEffect(() => {
+    currentCfiRef.current = currentCfi;
+  }, [currentCfi]);
 
   useEffect(() => {
     void refreshLibrary();
@@ -595,6 +604,7 @@ function App() {
       cfi: selection.cfi,
       chapter: selection.chapterLabel ?? null,
       color: "yellow",
+      page: currentPageLabel ?? null,
     });
     setPanelTab("threads");
   };
@@ -602,7 +612,7 @@ function App() {
   const handleMessagePair = (
     userContent: string,
     assistantContent: string,
-    excerpt?: { text: string; cfi: string | null; chapter: string | null; color: string }
+    excerpt?: { text: string; cfi: string | null; chapter: string | null; color: string; page: string | null }
   ) => {
     const threadId = activeThreadId;
     if (!threadId) return;
@@ -619,6 +629,7 @@ function App() {
             excerptCfi: excerpt.cfi ?? null,
             excerptChapter: excerpt.chapter ?? null,
             excerptColor: excerpt.color ?? "yellow",
+            excerptPage: excerpt.page ?? null,
           }
         : {}),
     };
@@ -810,21 +821,24 @@ function App() {
       );
       const lastHighlight = activeThreadHighlights[activeThreadHighlights.length - 1];
       const excerpt = (() => {
+        const page = currentPageLabel ?? null;
         if (pendingMessageExcerpt)
           return {
             text: pendingMessageExcerpt.text,
             cfi: pendingMessageExcerpt.cfi,
             chapter: pendingMessageExcerpt.chapter,
             color: pendingMessageExcerpt.color,
+            page: pendingMessageExcerpt.page ?? page,
           };
         if (!passageForThisMessage) return undefined;
         return passageForThisMessage === chapterText
-          ? { text: passageForThisMessage, cfi: currentCfi ?? null, chapter: currentTocLabel ?? null, color: "yellow" as const }
+          ? { text: passageForThisMessage, cfi: currentCfi ?? null, chapter: currentTocLabel ?? null, color: "yellow" as const, page }
           : {
               text: passageForThisMessage,
               cfi: currentCfi ?? lastHighlight?.cfi ?? null,
               chapter: currentTocLabel ?? lastHighlight?.chapterLabel ?? null,
               color: (lastHighlight?.color === "blue" || lastHighlight?.color === "green" || lastHighlight?.color === "pink" ? lastHighlight.color : "yellow") as string,
+              page,
             };
       })();
       setPendingMessageExcerpt(null);
@@ -946,6 +960,7 @@ function App() {
             void flushPendingProgressWrite();
           }}
           onRelocate={({ cfi, tocHref, tocLabel, pageLabel, pageCurrent, pageTotal }) => {
+            currentCfiRef.current = cfi;
             const block = progressWriteBlockRef.current;
             const isProgressWriteBlocked =
               !!currentBookId &&
@@ -993,6 +1008,8 @@ function App() {
             setHighlights([]);
             setBookmarks([]);
             setCurrentCfi(null);
+            setBackCfi(null);
+            currentCfiRef.current = null;
             void refreshLibrary();
           }}
         />
@@ -1002,6 +1019,9 @@ function App() {
             top: 88,
             left: 8,
             zIndex: 130,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
           }}
         >
           <button
@@ -1025,6 +1045,41 @@ function App() {
             <BookOpenText size={16} />
           </button>
         </div>
+        {backCfi && (
+          <div
+            style={{
+              position: "absolute",
+              top: 8,
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 130,
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setJumpToCfi(backCfi);
+                setBackCfi(null);
+              }}
+              aria-label="Go back to previous page"
+              title="Go back to previous page"
+              style={{
+                width: 34,
+                height: 34,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                border: "none",
+                borderRadius: 8,
+                background: theme === "dark" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+                color: chrome.controlFg,
+              }}
+            >
+              <ArrowLeft size={18} />
+            </button>
+          </div>
+        )}
         <div
           style={{
             position: "absolute",
@@ -1298,7 +1353,10 @@ function App() {
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                           <button
                             type="button"
-                            onClick={() => setJumpToCfi(bookmark.cfi)}
+                            onClick={() => {
+                              if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
+                              setJumpToCfi(bookmark.cfi);
+                            }}
                             style={{
                               border: `1px solid ${chrome.controlBorder}`,
                               borderRadius: 6,
@@ -1403,15 +1461,48 @@ function App() {
                                     lineHeight: 1.4,
                                     color: theme === "dark" ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.85)",
                                     cursor: "pointer",
+                                    position: "relative",
+                                    paddingRight: 32,
                                   }}
                                 >
                                   <div style={{ fontStyle: "italic", whiteSpace: "pre-wrap" }}>"{excerptDisplayText}"</div>
-                                  {m.excerptChapter && (
-                                    <div style={{ fontSize: 11, color: chrome.muted, marginTop: 4 }}>{m.excerptChapter}</div>
+                                  {(m.excerptChapter || m.excerptPage) && (
+                                    <div style={{ fontSize: 11, color: chrome.muted, marginTop: 4 }}>
+                                      {[m.excerptChapter, m.excerptPage].filter(Boolean).join(" · ")}
+                                    </div>
                                   )}
                                   <div style={{ fontSize: 10, color: chrome.muted, marginTop: 4 }}>
                                     {excerptExpanded ? "Click to collapse" : "Click to expand"}
                                   </div>
+                                  {m.excerptCfi && (
+                                    <button
+                                      type="button"
+                                      title="Go to excerpt"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
+                                        setJumpToCfi(m.excerptCfi!);
+                                      }}
+                                      onKeyDown={(e) => e.key === "Enter" && e.stopPropagation()}
+                                      style={{
+                                        position: "absolute",
+                                        bottom: 8,
+                                        right: 8,
+                                        padding: 4,
+                                        border: "none",
+                                        background: "transparent",
+                                        color: chrome.muted,
+                                        cursor: "pointer",
+                                        borderRadius: 4,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                      }}
+                                      aria-label="Go to excerpt"
+                                    >
+                                      <ArrowRight size={14} />
+                                    </button>
+                                  )}
                                 </div>
                               )}
                               <div style={{ whiteSpace: "pre-wrap" }}>{m.content}</div>
@@ -1473,7 +1564,10 @@ function App() {
                             {h.selectedText.slice(0, 80)}{h.selectedText.length > 80 ? "…" : ""}
                             <button
                               type="button"
-                              onClick={() => setJumpToCfi(h.cfi)}
+                              onClick={() => {
+                                if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
+                                setJumpToCfi(h.cfi);
+                              }}
                               style={{ marginLeft: 8, fontSize: 11, padding: "2px 6px" }}
                             >
                               Go to
@@ -1513,8 +1607,10 @@ function App() {
                       <div style={{ fontStyle: "italic", whiteSpace: "pre-wrap" }}>
                         "{pendingMessageExcerpt.text.length > 200 ? pendingMessageExcerpt.text.slice(0, 200).trim() + "…" : pendingMessageExcerpt.text}"
                       </div>
-                      {pendingMessageExcerpt.chapter && (
-                        <div style={{ fontSize: 11, color: chrome.muted, marginTop: 4 }}>{pendingMessageExcerpt.chapter}</div>
+                      {(pendingMessageExcerpt.chapter || pendingMessageExcerpt.page) && (
+                        <div style={{ fontSize: 11, color: chrome.muted, marginTop: 4 }}>
+                          {[pendingMessageExcerpt.chapter, pendingMessageExcerpt.page].filter(Boolean).join(" · ")}
+                        </div>
                       )}
                     </div>
                   )}
@@ -1630,6 +1726,7 @@ function App() {
                         <button
                           type="button"
                           onClick={() => {
+                            if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
                             setJumpToCfi(toc.href);
                             setIsTocOpen(false);
                           }}

@@ -142,6 +142,7 @@ struct DbThreadMessageInput {
     excerpt_cfi: Option<String>,
     excerpt_chapter: Option<String>,
     excerpt_color: Option<String>,
+    excerpt_page: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -156,6 +157,7 @@ struct DbThreadMessage {
     excerpt_cfi: Option<String>,
     excerpt_chapter: Option<String>,
     excerpt_color: Option<String>,
+    excerpt_page: Option<String>,
 }
 
 fn open_db(state: &DbState) -> Result<Connection, String> {
@@ -250,6 +252,7 @@ fn init_db(db_path: &Path) -> Result<(), String> {
     let _ = conn.execute("ALTER TABLE thread_messages ADD COLUMN excerpt_cfi TEXT", ());
     let _ = conn.execute("ALTER TABLE thread_messages ADD COLUMN excerpt_chapter TEXT", ());
     let _ = conn.execute("ALTER TABLE thread_messages ADD COLUMN excerpt_color TEXT", ());
+    let _ = conn.execute("ALTER TABLE thread_messages ADD COLUMN excerpt_page TEXT", ());
 
     Ok(())
 }
@@ -494,7 +497,7 @@ fn db_get_thread_messages(
     let conn = open_db(&state)?;
     let mut stmt = conn
         .prepare(
-            "SELECT id, thread_id, role, content, created_at, excerpt_text, excerpt_cfi, excerpt_chapter, excerpt_color
+            "SELECT id, thread_id, role, content, created_at, excerpt_text, excerpt_cfi, excerpt_chapter, excerpt_color, excerpt_page
              FROM thread_messages WHERE thread_id = ?1 ORDER BY created_at ASC",
         )
         .map_err(|e| e.to_string())?;
@@ -510,6 +513,7 @@ fn db_get_thread_messages(
                 excerpt_cfi: row.get(6)?,
                 excerpt_chapter: row.get(7)?,
                 excerpt_color: row.get(8)?,
+                excerpt_page: row.get(9)?,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -524,8 +528,8 @@ fn db_save_thread_message(
     let conn = open_db(&state)?;
     conn.execute(
         r#"
-        INSERT INTO thread_messages (id, thread_id, role, content, created_at, excerpt_text, excerpt_cfi, excerpt_chapter, excerpt_color)
-        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+        INSERT INTO thread_messages (id, thread_id, role, content, created_at, excerpt_text, excerpt_cfi, excerpt_chapter, excerpt_color, excerpt_page)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
         "#,
         params![
             message.id,
@@ -537,6 +541,7 @@ fn db_save_thread_message(
             message.excerpt_cfi,
             message.excerpt_chapter,
             message.excerpt_color,
+            message.excerpt_page,
         ],
     )
     .map_err(|e| e.to_string())?;

@@ -68,6 +68,7 @@ export interface ThreadMessage {
   excerptCfi?: string | null;
   excerptChapter?: string | null;
   excerptColor?: string | null;
+  excerptPage?: string | null;
 }
 
 export interface ThreadWithMessages extends Thread {
