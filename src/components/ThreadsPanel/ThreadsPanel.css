@@ -1,0 +1,616 @@
+/* Thread Panel — design system tokens only. See SKILLS/UI.md §6. */
+
+/* Panel shell: dimensions and parchment surface */
+.notes-panel {
+  width: 320px;
+  max-width: 38vw;
+  background: var(--surface-raised);
+  border-left: 1px solid var(--border-moderate);
+  box-shadow: var(--shadow-panel);
+  color: var(--ink-primary);
+  font-family: var(--font-ui);
+}
+
+.notes-panel.panelVisible {
+  animation: threadPanelEnter 220ms var(--transition-spring) forwards;
+}
+
+@keyframes threadPanelEnter {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Title bar */
+.threads-panel-title-bar {
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--ink-primary);
+}
+
+.threads-close-btn {
+  background: transparent;
+  border: 1px solid var(--border-moderate);
+  color: var(--ink-secondary);
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.threads-close-btn:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+/* Tab bar */
+.threads-tab-bar {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.threads-tab-bar button {
+  background: transparent;
+  border: 1px solid var(--border-moderate);
+  color: var(--ink-secondary);
+  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+
+.threads-tab-bar button:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.threads-tab-bar button[data-active="true"] {
+  border-color: var(--accent-border);
+  color: var(--accent);
+  background: var(--accent-dim);
+  font-weight: 600;
+}
+
+/* Thread chat header */
+.thread-chat-header {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.thread-chat-header button {
+  background: transparent;
+  border: 1px solid var(--border-moderate);
+  color: var(--ink-secondary);
+  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+
+.thread-chat-header button:hover:not(:disabled) {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+/* Back button — faint, same family as menu trigger */
+.thread-header-back-btn {
+  border: 1px solid var(--border-moderate);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  background: transparent;
+  color: var(--ink-tertiary);
+  font-size: 12px;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.thread-header-back-btn:hover {
+  color: var(--ink-secondary);
+  border-color: var(--border-strong);
+  background: var(--border-subtle);
+}
+
+/* Three-dot menu trigger — faint, same family as other header controls */
+.thread-header-menu-trigger {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--border-moderate);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-tertiary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.thread-header-menu-trigger:hover:not(:disabled) {
+  color: var(--ink-secondary);
+  border-color: var(--border-strong);
+  background: var(--border-subtle);
+}
+
+.thread-header-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: var(--space-1);
+  min-width: 120px;
+  padding: var(--space-1);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-moderate);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+}
+
+.thread-header-menu-item {
+  display: block;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-secondary);
+  font-size: 13px;
+  font-family: var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.thread-header-menu-item:hover:not(:disabled) {
+  background: var(--border-subtle);
+  color: var(--ink-primary);
+}
+
+.thread-header-menu-item-danger:hover:not(:disabled) {
+  color: #b42318;
+}
+
+.thread-chat-title {
+  color: var(--ink-primary);
+}
+
+/* Content area */
+.thread-chat-content {
+  background: var(--surface-page);
+  color: var(--ink-primary);
+}
+
+.thread-chat-empty-hint {
+  color: var(--ink-tertiary);
+  font-size: 12px;
+}
+
+/* Section label (Messages, Threads) — §3 */
+.threads-section-label,
+.thread-chat-messages-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-tertiary);
+}
+
+.thread-chat-messages-label {
+  margin-bottom: var(--space-2);
+}
+
+/* Message rows — §6.2 */
+.thread-msg-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 95%;
+}
+
+.thread-msg-row.thread-msg-row--user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.thread-msg-row.thread-msg-row--assistant {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.thread-msg-sender {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-1);
+}
+
+.thread-msg-row--user .thread-msg-sender {
+  color: var(--ink-tertiary);
+}
+
+.thread-msg-row--assistant .thread-msg-sender {
+  color: var(--accent);
+  opacity: 0.7;
+}
+
+/* User bubble — §6.2 */
+.thread-msg-bubble {
+  padding: var(--space-2) var(--space-3);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.thread-msg-row--user .thread-msg-bubble {
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  border-bottom-right-radius: calc(var(--radius-md) / 2);
+  color: var(--ink-primary);
+}
+
+.thread-msg-row--assistant .thread-msg-bubble {
+  background: transparent;
+  color: var(--ink-primary);
+  font-size: 13.5px;
+  line-height: 1.6;
+  padding-left: 0;
+  padding-right: 0;
+  border-radius: 0;
+}
+
+.thread-msg-bubble .thread-msg-text {
+  white-space: pre-wrap;
+}
+
+/* Assistant markdown content — §6.2 */
+.thread-msg-content {
+  font-size: 13.5px;
+  color: var(--ink-primary);
+  line-height: 1.6;
+}
+
+.thread-msg-content p {
+  margin: 0 0 var(--space-2);
+}
+
+.thread-msg-content p:last-child {
+  margin-bottom: 0;
+}
+
+.thread-msg-content ul,
+.thread-msg-content ol {
+  margin: 0 0 var(--space-2) var(--space-4);
+  padding: 0;
+}
+
+.thread-msg-content code {
+  background: var(--surface-sunken);
+  padding: 2px 5px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+
+.thread-msg-content pre {
+  margin: 0 0 var(--space-2);
+  padding: var(--space-2);
+  background: var(--surface-sunken);
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+}
+
+.thread-msg-content pre code {
+  padding: 0;
+  background: none;
+}
+
+/* Passage block (excerpt card) — §5.5 + §6.2 highlight colors */
+.thread-excerpt-card {
+  margin-bottom: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-dim);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-secondary);
+  line-height: 1.55;
+  cursor: pointer;
+  position: relative;
+}
+
+.thread-excerpt-card .thread-excerpt-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-tertiary);
+  margin-bottom: var(--space-1);
+}
+
+.thread-excerpt-card .thread-excerpt-meta,
+.thread-excerpt-card .thread-excerpt-expand-hint {
+  font-size: 11px;
+  color: var(--ink-tertiary);
+  margin-top: var(--space-1);
+}
+
+.thread-excerpt-goto-btn {
+  position: absolute;
+  bottom: var(--space-2);
+  right: var(--space-2);
+  padding: var(--space-1);
+  border: none;
+  background: transparent;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+}
+
+.thread-excerpt-goto-btn:hover {
+  color: var(--ink-primary);
+}
+
+/* Passage block by highlight color — §6.2 */
+.thread-excerpt-card[data-excerpt-color="blue"] {
+  background: rgba(100, 160, 230, 0.2);
+  border-left-color: rgba(100, 160, 230, 0.6);
+}
+
+.thread-excerpt-card[data-excerpt-color="green"] {
+  background: rgba(80, 185, 120, 0.2);
+  border-left-color: rgba(80, 185, 120, 0.6);
+}
+
+.thread-excerpt-card[data-excerpt-color="pink"] {
+  background: rgba(230, 100, 130, 0.2);
+  border-left-color: rgba(230, 100, 130, 0.6);
+}
+
+/* Pending excerpt (attached to next message) */
+.thread-pending-excerpt {
+  position: relative;
+  padding: var(--space-2) var(--space-3);
+  padding-top: var(--space-4);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-dim);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-secondary);
+  line-height: 1.55;
+}
+
+.thread-pending-excerpt-remove {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ink-tertiary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.thread-pending-excerpt-remove:hover {
+  color: var(--ink-primary);
+  background: var(--border-subtle);
+}
+
+.thread-pending-excerpt .thread-excerpt-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-tertiary);
+  margin-bottom: var(--space-1);
+}
+
+.thread-pending-excerpt .thread-excerpt-meta {
+  font-size: 11px;
+  color: var(--ink-tertiary);
+  margin-top: var(--space-1);
+}
+
+/* Input area — §6.2 */
+.thread-chat-input-area {
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface-raised);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.thread-chat-input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+  transition: border-color var(--transition-fast);
+}
+
+.thread-chat-input-row:focus-within {
+  border-color: var(--accent-border);
+}
+
+.thread-chat-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 13.5px;
+  font-family: var(--font-ui);
+  color: var(--ink-primary);
+  line-height: 1.4;
+}
+
+.thread-chat-input::placeholder {
+  color: var(--ink-tertiary);
+}
+
+.thread-chat-send-btn {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--accent);
+  color: var(--ink-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), transform 80ms;
+}
+
+.thread-chat-send-btn:hover:not(:disabled) {
+  background: var(--accent-light);
+}
+
+.thread-chat-send-btn:active:not(:disabled) {
+  transform: scale(0.93);
+}
+
+.thread-chat-send-btn:disabled {
+  background: var(--accent-dim);
+  color: var(--ink-tertiary);
+  cursor: default;
+}
+
+/* Error banner */
+.thread-chat-error {
+  font-size: 12px;
+  color: var(--ink-secondary);
+  margin-top: var(--space-2);
+}
+
+/* Thread list — §6.1 */
+.thread-list-item {
+  position: relative;
+  padding: var(--space-3) var(--space-4);
+  padding-right: var(--space-10);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-page);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.thread-list-item:hover {
+  background: var(--surface-sunken);
+  border-color: var(--border-moderate);
+}
+
+.thread-list-item.active {
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
+}
+
+/* Three-dot in top-right corner of card — out of text flow */
+.thread-list-item-actions {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 1;
+}
+
+.thread-list-item-menu-trigger {
+  width: 26px;
+  height: 26px;
+}
+
+.thread-list-item-main {
+  cursor: pointer;
+}
+
+.thread-list-item-title {
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--ink-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thread-list-item-date {
+  font-size: 11px;
+  color: var(--ink-tertiary);
+  margin-top: var(--space-1);
+}
+
+.thread-list-empty {
+  color: var(--ink-tertiary);
+  font-size: 12px;
+}
+
+/* New thread button — ghost with accent on hover */
+.threads-new-thread-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--border-moderate);
+  color: var(--ink-secondary);
+  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+
+.threads-new-thread-btn:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* Quick prompt chips — §6.2 */
+.thread-quick-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.thread-chip {
+  font-size: 11.5px;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-moderate);
+  background: transparent;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+
+.thread-chip:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* Typing indicator — §6.2 */
+.thread-typing-dots {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1) 0;
+}
+
+.thread-typing-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  animation: threadDotPulse 1.2s ease-in-out infinite;
+}
+
+.thread-typing-dots span:nth-child(2) { animation-delay: 160ms; }
+.thread-typing-dots span:nth-child(3) { animation-delay: 320ms; }
+
+@keyframes threadDotPulse {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.85); }
+  40% { opacity: 1; transform: scale(1); }
+}

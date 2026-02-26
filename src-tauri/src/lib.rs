@@ -490,6 +490,14 @@ fn db_archive_thread(state: State<DbState>, id: String) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn db_delete_thread(state: State<DbState>, id: String) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    conn.execute("DELETE FROM threads WHERE id = ?1", params![id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
 fn db_get_thread_messages(
     state: State<DbState>,
     thread_id: String,
@@ -1179,6 +1187,7 @@ pub fn run() {
             db_create_thread,
             db_update_thread_title,
             db_archive_thread,
+            db_delete_thread,
             db_clear_all_threads,
             db_get_thread_messages,
             db_save_thread_message,

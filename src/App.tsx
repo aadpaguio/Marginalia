@@ -11,6 +11,7 @@ import FoliateViewer from "@/app/reader/components/FoliateViewer";
 import Library from "@/components/Library";
 import {
   dbArchiveThread,
+  dbDeleteThread,
   dbAttachHighlightToThread,
   dbCreateThread,
   dbGetHighlightsForThread,
@@ -46,7 +47,10 @@ import {
   parseReaderMd,
 } from "@/services/compaction";
 import { askClaudeThread, generateThreadTitle } from "@/services/claude";
-import { ArrowLeft, ArrowRight, BookOpenText, NotepadText } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUp, BookOpenText, MoreVertical, NotepadText, X } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import "@/components/ThreadsPanel/ThreadsPanel.css";
 
 function base64ToFile(base64: string, filename: string): File {
   const binary = atob(base64);
@@ -128,6 +132,7 @@ function App() {
     green: "#22a06b",
     pink: "#d94692",
   };
+  const THREAD_QUICK_PROMPTS = ["Explain this", "Historical context", "Literary devices", "Define terms"];
   const [epubPath, setEpubPath] = useState<string | null>(null);
   const [currentBookId, setCurrentBookId] = useState<string | null>(null);
   const [bookDoc, setBookDoc] = useState<BookDoc | null>(null);
@@ -164,10 +169,18 @@ function App() {
   const [threadChatAsking, setThreadChatAsking] = useState(false);
   const [threadChatError, setThreadChatError] = useState<string | null>(null);
   const threadChatInputRef = useRef<HTMLInputElement | null>(null);
+  const threadChatMessagesScrollRef = useRef<HTMLDivElement | null>(null);
+  /** User message shown immediately on send; cleared when reply is persisted. */
+  const [pendingUserMessage, setPendingUserMessage] = useState<string | null>(null);
+  /** Assistant reply text revealed sequentially; cleared when done. */
+  const [pendingAssistantContent, setPendingAssistantContent] = useState("");
+  const revealIntervalRef = useRef<number | null>(null);
   const [savingSession, setSavingSession] = useState(false);
   const [archivingThreadId, setArchivingThreadId] = useState<string | null>(null);
   const [archiveToast, setArchiveToast] = useState<string | null>(null);
   const archiveToastTimeoutRef = useRef<number | null>(null);
+  const [threadMenuOpenId, setThreadMenuOpenId] = useState<string | null>(null);
+  const threadMenuRef = useRef<HTMLDivElement | null>(null);
   /** Excerpt to attach to the very next user message (set when user clicks "Add to thread"). */
   const [pendingMessageExcerpt, setPendingMessageExcerpt] = useState<{
     text: string;
@@ -396,8 +409,39 @@ function App() {
     void memoryEnsureDirs();
   }, []);
 
+  /* Auto-scroll thread messages to bottom when new content appears. */
   useEffect(() => {
-    setPendingMessageExcerpt(null);
+    const el = threadChatMessagesScrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [activeThreadMessages, pendingUserMessage, pendingAssistantContent]);
+
+  useEffect(() => {
+    return () => {
+      if (revealIntervalRef.current != null) {
+        window.clearInterval(revealIntervalRef.current);
+        revealIntervalRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (threadMenuOpenId == null) return;
+    const onPointer = (e: MouseEvent) => {
+      if (threadMenuRef.current && e.target instanceof Node && !threadMenuRef.current.contains(e.target)) {
+        setThreadMenuOpenId(null);
+      }
+    };
+    window.addEventListener("pointerdown", onPointer);
+    return () => window.removeEventListener("pointerdown", onPointer);
+  }, [threadMenuOpenId]);
+
+  useEffect(() => {
+    setPendingUserMessage(null);
+    setPendingAssistantContent("");
+    if (revealIntervalRef.current != null) {
+      window.clearInterval(revealIntervalRef.current);
+      revealIntervalRef.current = null;
+    }
     if (!activeThreadId || !currentBookId) {
       setActiveThreadMessages([]);
       setActiveThreadHighlights([]);
@@ -774,6 +818,17 @@ function App() {
     }
   };
 
+  const handleDeleteThread = async (threadId: string) => {
+    setThreadMenuOpenId(null);
+    try {
+      await dbDeleteThread(threadId);
+      setThreads((prev) => prev.filter((t) => t.id !== threadId));
+      if (activeThreadId === threadId) setActiveThreadId(null);
+    } catch (e) {
+      console.error("[Delete thread]", e);
+    }
+  };
+
   const handleUpdateThreadTitle = (threadId: string, title: string) => {
     setThreads((prev) =>
       prev.map((t) => (t.id === threadId ? { ...t, title } : t))
@@ -792,6 +847,12 @@ function App() {
     setThreadChatAsking(true);
     setThreadChatError(null);
     setThreadChatInput("");
+    setPendingUserMessage(userMessage);
+    setPendingAssistantContent("");
+    if (revealIntervalRef.current != null) {
+      window.clearInterval(revealIntervalRef.current);
+      revealIntervalRef.current = null;
+    }
     try {
       const [bookMemory, readerProfile] = await Promise.all([
         memoryReadBook(currentBookId),
@@ -819,33 +880,42 @@ function App() {
         },
         apiKey
       );
-      const lastHighlight = activeThreadHighlights[activeThreadHighlights.length - 1];
-      const excerpt = (() => {
-        const page = currentPageLabel ?? null;
-        if (pendingMessageExcerpt)
-          return {
+      const fullAnswer = result.answer ?? "";
+      const excerpt = pendingMessageExcerpt
+        ? {
             text: pendingMessageExcerpt.text,
             cfi: pendingMessageExcerpt.cfi,
             chapter: pendingMessageExcerpt.chapter,
             color: pendingMessageExcerpt.color,
-            page: pendingMessageExcerpt.page ?? page,
-          };
-        if (!passageForThisMessage) return undefined;
-        return passageForThisMessage === chapterText
-          ? { text: passageForThisMessage, cfi: currentCfi ?? null, chapter: currentTocLabel ?? null, color: "yellow" as const, page }
-          : {
-              text: passageForThisMessage,
-              cfi: currentCfi ?? lastHighlight?.cfi ?? null,
-              chapter: currentTocLabel ?? lastHighlight?.chapterLabel ?? null,
-              color: (lastHighlight?.color === "blue" || lastHighlight?.color === "green" || lastHighlight?.color === "pink" ? lastHighlight.color : "yellow") as string,
-              page,
-            };
-      })();
+            page: pendingMessageExcerpt.page ?? currentPageLabel ?? null,
+          }
+        : undefined;
       setPendingMessageExcerpt(null);
-      handleMessagePair(userMessage, result.answer ?? "", excerpt);
+
+      /* Reveal assistant reply sequentially, then persist and clear pending. */
+      const REVEAL_CHUNK = 3;
+      const REVEAL_MS = 16;
+      let index = 0;
+      revealIntervalRef.current = window.setInterval(() => {
+        index += REVEAL_CHUNK;
+        const slice = fullAnswer.slice(0, index);
+        setPendingAssistantContent(slice);
+        if (slice.length >= fullAnswer.length) {
+          if (revealIntervalRef.current != null) {
+            window.clearInterval(revealIntervalRef.current);
+            revealIntervalRef.current = null;
+          }
+          handleMessagePair(userMessage, fullAnswer, excerpt);
+          setPendingUserMessage(null);
+          setPendingAssistantContent("");
+          setThreadChatAsking(false);
+          threadChatInputRef.current?.focus();
+        }
+      }, REVEAL_MS);
     } catch (e) {
       setThreadChatError(e instanceof Error ? e.message : String(e));
-    } finally {
+      setPendingUserMessage(null);
+      setPendingAssistantContent("");
       setThreadChatAsking(false);
       threadChatInputRef.current?.focus();
     }
@@ -934,17 +1004,6 @@ function App() {
           onRegisterGetSectionText={(fn) => {
             getSectionTextRef.current = fn;
           }}
-          onMessagePair={handleMessagePair}
-          threadContext={
-            activeThreadId && currentBookId
-              ? {
-                  threadId: activeThreadId,
-                  messages: activeThreadMessages,
-                  highlights: activeThreadHighlights,
-                  bookId: currentBookId,
-                }
-              : null
-          }
           onTocNavigateComplete={(payload) => {
             if (!currentBookId || !payload) return;
             if (relocateDebounceTimerRef.current != null) {
@@ -1145,31 +1204,26 @@ function App() {
               }}
             />
             <aside
+              className={`notes-panel panelVisible ${panelTab === "threads" ? "notes-panel--threads" : ""}`}
               style={{
                 position: "absolute",
                 top: 44,
                 right: 8,
                 bottom: 8,
-                width: 360,
-                maxWidth: "45vw",
                 zIndex: 130,
                 borderRadius: 10,
-                border: `1px solid ${chrome.panelBorder}`,
-                background: chrome.panelBg,
-                boxShadow: "0 6px 22px rgba(0,0,0,0.12)",
                 overflow: "hidden",
                 display: "flex",
                 flexDirection: "column",
-                color: chrome.appFg,
               }}
               onClick={(e) => e.stopPropagation()}
               onWheelCapture={(e) => e.stopPropagation()}
             >
               <div
+                className="threads-panel-title-bar"
                 style={{
-                  padding: "10px 12px",
-                  borderBottom: `1px solid ${chrome.panelBorder}`,
-                  fontSize: 13,
+                  padding: "var(--space-4) var(--space-5)",
+                  fontSize: 15,
                   fontWeight: 600,
                   display: "flex",
                   alignItems: "center",
@@ -1185,13 +1239,11 @@ function App() {
                 </span>
                 <button
                   type="button"
+                  className="threads-close-btn"
                   onClick={() => setIsNotesOpen(false)}
                   style={{
-                    border: `1px solid ${chrome.controlBorder}`,
-                    borderRadius: 6,
-                    padding: "2px 8px",
-                    background: chrome.controlBg,
-                    color: chrome.controlFg,
+                    borderRadius: "var(--radius-sm)",
+                    padding: "var(--space-1) var(--space-2)",
                     cursor: "pointer",
                     fontSize: 12,
                   }}
@@ -1200,11 +1252,11 @@ function App() {
                 </button>
               </div>
               <div
+                className="threads-tab-bar"
                 style={{
-                  padding: "8px 10px",
-                  borderBottom: `1px solid ${chrome.panelBorder}`,
+                  padding: "var(--space-2) var(--space-3)",
                   display: "flex",
-                  gap: 6,
+                  gap: "var(--space-2)",
                   flexWrap: "wrap",
                 }}
               >
@@ -1220,13 +1272,11 @@ function App() {
                     <button
                       key={tab.key}
                       type="button"
+                      data-active={active}
                       onClick={() => setPanelTab(tab.key)}
                       style={{
-                        border: `1px solid ${chrome.controlBorder}`,
-                        borderRadius: 999,
-                        padding: "3px 10px",
-                        background: active ? "rgba(31,111,235,0.16)" : chrome.controlBg,
-                        color: active ? "#0b4fb3" : chrome.controlFg,
+                        borderRadius: "var(--radius-pill)",
+                        padding: "var(--space-1) var(--space-3)",
                         fontSize: 12,
                         fontWeight: active ? 600 : 500,
                         cursor: "pointer",
@@ -1239,6 +1289,7 @@ function App() {
               </div>
               {panelTab === "threads" && (
                 <div
+                  className="thread-chat-header"
                   style={{
                     padding: "8px 10px",
                     borderBottom: `1px solid ${chrome.panelBorder}`,
@@ -1251,21 +1302,14 @@ function App() {
                     <>
                       <button
                         type="button"
+                        className="thread-header-back-btn"
                         onClick={() => setActiveThreadId(null)}
                         aria-label="Back to threads"
-                        style={{
-                          border: `1px solid ${chrome.controlBorder}`,
-                          borderRadius: 6,
-                          padding: "4px 8px",
-                          background: chrome.controlBg,
-                          color: chrome.controlFg,
-                          cursor: "pointer",
-                          fontSize: 12,
-                        }}
                       >
                         ← Back
                       </button>
                       <span
+                        className="thread-chat-title"
                         style={{
                           flex: 1,
                           fontWeight: 600,
@@ -1278,43 +1322,47 @@ function App() {
                       >
                         {threads.find((t) => t.id === activeThreadId)?.title ?? "New thread"}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => activeThreadId && void handleArchiveThread(activeThreadId)}
-                        disabled={!!archivingThreadId}
-                        aria-label={archivingThreadId ? "Archiving…" : "Archive thread"}
-                        style={{
-                          border: `1px solid ${chrome.controlBorder}`,
-                          borderRadius: 6,
-                          padding: "4px 8px",
-                          background: chrome.controlBg,
-                          color: chrome.controlFg,
-                          cursor: archivingThreadId ? "wait" : "pointer",
-                          fontSize: 12,
-                          opacity: archivingThreadId ? 0.8 : 1,
-                        }}
-                      >
-                        {archivingThreadId === activeThreadId ? "Archiving…" : "Archive"}
-                      </button>
+                      <div ref={threadMenuRef} style={{ position: "relative" }}>
+                        <button
+                          type="button"
+                          className="thread-header-menu-trigger"
+                          onClick={() => setThreadMenuOpenId((id) => (id === activeThreadId ? null : activeThreadId))}
+                          disabled={!!archivingThreadId}
+                          aria-label="Thread options"
+                          aria-expanded={threadMenuOpenId === activeThreadId}
+                        >
+                          <MoreVertical size={16} />
+                        </button>
+                        {threadMenuOpenId === activeThreadId && (
+                          <div className="thread-header-menu" role="menu">
+                            <button
+                              type="button"
+                              role="menuitem"
+                              className="thread-header-menu-item"
+                              onClick={() => activeThreadId && void handleArchiveThread(activeThreadId)}
+                              disabled={archivingThreadId === activeThreadId}
+                            >
+                              {archivingThreadId === activeThreadId ? "Archiving…" : "Archive"}
+                            </button>
+                            <button
+                              type="button"
+                              role="menuitem"
+                              className="thread-header-menu-item thread-header-menu-item-danger"
+                              onClick={() => activeThreadId && void handleDeleteThread(activeThreadId)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </>
                   ) : (
                     <>
-                      <span style={{ flex: 1, fontWeight: 600, fontSize: 13 }}>Threads</span>
+                      <span className="thread-chat-title threads-section-label" style={{ flex: 1 }}>Threads</span>
                       <button
                         type="button"
+                        className="threads-new-thread-btn"
                         onClick={createNewThread}
-                        style={{
-                          border: `1px solid ${chrome.controlBorder}`,
-                          borderRadius: 6,
-                          padding: "4px 10px",
-                          background: chrome.controlBg,
-                          color: chrome.controlFg,
-                          cursor: "pointer",
-                          fontSize: 12,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                        }}
                       >
                         <NotepadText size={14} /> New thread
                       </button>
@@ -1322,7 +1370,20 @@ function App() {
                   )}
                 </div>
               )}
-              <div style={{ flex: 1, minHeight: 0, padding: 10, overflow: "auto", fontSize: 13, lineHeight: 1.45, display: "flex", flexDirection: "column" }}>
+              <div
+                ref={panelTab === "threads" ? threadChatMessagesScrollRef : null}
+                className={panelTab === "threads" ? "thread-chat-content" : undefined}
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  padding: panelTab === "threads" ? "var(--space-3) var(--space-4)" : 10,
+                  overflow: "auto",
+                  fontSize: 13,
+                  lineHeight: 1.45,
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
                 {panelTab === "bookmarks" ? (
                   bookmarks.length === 0 ? (
                     <p style={{ margin: 0, color: chrome.muted }}>No bookmarks yet.</p>
@@ -1395,15 +1456,52 @@ function App() {
                   )
                 ) : panelTab === "threads" && activeThreadId ? (
                   <>
-                    <div style={{ marginBottom: 8, fontWeight: 600, fontSize: 12, color: chrome.muted }}>Messages</div>
-                    {activeThreadMessages.length === 0 ? (
-                      <p style={{ margin: 0, color: chrome.muted, fontSize: 12 }}>
-                        {pendingMessageExcerpt ? "Type your question below — the passage will be attached to your message." : "No messages yet. Type below to start the conversation, or select text and use Add to thread to attach a passage."}
-                      </p>
-                    ) : (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                        {activeThreadMessages.map((m) => {
+                    <div className="thread-chat-messages-label" style={{ marginBottom: 8, fontWeight: 600, fontSize: 12, color: chrome.muted }}>Messages</div>
+                    {(() => {
+                      const displayMessages: ThreadMessage[] = [...activeThreadMessages];
+                      if (pendingUserMessage != null) {
+                        displayMessages.push({
+                          id: "pending-user",
+                          threadId: activeThreadId,
+                          role: "user",
+                          content: pendingUserMessage,
+                          createdAt: Date.now(),
+                        });
+                        displayMessages.push({
+                          id: "pending-assistant",
+                          threadId: activeThreadId,
+                          role: "assistant",
+                          content: pendingAssistantContent,
+                          createdAt: Date.now(),
+                        });
+                      }
+                      return displayMessages.length === 0 ? (
+                        <>
+                          <p className="thread-chat-empty-hint" style={{ margin: 0, marginBottom: "var(--space-3)" }}>
+                            {pendingMessageExcerpt ? "Type your question below — the passage will be attached to your message." : "No messages yet. Type below or pick a prompt, or select text and use Add to thread to attach a passage."}
+                          </p>
+                          <div className="thread-quick-prompts">
+                            {THREAD_QUICK_PROMPTS.map((prompt) => (
+                              <button
+                                key={prompt}
+                                type="button"
+                                className="thread-chip"
+                                onClick={() => {
+                                  setThreadChatInput(prompt);
+                                  threadChatInputRef.current?.focus();
+                                }}
+                              >
+                                {prompt}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-5)" }}>
+                        {displayMessages.map((m) => {
                           const isUser = m.role === "user";
+                          const isPendingAssistant = m.id === "pending-assistant";
+                          const showTypingDots = isPendingAssistant && m.content === "";
                           const excerptColorKey = (m.excerptColor === "blue" || m.excerptColor === "green" || m.excerptColor === "pink" ? m.excerptColor : "yellow") as keyof typeof HIGHLIGHT_COLOR_HEX;
                           const excerptHex = m.excerptText ? HIGHLIGHT_COLOR_HEX[excerptColorKey] ?? HIGHLIGHT_COLOR_HEX.yellow : null;
                           const excerptPreview =
@@ -1418,124 +1516,156 @@ function App() {
                           return (
                             <div
                               key={m.id}
-                              style={{
-                                alignSelf: isUser ? "flex-end" : "flex-start",
-                                maxWidth: "95%",
-                                padding: "6px 8px",
-                                borderRadius: 8,
-                                background: isUser ? "rgba(31,111,235,0.12)" : (theme === "dark" ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.04)"),
-                              }}
+                              className={`thread-msg-row ${isUser ? "thread-msg-row--user" : "thread-msg-row--assistant"}`}
+                              style={{ maxWidth: "95%" }}
                             >
-                              <div style={{ fontSize: 11, color: chrome.muted, marginBottom: 2 }}>{isUser ? "You" : "Claude"}</div>
-                              {isUser && excerptDisplayText && excerptHex && (
-                                <div
-                                  role="button"
-                                  tabIndex={0}
-                                  onClick={() =>
-                                    setExcerptExpandedIds((prev) => {
-                                      const next = new Set(prev);
-                                      if (next.has(m.id)) next.delete(m.id);
-                                      else next.add(m.id);
-                                      return next;
-                                    })
-                                  }
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Enter" || e.key === " ") {
-                                      e.preventDefault();
+                              <div className="thread-msg-sender">{isUser ? "You" : "Marginalia"}</div>
+                              <div className="thread-msg-bubble">
+                                {isUser && excerptDisplayText && excerptHex && (
+                                  <div
+                                    className="thread-excerpt-card"
+                                    data-excerpt-color={m.excerptColor === "blue" || m.excerptColor === "green" || m.excerptColor === "pink" ? m.excerptColor : "yellow"}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() =>
                                       setExcerptExpandedIds((prev) => {
                                         const next = new Set(prev);
                                         if (next.has(m.id)) next.delete(m.id);
                                         else next.add(m.id);
                                         return next;
-                                      });
+                                      })
                                     }
-                                  }}
-                                  style={{
-                                    marginBottom: 8,
-                                    padding: "8px 10px",
-                                    borderRadius: 6,
-                                    background: theme === "dark" ? `rgba(0,0,0,0.25)` : `rgba(0,0,0,0.06)`,
-                                    borderLeft: `3px solid ${excerptHex}`,
-                                    boxShadow: "inset 0 1px 2px rgba(0,0,0,0.06)",
-                                    fontSize: 12,
-                                    lineHeight: 1.4,
-                                    color: theme === "dark" ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.85)",
-                                    cursor: "pointer",
-                                    position: "relative",
-                                    paddingRight: 32,
-                                  }}
-                                >
-                                  <div style={{ fontStyle: "italic", whiteSpace: "pre-wrap" }}>"{excerptDisplayText}"</div>
-                                  {(m.excerptChapter || m.excerptPage) && (
-                                    <div style={{ fontSize: 11, color: chrome.muted, marginTop: 4 }}>
-                                      {[m.excerptChapter, m.excerptPage].filter(Boolean).join(" · ")}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault();
+                                        setExcerptExpandedIds((prev) => {
+                                          const next = new Set(prev);
+                                          if (next.has(m.id)) next.delete(m.id);
+                                          else next.add(m.id);
+                                          return next;
+                                        });
+                                      }
+                                    }}
+                                  >
+                                    <div className="thread-excerpt-label">Passage</div>
+                                    <div style={{ fontStyle: "italic", whiteSpace: "pre-wrap" }}>"{excerptDisplayText}"</div>
+                                    {(m.excerptChapter || m.excerptPage) && (
+                                      <div className="thread-excerpt-meta">
+                                        {[m.excerptChapter, m.excerptPage].filter(Boolean).join(" · ")}
+                                      </div>
+                                    )}
+                                    <div className="thread-excerpt-expand-hint">
+                                      {excerptExpanded ? "Click to collapse" : "Click to expand"}
                                     </div>
-                                  )}
-                                  <div style={{ fontSize: 10, color: chrome.muted, marginTop: 4 }}>
-                                    {excerptExpanded ? "Click to collapse" : "Click to expand"}
+                                    {m.excerptCfi && (
+                                      <button
+                                        type="button"
+                                        className="thread-excerpt-goto-btn"
+                                        title="Go to excerpt"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
+                                          setJumpToCfi(m.excerptCfi!);
+                                        }}
+                                        onKeyDown={(e) => e.key === "Enter" && e.stopPropagation()}
+                                        aria-label="Go to excerpt"
+                                      >
+                                        <ArrowRight size={14} />
+                                      </button>
+                                    )}
                                   </div>
-                                  {m.excerptCfi && (
-                                    <button
-                                      type="button"
-                                      title="Go to excerpt"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
-                                        setJumpToCfi(m.excerptCfi!);
-                                      }}
-                                      onKeyDown={(e) => e.key === "Enter" && e.stopPropagation()}
-                                      style={{
-                                        position: "absolute",
-                                        bottom: 8,
-                                        right: 8,
-                                        padding: 4,
-                                        border: "none",
-                                        background: "transparent",
-                                        color: chrome.muted,
-                                        cursor: "pointer",
-                                        borderRadius: 4,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                      }}
-                                      aria-label="Go to excerpt"
-                                    >
-                                      <ArrowRight size={14} />
-                                    </button>
-                                  )}
-                                </div>
-                              )}
-                              <div style={{ whiteSpace: "pre-wrap" }}>{m.content}</div>
+                                )}
+                                {isUser ? (
+                                  <div className="thread-msg-text">{m.content}</div>
+                                ) : showTypingDots ? (
+                                  <div className="thread-typing-dots">
+                                    <span /><span /><span />
+                                  </div>
+                                ) : (
+                                  <div className="thread-msg-content">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           );
                         })}
                       </div>
-                    )}
+                    );
+                    })()}
                   </>
                 ) : panelTab === "threads" && !activeThreadId ? (
                   <div style={{ marginBottom: 12 }}>
                     {threads.length === 0 ? (
-                      <p style={{ margin: 0, color: chrome.muted, fontSize: 12 }}>No threads yet. Create one or select text and use Add to thread.</p>
+                      <p className="thread-list-empty" style={{ margin: 0 }}>No threads yet. Create one or select text and use Add to thread.</p>
                     ) : (
                       threads.map((thread) => (
                         <div
                           key={thread.id}
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => setActiveThreadId(thread.id)}
-                          onKeyDown={(e) => e.key === "Enter" && setActiveThreadId(thread.id)}
-                          style={{
-                            marginBottom: 8,
-                            padding: "8px 10px",
-                            border: `1px solid ${chrome.panelBorder}`,
-                            borderRadius: 8,
-                            background: chrome.cardBg,
-                            cursor: "pointer",
-                          }}
+                          className="thread-list-item"
+                          style={{ marginBottom: "var(--space-2)" }}
                         >
-                          <div style={{ fontWeight: 600, fontSize: 13 }}>{thread.title ?? "New thread"}</div>
-                          <div style={{ fontSize: 11, color: chrome.muted, marginTop: 2 }}>
-                            {new Date(thread.updatedAt).toLocaleDateString()}
+                          <div
+                            ref={threadMenuOpenId === thread.id ? threadMenuRef : null}
+                            className="thread-list-item-actions"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <button
+                              type="button"
+                              className="thread-header-menu-trigger thread-list-item-menu-trigger"
+                              aria-label="Thread options"
+                              aria-expanded={threadMenuOpenId === thread.id}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setThreadMenuOpenId((id) => (id === thread.id ? null : thread.id));
+                              }}
+                            >
+                              <MoreVertical size={16} />
+                            </button>
+                            {threadMenuOpenId === thread.id && (
+                              <div className="thread-header-menu" role="menu">
+                                <button
+                                  type="button"
+                                  role="menuitem"
+                                  className="thread-header-menu-item"
+                                  onClick={() => {
+                                    setThreadMenuOpenId(null);
+                                    void handleArchiveThread(thread.id);
+                                  }}
+                                  disabled={archivingThreadId === thread.id}
+                                >
+                                  {archivingThreadId === thread.id ? "Archiving…" : "Archive"}
+                                </button>
+                                <button
+                                  type="button"
+                                  role="menuitem"
+                                  className="thread-header-menu-item thread-header-menu-item-danger"
+                                  onClick={() => void handleDeleteThread(thread.id)}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          <div
+                            className="thread-list-item-main"
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => {
+                              setPendingMessageExcerpt(null);
+                              setActiveThreadId(thread.id);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                setPendingMessageExcerpt(null);
+                                setActiveThreadId(thread.id);
+                              }
+                            }}
+                          >
+                            <div className="thread-list-item-title">{thread.title ?? "Untitled"}</div>
+                            <div className="thread-list-item-date">
+                              {new Date(thread.updatedAt).toLocaleDateString()}
+                            </div>
                           </div>
                         </div>
                       ))
@@ -1581,43 +1711,39 @@ function App() {
               </div>
               {panelTab === "threads" && activeThreadId && (
                 <div
+                  className="thread-chat-input-area"
                   style={{
-                    padding: "10px 12px",
-                    borderTop: `1px solid ${chrome.panelBorder}`,
-                    background: chrome.panelBg,
                     display: "flex",
                     flexDirection: "column",
-                    gap: 6,
+                    gap: "var(--space-2)",
                   }}
                 >
                   {pendingMessageExcerpt && (
-                    <div
-                      style={{
-                        padding: "8px 10px",
-                        borderRadius: 6,
-                        background: theme === "dark" ? "rgba(0,0,0,0.25)" : "rgba(0,0,0,0.06)",
-                        borderLeft: "3px solid #e0d26c",
-                        boxShadow: "inset 0 1px 2px rgba(0,0,0,0.06)",
-                        fontSize: 12,
-                        lineHeight: 1.4,
-                        color: theme === "dark" ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.85)",
-                      }}
-                    >
-                      <div style={{ fontSize: 10, color: chrome.muted, marginBottom: 4 }}>Attached to next message</div>
+                    <div className="thread-pending-excerpt">
+                      <button
+                        type="button"
+                        className="thread-pending-excerpt-remove"
+                        onClick={() => setPendingMessageExcerpt(null)}
+                        aria-label="Remove attached passage"
+                        title="Remove from next message"
+                      >
+                        <X size={14} />
+                      </button>
                       <div style={{ fontStyle: "italic", whiteSpace: "pre-wrap" }}>
                         "{pendingMessageExcerpt.text.length > 200 ? pendingMessageExcerpt.text.slice(0, 200).trim() + "…" : pendingMessageExcerpt.text}"
                       </div>
                       {(pendingMessageExcerpt.chapter || pendingMessageExcerpt.page) && (
-                        <div style={{ fontSize: 11, color: chrome.muted, marginTop: 4 }}>
+                        <div className="thread-excerpt-meta">
                           {[pendingMessageExcerpt.chapter, pendingMessageExcerpt.page].filter(Boolean).join(" · ")}
                         </div>
                       )}
                     </div>
                   )}
-                  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                  <div className="thread-chat-input-row">
                     <input
                       ref={threadChatInputRef}
                       type="text"
+                      className="thread-chat-input"
                       value={threadChatInput}
                       onChange={(e) => setThreadChatInput(e.target.value)}
                       onKeyDown={(e) => {
@@ -1626,38 +1752,22 @@ function App() {
                           void handleThreadChatSend();
                         }
                       }}
-                      placeholder="Ask about this thread or your highlights..."
+                      placeholder="Ask about this passage…"
                       disabled={threadChatAsking}
-                      style={{
-                        flex: 1,
-                        padding: "10px 12px",
-                        borderRadius: 8,
-                        border: `1px solid ${chrome.controlBorder}`,
-                        background: chrome.controlBg,
-                        color: chrome.controlFg,
-                        fontSize: 13,
-                        outline: "none",
-                      }}
+                      style={{ flex: 1 }}
                     />
                     <button
                       type="button"
+                      className="thread-chat-send-btn"
                       onClick={() => void handleThreadChatSend()}
                       disabled={threadChatAsking}
-                      style={{
-                        borderRadius: 8,
-                        border: `1px solid ${chrome.controlBorder}`,
-                        background: threadChatAsking ? chrome.muted : "#1f6feb",
-                        color: "#fff",
-                        padding: "10px 14px",
-                        fontSize: 13,
-                        cursor: threadChatAsking ? "wait" : "pointer",
-                      }}
+                      aria-label="Send"
                     >
-                      {threadChatAsking ? "…" : "Send"}
+                      {threadChatAsking ? "…" : <ArrowUp size={16} />}
                     </button>
                   </div>
                   {threadChatError && (
-                    <div style={{ fontSize: 12, color: "#b42318" }}>{threadChatError}</div>
+                    <div className="thread-chat-error">{threadChatError}</div>
                   )}
                 </div>
               )}

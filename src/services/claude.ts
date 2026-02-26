@@ -47,7 +47,7 @@ function buildSystemPrompt(bookTitle: string, author: string): string {
   return [
     `You are a reading assistant embedded in an ebook reader. The user is reading "${bookTitle}" by "${author}".`,
     "Answer questions about the text concisely and accurately. Ground your answers in the book's content.",
-    "Do not summarize the entire book unless asked. Be conversational, not academic.",
+    "Do not summarize the entire book unless asked. Be conversational, not academic.", "You need not ask questions all the time to the user, use questions sparingly."
   ].join("\n");
 }
 
@@ -171,7 +171,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     }
   }
   systemParts.push(
-    "Your default state is the selected passage and the reader's question. Do not assume knowledge of the broader book beyond what you are given. Explore only what the context warrants. You'll be given the chapter text and the highlighted sections by the user. Only answer questions as if you've only read up to the same point as the user (unless explicitly asked for by the user)"
+    "Your default state is the selected passage and the reader's question. Do not assume knowledge of the broader book beyond what you are given. Explore only what the context warrants. You'll be given the chapter text and the highlighted sections by the user.\ Only answer questions as if you've only read up to the same point as the user (unless explicitly asked for by the user)"
   );
   const systemBlock: AssembledThreadRequest["systemBlocks"][0] = {
     text: systemParts.join("\n\n"),

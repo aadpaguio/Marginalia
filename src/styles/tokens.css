@@ -1,0 +1,66 @@
+/* Marginalia design tokens — warm parchment, amber accent. See SKILLS/UI.md */
+
+:root {
+  /* === SURFACE === */
+  --surface-page: #f5f0e8;
+  --surface-raised: #ede8dc;
+  --surface-sunken: #e4ddd0;
+  --surface-overlay: rgba(30, 24, 14, 0.92);
+
+  /* === INK (text) === */
+  --ink-primary: #1e1810;
+  --ink-secondary: #5c5040;
+  --ink-tertiary: #9c8e7c;
+  --ink-inverse: #f5f0e8;
+
+  /* === ACCENT (amber-gold) === */
+  --accent: #b8860b;
+  --accent-light: #d4a017;
+  --accent-dim: rgba(184, 134, 11, 0.15);
+  --accent-border: rgba(184, 134, 11, 0.35);
+
+  /* === HIGHLIGHT COLORS (match DB schema) === */
+  --highlight-yellow: rgba(255, 214, 0, 0.35);
+  --highlight-blue: rgba(100, 160, 230, 0.35);
+  --highlight-green: rgba(80, 185, 120, 0.35);
+  --highlight-pink: rgba(230, 100, 130, 0.35);
+
+  /* === BORDERS === */
+  --border-subtle: rgba(30, 24, 14, 0.08);
+  --border-moderate: rgba(30, 24, 14, 0.15);
+  --border-strong: rgba(30, 24, 14, 0.28);
+
+  /* === SHADOWS === */
+  --shadow-sm: 0 1px 3px rgba(30, 24, 14, 0.1);
+  --shadow-md: 0 4px 12px rgba(30, 24, 14, 0.12);
+  --shadow-lg: 0 12px 32px rgba(30, 24, 14, 0.18);
+  --shadow-panel: -4px 0 24px rgba(30, 24, 14, 0.12);
+
+  /* === TYPOGRAPHY === */
+  --font-ui: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
+  --font-reading: Georgia, "Times New Roman", serif;
+  --font-mono: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+
+  /* === SPACING (4px base grid) === */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* === RADIUS === */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* === TRANSITIONS === */
+  --transition-fast: 120ms ease;
+  --transition-normal: 200ms ease;
+  --transition-spring: 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}

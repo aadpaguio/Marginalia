@@ -16,10 +16,8 @@ import {
 } from "../utils/iframeEventHandlers";
 import { getReaderStyles, type ReaderTheme } from "../utils/readerStyles";
 import { useInstantAnnotation } from "../hooks/useInstantAnnotation";
-import { useAIPanel, type AIPanelSelection } from "../hooks/useAIPanel";
 import Annotator from "./annotator/Annotator";
-import type { BookNote, Highlight } from "@/types/book";
-import AIPanel from "@/components/AIPanel/AIPanel";
+import type { Highlight } from "@/types/book";
 import { Bookmark, ChevronDown, Plus, SlidersHorizontal } from "lucide-react";
 
 export interface BookConfig {
@@ -72,10 +70,6 @@ type Props = {
   threads?: Array<{ id: string; title?: string }>;
   /** Called when view is ready so parent can get current chapter text (pass tocHref to get that chapter only). */
   onRegisterGetSectionText?: (fn: ((tocHref?: string) => string) | null) => void;
-  /** When AI panel completes a user/assistant pair (thread mode), persist to thread and auto-name. */
-  onMessagePair?: (userContent: string, assistantContent: string) => void;
-  /** Thread context for thread-aware AI (Phase 25). When set, panel uses askClaudeThread. */
-  threadContext?: import("@/components/AIPanel/AIPanel").ThreadContext | null;
   theme?: ReaderTheme;
   onThemeChange?: (theme: ReaderTheme) => void;
   isCurrentBookmarked?: boolean;
@@ -83,7 +77,9 @@ type Props = {
   onClose?: () => void;
 };
 
-type ToolbarSelection = AIPanelSelection & {
+type ToolbarSelection = {
+  selectedText: string;
+  cfi: string;
   anchorX: number;
   anchorY: number;
   selectedColor?: string;
@@ -110,8 +106,6 @@ export default function FoliateViewer({
   onOpenAiPanel,
   threads = [],
   onRegisterGetSectionText,
-  onMessagePair,
-  threadContext = null,
   theme = "light",
   onThemeChange,
   isCurrentBookmarked = false,
@@ -145,8 +139,7 @@ export default function FoliateViewer({
   const [addToThreadDropdownOpen, setAddToThreadDropdownOpen] = useState(false);
   const [hoveredNote, setHoveredNote] = useState<ToolbarSelection | null>(null);
   const [isDisplayMenuOpen, setIsDisplayMenuOpen] = useState(false);
-  const { isOpen, currentSelection, openPanel, closePanel } = useAIPanel();
-  const interactionBlocked = isOpen || pendingSelection != null;
+  const interactionBlocked = pendingSelection != null;
   const chrome =
     theme === "dark"
       ? {
@@ -383,33 +376,6 @@ export default function FoliateViewer({
       onRegisterGetSectionText?.(null);
     };
   }, [view, onRegisterGetSectionText, getCurrentSectionText]);
-
-  const handleSaveAiNote = useCallback(
-    (note: BookNote) => {
-      const v = viewRef.current;
-      if (!bookId) return;
-      const existing = highlightsRef.current.find((h) => h.cfi === note.cfi);
-      const highlight: Highlight = {
-        id: existing?.id ?? note.id,
-        bookId,
-        cfi: note.cfi,
-        selectedText: note.selectedText ?? note.text ?? "",
-        color: (note.color as Highlight["color"]) ?? "yellow",
-        chapterLabel: note.chapterLabel ?? locationRef.current.tocLabel ?? undefined,
-        chapterHref: note.chapterHref ?? locationRef.current.tocHref ?? undefined,
-        createdAt: existing?.createdAt ?? note.createdAt ?? Date.now(),
-      };
-      if (existing) {
-        onUpdateHighlight?.(highlight);
-      } else {
-        onAddHighlight?.(highlight);
-      }
-      if (v?.addAnnotation) {
-        void v.addAnnotation({ ...highlight, value: highlight.cfi });
-      }
-    },
-    [bookId, onAddHighlight, onUpdateHighlight]
-  );
 
   const {
     handleInstantAnnotationPointerDown,
@@ -1060,19 +1026,7 @@ export default function FoliateViewer({
           </button>
         </>
       )}
-      {isOpen && currentSelection && (
-        <AIPanel
-          selection={currentSelection}
-          bookTitle={bookDoc.metadata.title || "Untitled"}
-          author={bookDoc.metadata.author || "Unknown"}
-          getContext={getCurrentSectionText}
-          onSave={handleSaveAiNote}
-          onDismiss={closePanel}
-          onMessagePair={onMessagePair}
-          threadContext={threadContext}
-        />
-      )}
-      {hoveredNote && !pendingSelection && !isOpen && (
+      {hoveredNote && !pendingSelection && (
         <>
           <button
             type="button"
@@ -1140,7 +1094,7 @@ export default function FoliateViewer({
           </div>
         </>
       )}
-      {pendingSelection && !isOpen && (
+      {pendingSelection && (
         <>
           <button
             type="button"

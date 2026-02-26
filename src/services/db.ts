@@ -99,6 +99,10 @@ export async function dbArchiveThread(threadId: string): Promise<void> {
   await invoke("db_archive_thread", { id: threadId });
 }
 
+export async function dbDeleteThread(threadId: string): Promise<void> {
+  await invoke("db_delete_thread", { id: threadId });
+}
+
 export async function dbGetThreadMessages(threadId: string): Promise<ThreadMessage[]> {
   return invoke<ThreadMessage[]>("db_get_thread_messages", { threadId });
 }
