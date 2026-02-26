@@ -135,6 +135,23 @@ export async function generateThreadTitle(topicOrQuestion: string, apiKey: strin
   return (data.answer ?? "").trim();
 }
 
+/**
+ * Extract a character window from `text` centered on the first occurrence
+ * of `anchor`. If anchor isn't found, centers on the middle of the text.
+ * Returns the full text unchanged if it fits within the budget.
+ */
+function centeredWindow(text: string, anchor: string, charBudget = 12000): string {
+  if (text.length <= charBudget) return text;
+
+  const idx = anchor ? text.indexOf(anchor) : -1;
+  const center = idx !== -1 ? idx : Math.floor(text.length / 2);
+  const half = Math.floor(charBudget / 2);
+
+  const start = Math.max(0, center - half);
+  const end = Math.min(text.length, center + half);
+  return text.slice(start, end);
+}
+
 /** Assemble system blocks and messages for thread-aware Claude request (Phase 25). */
 export function assembleThreadContext(params: ThreadContextParams): AssembledThreadRequest {
   const {
@@ -178,7 +195,17 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     cacheControl: "ephemeral",
   };
 
-  const chapterText = currentPassage.trim().slice(0, 16000);
+  // Anchor the window on the last highlight — that's where the reader is
+  const anchorText =
+    attachedHighlights.length > 0
+      ? attachedHighlights[attachedHighlights.length - 1].selectedText
+      : "";
+
+  const chapterText = centeredWindow(
+    currentPassage.trim(),
+    anchorText,
+    12000 // ~3k tokens — leaves room for history + highlights + system prompt
+  );
   const highlightedSections =
     attachedHighlights.length > 0
       ? attachedHighlights

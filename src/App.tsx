@@ -864,7 +864,9 @@ function App() {
         (activeThreadHighlights.length > 0
           ? activeThreadHighlights[activeThreadHighlights.length - 1].selectedText
           : "");
-      const passageForThisMessage = pendingMessageExcerpt?.text ?? currentPassage;
+      // Always use the chapter text — the excerpt is already in attachedHighlights.
+      // centeredWindow in assembleThreadContext will center it on the highlight.
+      const passageForThisMessage = currentPassage;
       const result = await askClaudeThread(
         {
           threadId: activeThreadId,

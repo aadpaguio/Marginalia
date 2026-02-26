@@ -347,25 +347,26 @@ export default function FoliateViewer({
     return { left, top };
   }, []);
 
-  /** Get text for the current chapter (if tocHref matches a loaded doc) or all loaded sections. */
+  /** Get text for the current chapter (if tocHref matches a loaded doc) or the first loaded section. */
   const getCurrentSectionText = useCallback((tocHref?: string): string => {
     const v = viewRef.current;
     const contents = v?.renderer?.getContents?.() ?? [];
     if (contents.length === 0) return "";
     if (tocHref?.trim()) {
+      // Strip fragment (#section2) — spine URIs don't include it
+      const hrefBase = tocHref.split("#")[0].replace(/^\.\//, "");
       const doc = contents.find((entry) => {
         const uri = (entry.doc as Document & { documentURI?: string })?.documentURI ?? "";
-        return uri.includes(tocHref) || uri.endsWith(tocHref.replace(/^\.\//, ""));
+        return uri.includes(hrefBase) || uri.endsWith(hrefBase);
       });
       if (doc?.doc?.body?.innerText) {
-        return doc.doc.body.innerText.trim().slice(0, 50000);
+        return doc.doc.body.innerText.trim(); // no slice here — caller handles sizing
       }
     }
-    const text = contents
-      .map((entry) => entry.doc?.body?.innerText?.trim() ?? "")
-      .filter(Boolean)
-      .join("\n\n");
-    return text.slice(0, 50000);
+    // Fallback: first doc only (the one currently in view). NOT a concat — foliate-js
+    // pre-loads adjacent spine items for scroll perf, so concatenating all would leak future content.
+    const firstDoc = contents[0];
+    return firstDoc?.doc?.body?.innerText?.trim() ?? "";
   }, []);
 
   useEffect(() => {
