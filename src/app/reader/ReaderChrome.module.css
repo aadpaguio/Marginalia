@@ -1,0 +1,102 @@
+/* Reader chrome — Smart Scan button and status strip. See SKILLS/UI.md tokens. */
+
+.scanToolbarCluster {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.scanButton {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-moderate);
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+  cursor: pointer;
+}
+
+.scanButtonDefault {
+  background: var(--surface-sunken);
+  color: var(--ink-secondary);
+}
+
+.scanButtonDefault:hover:not(:disabled) {
+  background: var(--surface-raised);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.scanButtonInProgress {
+  background: var(--surface-sunken);
+  color: var(--ink-tertiary);
+  cursor: default;
+  opacity: 0.9;
+}
+
+.scanButtonDone {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.scanButtonDone:hover:not(:disabled) {
+  background: rgba(184, 134, 11, 0.25);
+  border-color: var(--accent);
+}
+
+.scanButton:disabled {
+  cursor: default;
+}
+
+/* Status strip shown below toolbar when scan is in progress */
+.scanStatusStrip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 140px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  font-size: 11px;
+  font-family: var(--font-ui);
+  color: var(--ink-secondary);
+}
+
+.scanStatusLabel {
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-tertiary);
+}
+
+.scanProgressText {
+  color: var(--ink-primary);
+  font-weight: 500;
+}
+
+.scanProgressTrack {
+  height: 3px;
+  background: var(--border-subtle);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.scanProgressFill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  transition: width 400ms var(--transition-spring);
+}
+
+.scanRateLimitMessage {
+  color: var(--ink-secondary);
+  font-size: 11px;
+}
+
+.scanRateLimitMessage strong {
+  color: var(--accent);
+}

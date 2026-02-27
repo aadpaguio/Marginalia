@@ -17,8 +17,144 @@ import {
 import { getReaderStyles, type ReaderTheme } from "../utils/readerStyles";
 import { useInstantAnnotation } from "../hooks/useInstantAnnotation";
 import Annotator from "./annotator/Annotator";
-import type { Highlight } from "@/types/book";
+import type { CitationPayload, Highlight } from "@/types/book";
 import { Bookmark, ChevronDown, Plus, SlidersHorizontal } from "lucide-react";
+
+/** Normalize for fuzzy match: smart quotes → straight, collapse whitespace. */
+function normalizeForMatch(s: string): string {
+  return s
+    .replace(/\u201c|\u201d/g, '"')
+    .replace(/\u2018|\u2019/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Find quote in document and return a Range covering it, or null.
+ * Uses text-node walk + optional normalized match so citations work when
+ * Window.find() is unavailable (e.g. in iframes) or quote has smart quotes.
+ */
+function findQuoteRangeInDocument(doc: Document, quote: string): Range | null {
+  const body = doc.body;
+  if (!body) return null;
+
+  const textNodes: { node: Text; start: number }[] = [];
+  let totalLength = 0;
+
+  function walk(node: Node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node as Text;
+      const len = text.length;
+      if (len > 0) {
+        textNodes.push({ node: text, start: totalLength });
+        totalLength += len;
+      }
+    } else {
+      for (let i = 0; i < node.childNodes.length; i++) {
+        walk(node.childNodes[i]);
+      }
+    }
+  }
+  walk(body);
+
+  const fullText = textNodes
+    .map((t) => t.node.textContent ?? "")
+    .join("");
+  if (fullText.length === 0) return null;
+
+  const quoteTrim = quote.trim();
+  if (quoteTrim.length === 0) return null;
+
+  let startIdx = fullText.indexOf(quoteTrim);
+  let endIdx = startIdx + quoteTrim.length;
+
+  if (startIdx === -1) {
+    const normQuote = normalizeForMatch(quoteTrim);
+    if (normQuote.length === 0) return null;
+    const normChars: string[] = [];
+    const normToOriginal: number[] = [];
+    for (let i = 0; i < fullText.length; i++) {
+      const c = fullText[i];
+      const n =
+        c === "\u201c" || c === "\u201d"
+          ? '"'
+          : c === "\u2018" || c === "\u2019"
+            ? "'"
+            : c;
+      if (/\s/.test(n)) {
+        if (normChars.length === 0 || normChars[normChars.length - 1] !== " ") {
+          normChars.push(" ");
+          normToOriginal.push(i);
+        }
+      } else {
+        normChars.push(n);
+        normToOriginal.push(i);
+      }
+    }
+    const normFull = normChars.join("");
+    const normIdx = normFull.indexOf(normQuote);
+
+    if (normIdx !== -1) {
+      startIdx = normToOriginal[normIdx];
+      endIdx = normToOriginal[normIdx + normQuote.length - 1] + 1;
+    } else {
+      // Ellipsis-aware fallback: handles leading, trailing, and middle '...' / '…'.
+      const ellipsisToken = /\.{3}|…/;
+      if (!ellipsisToken.test(quoteTrim)) return null;
+
+      // Strip leading/trailing ellipsis, then split on any remaining middle ones.
+      const stripped = quoteTrim
+        .replace(/^[\s.…]+/, "")
+        .replace(/[\s.…]+$/, "");
+      const parts = stripped
+        .split(/\.{3}|…/)
+        .map((p) => normalizeForMatch(p.trim()))
+        .filter(Boolean);
+      if (parts.length === 0) return null;
+
+      const head = parts[0];
+      const headIdx = normFull.indexOf(head);
+      if (headIdx === -1) return null;
+
+      if (parts.length === 1) {
+        // Trailing or leading ellipsis only — anchor on the single fragment.
+        startIdx = normToOriginal[headIdx];
+        endIdx = normToOriginal[headIdx + head.length - 1] + 1;
+      } else {
+        // Middle ellipsis — anchor on head start and tail end.
+        const tail = parts[parts.length - 1];
+        const tailIdx = normFull.indexOf(tail, headIdx + head.length);
+        if (tailIdx === -1) return null;
+        startIdx = normToOriginal[headIdx];
+        endIdx = normToOriginal[tailIdx + tail.length - 1] + 1;
+      }
+    }
+  }
+
+  if (endIdx > fullText.length) return null;
+
+  function findNodeAndOffset(charIndex: number): { node: Text; offset: number } | null {
+    for (let i = textNodes.length - 1; i >= 0; i--) {
+      const { node, start } = textNodes[i];
+      const nodeLen = node.length;
+      if (charIndex >= start && charIndex <= start + nodeLen) {
+        return { node, offset: charIndex - start };
+      }
+    }
+    return null;
+  }
+
+  const startInfo = findNodeAndOffset(startIdx);
+  const endInfo = findNodeAndOffset(endIdx - 1);
+  if (!startInfo || !endInfo) return null;
+
+  const range = doc.createRange();
+  range.setStart(startInfo.node, startInfo.offset);
+  const endOffset = endInfo.node === startInfo.node ? endInfo.offset + 1 : endInfo.offset + 1;
+  range.setEnd(endInfo.node, Math.min(endOffset, endInfo.node.length));
+
+  return range;
+}
 
 export interface BookConfig {
   location?: string;
@@ -72,6 +208,12 @@ type Props = {
   onRegisterGetSectionText?: (fn: ((tocHref?: string) => string) | null) => void;
   /** Called when view is ready so parent can get text around a CFI (for get_context tool). */
   onRegisterGetContextAroundCfi?: (fn: ((cfi: string, charRadius: number) => string) | null) => void;
+  /** Called when view is ready so parent can resolve citation (quote) to CFI and jump + temporary highlight. */
+  onRegisterResolveCitation?: (
+    fn: ((citation: CitationPayload) => Promise<string | null>) | null
+  ) => void;
+  /** Used by resolver to find which section contains the quote (then goTo that section and resolve range in DOM). */
+  getSectionContainingQuote?: (citation: CitationPayload) => Promise<{ spineIndex: number } | null>;
   theme?: ReaderTheme;
   onThemeChange?: (theme: ReaderTheme) => void;
   isCurrentBookmarked?: boolean;
@@ -109,6 +251,8 @@ export default function FoliateViewer({
   threads = [],
   onRegisterGetSectionText,
   onRegisterGetContextAroundCfi,
+  onRegisterResolveCitation,
+  getSectionContainingQuote,
   theme = "light",
   onThemeChange,
   isCurrentBookmarked = false,
@@ -417,6 +561,105 @@ export default function FoliateViewer({
       onRegisterGetContextAroundCfi?.(null);
     };
   }, [view, onRegisterGetContextAroundCfi, getContextAroundCfi]);
+
+  useEffect(() => {
+    if (!view || !onRegisterResolveCitation) return;
+
+    async function resolveCitation(citation: CitationPayload): Promise<string | null> {
+      const v = viewRef.current;
+      if (!v) return null;
+
+      const quote = citation.quote?.trim();
+      if (!quote) return null;
+
+      const contents = v.renderer.getContents?.() ?? [];
+
+      for (let i = 0; i < contents.length; i++) {
+        const entry = contents[i];
+        const doc = entry?.doc;
+        if (!doc) continue;
+
+        const range = findQuoteRangeInDocument(doc, quote);
+        if (!range) continue;
+
+        const spineIndex = entry?.index ?? i;
+        const cfi = v.getCFI?.(spineIndex, range);
+        if (!cfi) continue;
+
+        await v.goTo(cfi);
+
+        const tempId = "temp-citation-" + Date.now();
+        const tempAnn = {
+          id: tempId,
+          value: cfi,
+          color: "rgba(255,200,0,0.4)",
+        };
+        await v.addAnnotation?.(tempAnn);
+        setTimeout(() => {
+          v.addAnnotation?.(tempAnn, true);
+        }, 4000);
+
+        return cfi;
+      }
+
+      // getContents() only has the current section. Find which section has the quote
+      // via getSectionContainingQuote (uses section.createDocument()), then goTo that
+      // section and resolve the range in the now-loaded doc.
+      if (!getSectionContainingQuote) return null;
+
+      const sectionResult = await getSectionContainingQuote(citation);
+      if (!sectionResult) return null;
+
+      await (v.goTo as (target: string | number) => Promise<void>)(sectionResult.spineIndex);
+
+      // Poll until getContents() reflects the new section (iframe navigation is async).
+      let entry: { doc?: Document; index?: number } | undefined;
+      const deadline = Date.now() + 3000;
+      while (Date.now() < deadline) {
+        await new Promise((r) => requestAnimationFrame(r));
+        const contents = v.renderer.getContents?.() ?? [];
+        const candidate = contents[0];
+        if (candidate?.doc && candidate?.index === sectionResult.spineIndex) {
+          entry = candidate;
+          break;
+        }
+        // Section may have only one content entry with no index — try doc match too.
+        if (candidate?.doc) {
+          const range = findQuoteRangeInDocument(candidate.doc, quote);
+          if (range) { entry = candidate; break; }
+        }
+      }
+      const doc = entry?.doc;
+      if (!doc) return null;
+
+      const range = findQuoteRangeInDocument(doc, quote);
+      if (!range) return null;
+
+      const spineIndex = entry?.index ?? sectionResult.spineIndex;
+      const cfi = v.getCFI?.(spineIndex, range);
+      if (!cfi) return null;
+
+      await v.goTo(cfi);
+
+      const tempId = "temp-citation-" + Date.now();
+      const tempAnn = {
+        id: tempId,
+        value: cfi,
+        color: "rgba(255,200,0,0.4)",
+      };
+      await v.addAnnotation?.(tempAnn);
+      setTimeout(() => {
+        v.addAnnotation?.(tempAnn, true);
+      }, 4000);
+
+      return cfi;
+    }
+
+    onRegisterResolveCitation(resolveCitation);
+    return () => {
+      onRegisterResolveCitation(null);
+    };
+  }, [view, onRegisterResolveCitation, getSectionContainingQuote]);
 
   const {
     handleInstantAnnotationPointerDown,

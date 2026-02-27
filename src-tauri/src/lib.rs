@@ -977,6 +977,27 @@ fn db_set_book_structure_type(
     Ok(())
 }
 
+/// Deletes all section summaries (Smart Scan section data). Use with db_reset_all_book_scan_data to start scan from scratch.
+#[tauri::command]
+fn db_delete_all_section_summaries(state: State<DbState>) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    conn.execute("DELETE FROM section_summaries", ())
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// Resets smart_scan_status, book_summary, and book_structure_type for all books.
+#[tauri::command]
+fn db_reset_all_book_scan_data(state: State<DbState>) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    conn.execute(
+        "UPDATE books SET smart_scan_status = 'none', book_summary = NULL, book_structure_type = NULL",
+        (),
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 fn chrono_like_now() -> i64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -1079,16 +1100,38 @@ fn memory_write_reader(state: State<MemoryState>, content: String) -> Result<(),
     std::fs::write(&path, content).map_err(|e| e.to_string())
 }
 
+const MAX_CONTEXT_CHARS: usize = 4000;
+const MAX_PASSAGE_CHARS: usize = 4000;
+const MAX_HISTORY_MESSAGES: usize = 10;
+
+fn truncate_with_marker(s: &str, max_chars: usize) -> (String, bool) {
+    let chars: Vec<char> = s.chars().collect();
+    let truncated = chars.len() > max_chars;
+    let out: String = chars.into_iter().take(max_chars).collect();
+    let out = if truncated {
+        format!("{} (truncated)", out)
+    } else {
+        out
+    };
+    (out, truncated)
+}
+
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct ClaudeProxyRequest {
     api_key: String,
     model: String,
-    system_prompt: String,
+    /// Stable rules (behavior, style, spoilers) — cached.
+    system_prompt_stable: String,
+    /// Session-specific (book title, author) — not cached.
+    system_prompt_session: String,
     surrounding_context: String,
     selected_text: String,
     user_message: String,
     conversation_history: Option<Vec<ClaudeHistoryMessage>>,
+    /// Max output tokens; default 600. Use 900–1600 for deep analysis.
+    #[serde(default)]
+    max_tokens: Option<u32>,
 }
 
 #[derive(Deserialize)]
@@ -1138,6 +1181,9 @@ struct ClaudeThreadProxyRequest {
     /// Optional log prefix (e.g. "smart_scan") so logs are distinguishable from thread chat.
     #[serde(default)]
     log_label: Option<String>,
+    /// Max output tokens (default 4096). Use lower values (e.g. 550) for short JSON/summaries to reduce latency and rate-limit pressure.
+    #[serde(default)]
+    max_tokens: Option<u32>,
 }
 
 #[derive(Serialize)]
@@ -1171,46 +1217,47 @@ struct ClaudeThreadProxyResponse {
 #[tauri::command]
 async fn ask_claude_proxy(request: ClaudeProxyRequest) -> Result<ClaudeProxyResponse, String> {
     let model = request.model.clone();
-    let mut messages = vec![serde_json::json!({
-        "role": "user",
-        "content": [
-            {
-                "type": "text",
-                "text": format!("Context from the book:\n\n{}", request.surrounding_context),
-                "cache_control": { "type": "ephemeral" }
-            }
-        ]
-    })];
+    let (surrounding, _) = truncate_with_marker(&request.surrounding_context, MAX_CONTEXT_CHARS);
+    let (selected, _) = truncate_with_marker(&request.selected_text, MAX_PASSAGE_CHARS);
+
+    let current_turn_text = format!(
+        "Context from the book:\n\n{}\n\nSelected passage:\n\"{}\"\n\n{}",
+        surrounding, selected, request.user_message
+    );
+
+    let mut messages: Vec<serde_json::Value> = Vec::new();
 
     if let Some(history) = request.conversation_history {
-        for message in history {
-            if (message.role != "user" && message.role != "assistant") || message.content.trim().is_empty() {
-                continue;
-            }
+        let valid: Vec<_> = history
+            .into_iter()
+            .filter(|m| (m.role == "user" || m.role == "assistant") && !m.content.trim().is_empty())
+            .collect();
+        let start = valid.len().saturating_sub(MAX_HISTORY_MESSAGES);
+        for message in valid.into_iter().skip(start) {
             messages.push(serde_json::json!({
                 "role": message.role,
-                "content": [
-                    {
-                        "type": "text",
-                        "text": message.content
-                    }
-                ]
+                "content": [{ "type": "text", "text": message.content }]
             }));
         }
     }
 
     messages.push(serde_json::json!({
         "role": "user",
-        "content": [
-            {
-                "type": "text",
-                "text": format!(
-                    "Selected passage:\n\"{}\"\n\n{}",
-                    request.selected_text, request.user_message
-                )
-            }
-        ]
+        "content": [{ "type": "text", "text": current_turn_text }]
     }));
+
+    let max_tokens = request.max_tokens.unwrap_or(600);
+    let system = [
+        serde_json::json!({
+            "type": "text",
+            "text": request.system_prompt_stable,
+            "cache_control": { "type": "ephemeral" }
+        }),
+        serde_json::json!({
+            "type": "text",
+            "text": request.system_prompt_session
+        }),
+    ];
 
     let client = reqwest::Client::new();
     let response = client
@@ -1221,14 +1268,8 @@ async fn ask_claude_proxy(request: ClaudeProxyRequest) -> Result<ClaudeProxyResp
         .header("anthropic-beta", "prompt-caching-2024-07-31")
         .json(&serde_json::json!({
             "model": model.clone(),
-            "max_tokens": 900,
-            "system": [
-                {
-                    "type": "text",
-                    "text": request.system_prompt,
-                    "cache_control": { "type": "ephemeral" }
-                }
-            ],
+            "max_tokens": max_tokens,
+            "system": system,
             "messages": messages
         }))
         .send()
@@ -1385,9 +1426,10 @@ async fn ask_claude_thread_proxy(
         })
         .collect();
 
+    let max_tokens = request.max_tokens.unwrap_or(4096);
     let mut body = serde_json::json!({
         "model": model.clone(),
-        "max_tokens": 4096,
+        "max_tokens": max_tokens,
         "system": system,
         "messages": messages
     });
@@ -1419,6 +1461,11 @@ async fn ask_claude_thread_proxy(
         .map_err(|e| e.to_string())?;
 
     let status = response.status();
+    let retry_after_hdr = response
+        .headers()
+        .get("retry-after")
+        .and_then(|v| v.to_str().ok())
+        .map(String::from);
     let body_res = response.text().await.map_err(|e| e.to_string())?;
     // Truncate at 800 bytes on a char boundary to avoid panicking on multi-byte UTF-8 (e.g. '—').
     let max_byte = body_res.len().min(800);
@@ -1429,10 +1476,15 @@ async fn ask_claude_thread_proxy(
         .unwrap_or(body_res.len());
     eprintln!("[{}] response status={} body={}", log_prefix, status, &body_res[..end]);
     if !status.is_success() {
-        return Err(format!(
-            "Anthropic request failed ({}): {}",
-            status, body_res
-        ));
+        let retry_suffix = retry_after_hdr
+            .as_ref()
+            .map(|s| format!(" retry_after={}", s))
+            .unwrap_or_default();
+        let err_msg = format!(
+            "Anthropic request failed ({}): {}{}",
+            status, body_res, retry_suffix
+        );
+        return Err(err_msg);
     }
 
     let parsed: serde_json::Value =
@@ -1530,6 +1582,8 @@ pub fn run() {
             save_cover_image,
             db_get_section_summaries,
             db_upsert_section_summary,
+            db_delete_all_section_summaries,
+            db_reset_all_book_scan_data,
             db_get_book_scan_status,
             db_set_book_scan_status,
             db_get_book_summary,

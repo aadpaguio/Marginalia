@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FC } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { exists } from "@tauri-apps/plugin-fs";
 import { DocumentLoader } from "@/libs/document";
 import type { BookDoc, TOCItem } from "@/libs/document";
-import type { Highlight, Thread, ThreadMessage } from "@/types/book";
+import type { CitationPayload, Highlight, Thread, ThreadMessage } from "@/types/book";
 import type { ReaderTheme } from "@/app/reader/utils/readerStyles";
 import FoliateViewer from "@/app/reader/components/FoliateViewer";
 import Library from "@/components/Library";
@@ -31,6 +31,7 @@ import {
   dbUpsertBookmark,
   dbUpsertBook,
   dbUpsertHighlight,
+  dbClearAllScanData,
   dbGetSectionSummaries,
   dbSetBookScanStatus,
   memoryEnsureDirs,
@@ -55,6 +56,7 @@ import { ArrowLeft, ArrowRight, ArrowUp, BookOpenText, MoreVertical, NotepadText
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "@/components/ThreadsPanel/ThreadsPanel.css";
+import readerChromeStyles from "@/app/reader/ReaderChrome.module.css";
 
 function base64ToFile(base64: string, filename: string): File {
   const binary = atob(base64);
@@ -125,6 +127,100 @@ function buildBookmarkLocationLabel(args: {
   if (page) return page;
   return "Bookmark";
 }
+
+type CitationSegment = { text: string; citation?: CitationPayload };
+
+/** Split message text at inline <!--cite:{...}--> markers into renderable segments.
+ * Falls back to stripping the legacy end-block format if no inline markers are found. */
+function parseCitationSegments(text: string): CitationSegment[] {
+  // New inline format: <!--cite:{...}-->
+  const inlinePattern = /<!--cite:([\s\S]*?)-->/g;
+  const hasInline = inlinePattern.test(text);
+
+  if (hasInline) {
+    const segments: CitationSegment[] = [];
+    let lastIndex = 0;
+    for (const match of text.matchAll(/<!--cite:([\s\S]*?)-->/g)) {
+      const textChunk = text.slice(lastIndex, match.index);
+      let citation: CitationPayload | undefined;
+      try { citation = JSON.parse(match[1]) as CitationPayload; } catch { /* skip */ }
+      segments.push({ text: textChunk, citation });
+      lastIndex = (match.index ?? 0) + match[0].length;
+    }
+    const tail = text.slice(lastIndex).trim();
+    if (tail) segments.push({ text: tail });
+    return segments;
+  }
+
+  // Legacy end-block format: <!--citations:{...}--> at the end
+  const endMatch = text.match(/<!--\s*citations:\s*([\s\S]*?)\s*-->/);
+  if (endMatch) {
+    let citations: CitationPayload[] = [];
+    try {
+      const parsed = JSON.parse(endMatch[1]) as { items?: CitationPayload[]; citations?: CitationPayload[] };
+      citations = parsed.items ?? parsed.citations ?? [];
+    } catch { /* ignore */ }
+    const cleanText = text.replace(endMatch[0], "").trim();
+    // Return as a single text segment followed by individual citation-only segments
+    return [
+      { text: cleanText },
+      ...citations.map((c) => ({ text: "", citation: c })),
+    ];
+  }
+
+  return [{ text }];
+}
+
+type CitationJumpStatus = "idle" | "resolving" | "error";
+
+const CitationJumpButton: FC<{
+  citation: CitationPayload;
+  onResolve: (citation: CitationPayload) => Promise<string | null>;
+}> = ({ citation, onResolve }) => {
+  const [status, setStatus] = useState<CitationJumpStatus>("idle");
+
+  const handleClick = async () => {
+    if (status === "resolving") return;
+    setStatus("resolving");
+    try {
+      const cfi = await onResolve(citation);
+      setStatus(cfi ? "idle" : "error");
+      if (!cfi) setTimeout(() => setStatus("idle"), 2500);
+    } catch {
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 2500);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      className={`thread-citation-card thread-citation-card--${status}`}
+      onClick={handleClick}
+      disabled={status === "resolving"}
+    >
+      <span className="thread-citation-quote">"{citation.quote}"</span>
+      <span className="thread-citation-jump">
+        {status === "resolving" ? (
+          <>
+            <span className="thread-citation-spinner" />
+            Locating…
+          </>
+        ) : status === "error" ? (
+          <>
+            <ArrowRight size={11} />
+            Passage not found
+          </>
+        ) : (
+          <>
+            <ArrowRight size={11} />
+            Jump to passage
+          </>
+        )}
+      </span>
+    </button>
+  );
+};
 
 function App() {
   type PanelTab = "threads" | "highlights" | "bookmarks";
@@ -201,12 +297,17 @@ function App() {
   const [bookSummary, setBookSummary] = useState<string | null>(null);
   const [bookStructureType, setBookStructureType] = useState<string | null>(null);
   const [scanProgress, setScanProgress] = useState<{ done: number; total: number } | null>(null);
+  /** When rate limited, seconds left until next retry (0 = retrying now). null = not waiting. */
+  const [scanRetryInSeconds, setScanRetryInSeconds] = useState<number | null>(null);
   const [showSmartScanBanner, setShowSmartScanBanner] = useState(false);
   /** When true, open the next book and immediately trigger a Smart Scan. */
   const pendingScanAfterOpenRef = useRef(false);
   const getSectionTextRef = useRef<((tocHref?: string) => string) | null>(null);
   const getContextAroundCfiRef = useRef<
     ((cfi: string, charRadius: number) => string) | null
+  >(null);
+  const resolveCitationRef = useRef<
+    ((citation: CitationPayload) => Promise<string | null>) | null
   >(null);
   /** Session-only working context: last 1–2 get_context results for follow-up continuity. Evicted on new fetch; not persisted. */
   const workingContextRef = useRef<string[]>([]);
@@ -236,6 +337,40 @@ function App() {
       }
     },
     [bookDoc]
+  );
+
+  /** Normalize string for fuzzy match (smart quotes, collapsed whitespace). */
+  const normalizeForQuoteMatch = useCallback((s: string) => {
+    return s
+      .replace(/\u201c|\u201d/g, '"')
+      .replace(/\u2018|\u2019/g, "'")
+      .replace(/\s+/g, " ")
+      .trim();
+  }, []);
+
+  /** Find which section contains the citation quote (by fetching section text via createDocument). Returns index in bookDoc.sections for view.goTo(index). */
+  const getSectionContainingQuote = useCallback(
+    async (citation: CitationPayload): Promise<{ spineIndex: number } | null> => {
+      const quote = citation.quote?.trim();
+      if (!quote || !bookDoc?.sections) return null;
+
+      const spineItems = bookDoc.sections.filter((s) => s.linear !== "no");
+      const normQuote = normalizeForQuoteMatch(quote);
+
+      for (let i = 0; i < spineItems.length; i++) {
+        const section = spineItems[i];
+        const href = section.href?.split("#")[0].trim() || `spine-${i}`;
+        const text = await getSectionTextByHref(href);
+        if (!text) continue;
+        const normText = normalizeForQuoteMatch(text);
+        if (normText.includes(normQuote) || text.includes(quote)) {
+          const spineIndex = bookDoc.sections!.indexOf(section);
+          if (spineIndex >= 0) return { spineIndex };
+        }
+      }
+      return null;
+    },
+    [bookDoc, getSectionTextByHref, normalizeForQuoteMatch]
   );
   const highlightRefs = useRef<Record<string, HTMLDetailsElement | null>>({});
   const progressLastWriteAtRef = useRef(0);
@@ -406,6 +541,7 @@ function App() {
       });
 
       setCurrentBookId(bookId);
+      workingContextRef.current = [];
       // Prevent startup relocate events from overwriting saved progress with opening-position CFIs.
       progressWriteBlockRef.current = { bookId, untilMs: Date.now() + 3000 };
       setEpubPath(path);
@@ -547,6 +683,7 @@ function App() {
       return;
     }
     setThreadChatError(null);
+    workingContextRef.current = [];
     Promise.all([
       dbGetThreadMessages(activeThreadId),
       dbGetHighlightsForThread(activeThreadId),
@@ -961,7 +1098,7 @@ function App() {
         {
           threadId: activeThreadId,
           messages: activeThreadMessages,
-          attachedHighlights: activeThreadHighlights,
+          attachedHighlights: activeThreadHighlights.filter((h) => h.bookId === currentBookId),
           userMessage,
           bookTitle: bookDoc.metadata?.title ?? "Book",
           author: bookDoc.metadata?.author ?? "",
@@ -1064,7 +1201,7 @@ function App() {
     const confirmed = window.confirm(
       isRescan
         ? "Replace existing scan with a fresh one?"
-        : "Smart Scan reads every section of this book and generates summaries (~30 seconds, one-time cost). Run it?"
+        : "Smart Scan reads every section and generates summaries (~30s, one-time). If the API is rate limited, it will pause; run again to resume from where it left off. Run it?"
     );
     if (!confirmed) return;
     if (isRescan) {
@@ -1072,14 +1209,23 @@ function App() {
       setBookSummary(null);
     }
     setScanProgress(null);
+    setScanRetryInSeconds(null);
     void runSmartScan({
       bookId: currentBookId,
       bookDoc,
       apiKey,
-      onProgress: (done, total) => setScanProgress({ done, total }),
+      onProgress: (done, total) => {
+        setScanProgress({ done, total });
+        setScanRetryInSeconds(null);
+      },
       onScanStatusChange: (status) => {
         setScanStatus(status);
+        setScanRetryInSeconds(null);
         void refreshLibrary();
+      },
+      onRateLimitWait: (secondsLeft) => {
+        setScanRetryInSeconds(secondsLeft);
+        if (secondsLeft === 0) setTimeout(() => setScanRetryInSeconds(null), 800);
       },
       onSectionSummaryAdded: (summary) =>
         setSectionSummaries((prev) => {
@@ -1158,6 +1304,10 @@ function App() {
           onRegisterGetContextAroundCfi={(fn) => {
             getContextAroundCfiRef.current = fn;
           }}
+          onRegisterResolveCitation={(fn: ((citation: CitationPayload) => Promise<string | null>) | null) => {
+            resolveCitationRef.current = fn;
+          }}
+          getSectionContainingQuote={getSectionContainingQuote}
           onTocNavigateComplete={(payload) => {
             if (!currentBookId || !payload) return;
             if (relocateDebounceTimerRef.current != null) {
@@ -1233,8 +1383,8 @@ function App() {
             left: 8,
             zIndex: 130,
             display: "flex",
-            alignItems: "center",
-            gap: 6,
+            alignItems: "flex-start",
+            gap: 8,
           }}
         >
           <button
@@ -1257,54 +1407,80 @@ function App() {
           >
             <BookOpenText size={16} />
           </button>
-          <button
-            type="button"
-            onClick={() => void handleRunSmartScan()}
-            disabled={scanStatus === "in_progress"}
-            aria-label={
-              scanStatus === "none"
-                ? "Run Smart Scan"
-                : scanStatus === "in_progress"
-                  ? scanProgress
-                    ? `Scanning… ${scanProgress.done}/${scanProgress.total}`
-                    : "Scanning…"
-                  : "Smart Scan complete · Re-scan"
-            }
-            title={
-              scanStatus === "none"
-                ? "Run Smart Scan"
-                : scanStatus === "in_progress"
-                  ? scanProgress
-                    ? `Scanning… ${scanProgress.done}/${scanProgress.total}`
-                    : "Scanning…"
-                  : "Smart Scan complete · Re-scan"
-            }
-            style={{
-              width: 34,
-              height: 34,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: scanStatus === "in_progress" ? "default" : "pointer",
-              border: `1px solid ${chrome.controlBorder}`,
-              borderRadius: 8,
-              background:
-                scanStatus === "done"
-                  ? theme === "dark"
-                    ? "rgba(31,111,235,0.25)"
-                    : "rgba(31,111,235,0.1)"
-                  : chrome.controlBg,
-              color:
-                scanStatus === "done"
-                  ? "#1f6feb"
+          <div className={readerChromeStyles.scanToolbarCluster}>
+            <button
+              type="button"
+              onClick={() => void handleRunSmartScan()}
+              disabled={scanStatus === "in_progress"}
+              aria-label={
+                scanStatus === "none"
+                  ? "Run Smart Scan"
                   : scanStatus === "in_progress"
-                    ? chrome.muted
-                    : chrome.controlFg,
-              opacity: scanStatus === "in_progress" ? 0.7 : 1,
-            }}
-          >
-            <Sparkles size={16} />
-          </button>
+                    ? scanProgress
+                      ? `Scanning… ${scanProgress.done}/${scanProgress.total}`
+                      : "Scanning…"
+                    : "Smart Scan complete · Re-scan"
+              }
+              title={
+                scanStatus === "none"
+                  ? "Run Smart Scan"
+                  : scanStatus === "in_progress"
+                    ? scanProgress
+                      ? `Scanning… ${scanProgress.done}/${scanProgress.total}`
+                      : "Scanning…"
+                    : "Smart Scan complete · Re-scan"
+              }
+              className={[
+                readerChromeStyles.scanButton,
+                scanStatus === "in_progress"
+                  ? readerChromeStyles.scanButtonInProgress
+                  : scanStatus === "done"
+                    ? readerChromeStyles.scanButtonDone
+                    : readerChromeStyles.scanButtonDefault,
+              ].join(" ")}
+              style={
+                theme === "dark" && scanStatus !== "done"
+                  ? {
+                      borderColor: chrome.controlBorder,
+                      background: chrome.controlBg,
+                      color: chrome.controlFg,
+                    }
+                  : undefined
+              }
+            >
+              <Sparkles size={16} />
+            </button>
+            {scanStatus === "in_progress" && (
+              <div className={readerChromeStyles.scanStatusStrip}>
+                <span className={readerChromeStyles.scanStatusLabel}>Smart Scan</span>
+                {scanRetryInSeconds !== null ? (
+                  <span className={readerChromeStyles.scanRateLimitMessage}>
+                    {scanRetryInSeconds > 0 ? (
+                      <>Rate limited. <strong>Retrying in {scanRetryInSeconds}s…</strong></>
+                    ) : (
+                      <strong>Retrying…</strong>
+                    )}
+                  </span>
+                ) : scanProgress ? (
+                  <>
+                    <span className={readerChromeStyles.scanProgressText}>
+                      {scanProgress.done} / {scanProgress.total} sections
+                    </span>
+                    <div className={readerChromeStyles.scanProgressTrack}>
+                      <div
+                        className={readerChromeStyles.scanProgressFill}
+                        style={{
+                          width: `${scanProgress.total > 0 ? (100 * scanProgress.done) / scanProgress.total : 0}%`,
+                        }}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <span className={readerChromeStyles.scanProgressText}>Scanning…</span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
         {backCfi && (
           <div
@@ -1788,7 +1964,26 @@ function App() {
                                   </div>
                                 ) : (
                                   <div className="thread-msg-content">
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                                    {parseCitationSegments(m.content).map((seg, segIdx) => (
+                                      <div key={segIdx}>
+                                        {seg.text && (
+                                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{seg.text}</ReactMarkdown>
+                                        )}
+                                        {seg.citation && (
+                                          <CitationJumpButton
+                                            citation={seg.citation}
+                                            onResolve={async (c) => {
+                                              const cfi = await resolveCitationRef.current?.(c) ?? null;
+                                              if (cfi) {
+                                                if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
+                                                setJumpToCfi(cfi);
+                                              }
+                                              return cfi;
+                                            }}
+                                          />
+                                        )}
+                                      </div>
+                                    ))}
                                   </div>
                                 )}
                               </div>
@@ -2180,11 +2375,16 @@ function App() {
           const confirmed = window.confirm(
             isRescan
               ? "Replace existing scan with a fresh one?"
-              : "Smart Scan reads every section of this book and generates summaries (~30 seconds, one-time cost). Run it?"
+              : "Smart Scan reads every section and generates summaries (~30s, one-time). If rate limited, run again to resume. Run it?"
           );
           if (!confirmed) return;
           pendingScanAfterOpenRef.current = true;
           void openBookFromPath(book.filePath, book.id);
+        }}
+        onClearScanData={async () => {
+          if (!window.confirm("Delete all Smart Scan data (section + book summaries) and reset scan status for every book? You can re-run Smart Scan on any book afterward.")) return;
+          await dbClearAllScanData();
+          await refreshLibrary();
         }}
       />
       {openingBookId && (

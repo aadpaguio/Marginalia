@@ -56,22 +56,28 @@ const DEFAULT_MODEL = "claude-haiku-4-5-20251001";
 const DEEP_ANALYSIS_MODEL = "claude-sonnet-4-6";
 const DEFAULT_PROMPT = "Explain this passage in context.";
 
-function buildSystemPrompt(bookTitle: string, author: string): string {
-  return [
-    `You are a reading assistant embedded in an ebook reader. The user is reading "${bookTitle}" by "${author}".`,
-    "Answer questions about the text concisely and accurately. Ground your answers in the book's content.",
-    "Do not summarize the entire book unless asked. Be conversational, not academic.", "You need not ask questions all the time to the user, use questions sparingly."
-  ].join("\n");
+/** Stable rules (behavior, style) — cached by the API. Rarely changes. */
+const STABLE_SYSTEM_RULES = [
+  "Answer questions about the text concisely and accurately. Ground your answers in the book's content.",
+  "Do not summarize the entire book unless asked. Be conversational, not academic.",
+  "You need not ask questions all the time to the user, use questions sparingly.",
+].join("\n");
+
+/** Session-specific (book, author) — not cached. */
+function buildSessionSystemPrompt(bookTitle: string, author: string): string {
+  return `You are a reading assistant embedded in an ebook reader. The user is reading "${bookTitle}" by "${author}".`;
 }
 
-function chooseModel(userMessage: string): string {
+function chooseModelAndMaxTokens(userMessage: string): { model: string; maxTokens: number } {
   const query = userMessage.toLowerCase();
   const asksDeepAnalysis =
     query.includes("deep analysis") ||
     query.includes("analyze deeply") ||
     query.includes("in depth") ||
     query.includes("in-depth");
-  return asksDeepAnalysis ? DEEP_ANALYSIS_MODEL : DEFAULT_MODEL;
+  return asksDeepAnalysis
+    ? { model: DEEP_ANALYSIS_MODEL, maxTokens: 1200 }
+    : { model: DEFAULT_MODEL, maxTokens: 600 };
 }
 
 function getApiKey(): string {
@@ -94,7 +100,7 @@ export async function askClaude({
 }: ClaudeRequest): Promise<ClaudeResponse> {
   const apiKey = getApiKey();
   const prompt = (userMessage ?? "").trim() || DEFAULT_PROMPT;
-  const model = chooseModel(prompt);
+  const { model, maxTokens } = chooseModelAndMaxTokens(prompt);
 
   const data = await invoke<{
     answer: string;
@@ -109,11 +115,13 @@ export async function askClaude({
     request: {
       apiKey,
       model,
-      systemPrompt: buildSystemPrompt(bookTitle, author),
+      systemPromptStable: STABLE_SYSTEM_RULES,
+      systemPromptSession: buildSessionSystemPrompt(bookTitle, author),
       surroundingContext,
       selectedText,
       userMessage: prompt,
       conversationHistory,
+      maxTokens,
     },
   });
   const answer = data.answer ?? "";
@@ -303,7 +311,17 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     "You are allowed to be confident in your readings. " +
 "Uncertainty should come from the text being genuinely ambiguous, not from the reader asking questions."
   );
-  
+
+  systemParts.push(
+    "CITATIONS (required when you quote the book): When your answer includes a specific quoted passage from the book " +
+    "(a verbatim phrase or sentence you copy from the text), place an HTML comment IMMEDIATELY after the closing quotation mark of that quote — " +
+    "on the same line, no space before it. Do not add a citation block at the end of the message. " +
+    "One comment per quote. The comment must never appear in visible text.\n" +
+    "CRITICAL — the quote field must be a CONTINUOUS VERBATIM SUBSTRING copied character-for-character from the book. " +
+    "NEVER use '...' or '…' to skip over words. NEVER paraphrase. NEVER combine two separate sentences. " +
+    "If the passage is longer than 240 characters, quote only the most distinctive opening phrase — keep it short and exact rather than long and truncated.\n" +
+    'Format:\n"some quoted passage"<!--cite:{"quote":"some quoted passage","anchorBefore":"optional 10–20 words before","anchorAfter":"optional 10–20 words after","spineHint":null}-->'
+  );
 
   const highlightedSections =
     attachedHighlights.length > 0
@@ -449,7 +467,7 @@ export async function askClaudeThread(
   apiKey: string
 ): Promise<ClaudeResponse> {
   const assembled = assembleThreadContext(params);
-  const model = chooseModel(params.userMessage);
+  const model = chooseModelAndMaxTokens(params.userMessage).model;
   let messages: AssembledThreadRequest["messages"] = assembled.messages;
   /**
    * Force tool use on round 0 only when the user's message explicitly asks for

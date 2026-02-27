@@ -75,3 +75,11 @@ export interface ThreadWithMessages extends Thread {
   messages: ThreadMessage[];
   highlights: Highlight[];
 }
+
+/** Citation payload from assistant (HTML comment); used for jump-to-passage resolution. */
+export interface CitationPayload {
+  quote: string;
+  anchorBefore?: string;
+  anchorAfter?: string;
+  spineHint?: string | null;
+}

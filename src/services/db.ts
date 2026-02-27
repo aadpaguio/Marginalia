@@ -292,6 +292,22 @@ export async function dbSetBookStructureType(
   });
 }
 
+/** Deletes all section summaries from the DB. */
+export async function dbDeleteAllSectionSummaries(): Promise<void> {
+  await invoke("db_delete_all_section_summaries");
+}
+
+/** Resets scan status, book summary, and structure type for all books. */
+export async function dbResetAllBookScanData(): Promise<void> {
+  await invoke("db_reset_all_book_scan_data");
+}
+
+/** Clears all Smart Scan data so you can start from scratch. */
+export async function dbClearAllScanData(): Promise<void> {
+  await dbDeleteAllSectionSummaries();
+  await dbResetAllBookScanData();
+}
+
 export interface StoredBookmark {
   id: string;
   bookId: string;

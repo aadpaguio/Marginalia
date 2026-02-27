@@ -15,9 +15,10 @@ type Props = {
   onDeleteBook: (book: LibraryBook) => void;
   openingBookId?: string | null;
   onScanBook?: (book: LibraryBook) => void;
+  onClearScanData?: () => void | Promise<void>;
 };
 
-export default function Library({ books, onOpenBook, onSelectBook, onDeleteBook, openingBookId, onScanBook }: Props) {
+export default function Library({ books, onOpenBook, onSelectBook, onDeleteBook, openingBookId, onScanBook, onClearScanData }: Props) {
   const [hoveredBookId, setHoveredBookId] = useState<string | null>(null);
 
   const handleContextMenu = async (e: React.MouseEvent, book: LibraryBook) => {
@@ -51,9 +52,21 @@ export default function Library({ books, onOpenBook, onSelectBook, onDeleteBook,
     <div style={{ minHeight: "100vh", padding: 18 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
         <h1 style={{ margin: 0, fontSize: 22 }}>Library</h1>
-        <button type="button" onClick={onOpenBook} style={{ padding: "8px 12px", cursor: "pointer" }}>
-          Import EPUB...
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {onClearScanData && (
+            <button
+              type="button"
+              onClick={() => void onClearScanData()}
+              style={{ padding: "6px 10px", cursor: "pointer", fontSize: 12, color: "#666" }}
+              title="Delete all Smart Scan data and reset scan status for every book"
+            >
+              Clear Smart Scan data
+            </button>
+          )}
+          <button type="button" onClick={onOpenBook} style={{ padding: "8px 12px", cursor: "pointer" }}>
+            Import EPUB...
+          </button>
+        </div>
       </div>
       <div
         style={{
