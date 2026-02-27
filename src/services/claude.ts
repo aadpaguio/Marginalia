@@ -59,6 +59,7 @@ const DEFAULT_PROMPT = "Explain this passage in context.";
 /** Stable rules (behavior, style) — cached by the API. Rarely changes. */
 const STABLE_SYSTEM_RULES = [
   "Answer questions about the text concisely and accurately. Ground your answers in the book's content.",
+  "Never assume the gender of the author, use they/them.",
   "Do not summarize the entire book unless asked. Be conversational, not academic.",
   "You need not ask questions all the time to the user, use questions sparingly.",
 ].join("\n");
@@ -156,21 +157,34 @@ export async function generateThreadTitle(topicOrQuestion: string, apiKey: strin
   return (data.answer ?? "").trim();
 }
 
-/** Returns the spine index for the reader's current position by matching tocHref/cfi against section summaries. */
+/** Normalize href for comparison: strip fragment, leading ./, lowercase. */
+function normalizeHrefForMatch(href: string): string {
+  const withoutFragment = href.split("#")[0].trim();
+  const withoutLeadingDot = withoutFragment.replace(/^\.\//, "").trim();
+  return withoutLeadingDot.toLowerCase();
+}
+
+/** Returns the spine index for the reader's current position by matching tocHref (or cfi) against section summaries. */
 function currentSpineIndexForCfi(
   cfi: string | null | undefined,
   summaries: Array<{ spineHref: string; spineIndex: number }>
 ): number {
   if (!cfi || summaries.length === 0) return 0;
-  // Exact match (when currentTocHref is passed)
-  let idx = summaries.findIndex((s) => s.spineHref === cfi);
+  // EPUB CFI (epubcfi(...)) cannot be matched to spine href; only tocHref can
+  const isEpubCfi = typeof cfi === "string" && cfi.trim().toLowerCase().startsWith("epubcfi(");
+  if (isEpubCfi) return 0;
+  const normalized = normalizeHrefForMatch(cfi);
+  if (!normalized) return 0;
+  // Exact match after normalization
+  let idx = summaries.findIndex((s) => normalizeHrefForMatch(s.spineHref) === normalized);
   if (idx >= 0) return summaries[idx].spineIndex;
-  // Strip fragment and try basename suffix match
-  const base = cfi.split("/").pop()?.split("#")[0] ?? "";
+  // Basename match (e.g. "chapter05.xhtml" vs "OEBPS/chapter05.xhtml")
+  const base = normalized.split("/").pop() ?? "";
   if (base) {
-    idx = summaries.findIndex(
-      (s) => s.spineHref.endsWith("/" + base) || s.spineHref === base
-    );
+    idx = summaries.findIndex((s) => {
+      const sNorm = normalizeHrefForMatch(s.spineHref);
+      return sNorm === base || sNorm.endsWith("/" + base);
+    });
     if (idx >= 0) return summaries[idx].spineIndex;
   }
   return 0;
@@ -188,33 +202,37 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     userMessage,
   } = params;
 
-  const systemParts: string[] = [
-    `You are Marginalia, a reading companion for "${bookTitle}" by ${author}.`,
-  ];
+  const systemParts: string[] = [];
+  // --- IDENTITY ---
+  systemParts.push(
+    `--- IDENTITY ---\nYou are Marginalia, a reading companion for "${bookTitle}" by ${author}.`
+  );
+  // --- READER PROFILE ---
   if (readerProfile?.trim()) {
-    systemParts.push(`About this reader: ${readerProfile.trim()}`);
+    systemParts.push(`--- READER PROFILE ---\n${readerProfile.trim()}`);
   }
+  // --- READING HISTORY (this book) ---
   if (bookMemory?.trim()) {
     const trimmed = bookMemory.trim();
     const wordCount = trimmed.split(/\s+/).length;
     if (wordCount <= 500) {
-      systemParts.push(`Reading history for this book:\n${trimmed}`);
+      systemParts.push(`--- READING HISTORY (this book) ---\n${trimmed}`);
     } else {
       const entries = trimmed.split("\n## ");
       const recent = entries.slice(-3);
       systemParts.push(
-        `Reading history for this book (recent entries):\n## ${recent.join("\n## ")}`
+        `--- READING HISTORY (this book) ---\n## ${recent.join("\n## ")}`
       );
       systemParts.push(
         `You have ${Math.max(0, entries.length - 3)} prior journal entries for this book.`
       );
     }
   }
-  // Book summary — injected unconditionally when available
+  // --- BOOK OVERVIEW ---
   if (params.bookSummary?.trim()) {
-    systemParts.push(`About this book:\n${params.bookSummary.trim()}`);
+    systemParts.push(`--- BOOK OVERVIEW ---\n${params.bookSummary.trim()}`);
   }
-  // Navigation manifest — only when scan is done
+  // --- SECTION INDEX --- (single collapsed list: spine_href | section name | spine N | type | tokens | radii | [ahead])
   if (
     params.scanStatus === "done" &&
     params.sectionSummaries &&
@@ -224,76 +242,45 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
       params.currentCfi,
       params.sectionSummaries
     );
-    // Compact structural map: href first (or spine-N when EPUB had no href) so the model passes spine_href to get_section_summary / get_section_text
     const hrefCol = (s: { spineHref: string; spineIndex: number }) =>
       (s.spineHref ?? "").trim() || `spine-${s.spineIndex}`;
-    const structureMapLines = params.sectionSummaries.map((s) => {
-      const col = hrefCol(s);
-      const label = s.tocLabel ?? (s.spineHref || col);
+    const sectionIndexLines = params.sectionSummaries.map((s) => {
+      const isAhead = s.spineIndex > currentSpineIndex;
       const typeTag =
         s.structureType === "prefatory" || s.structureType === "reference"
-          ? `[${s.structureType}]`
+          ? s.structureType
           : s.structureType === "journal_entries" && s.entryCount != null
             ? `${s.structureType} · ${s.entryCount} entries`
             : `${s.structureType} · ~${s.estimatedTokens.toLocaleString()} tokens`;
-      const ahead = s.spineIndex > currentSpineIndex ? " [ahead]" : "";
-      return `  ${col} | ${label} · spine ${s.spineIndex} [${typeTag}]${ahead}`;
-    });
-    const isLinearBook =
-      (params.bookStructureType ?? "").toLowerCase() === "narrative" ||
-      (params.bookStructureType ?? "").toLowerCase() === "other";
-    const structureMap =
-      structureMapLines.length > 0
-        ? isLinearBook
-          ? params.sectionSummaries
-              .map(
-                (s) =>
-                  `  ${hrefCol(s)} | ${s.tocLabel ?? (s.spineHref || hrefCol(s))} · spine ${s.spineIndex}${s.spineIndex > currentSpineIndex ? " [ahead]" : ""}`
-              )
-              .join("\n")
-          : structureMapLines.join("\n")
-        : "";
-    if (structureMap) {
-      systemParts.push(
-        `Book structure (${params.sectionSummaries.length} spine items):\n${structureMap}`
-      );
-    }
-    const entries = params.sectionSummaries.map((s) => {
-      const isAhead = s.spineIndex > currentSpineIndex;
-      const typeTag =
-        s.structureType === "journal_entries" && s.entryCount != null
-          ? `${s.structureType} · ${s.entryCount} entries`
-          : s.structureType;
-      const sectionId = hrefCol(s);
-      const label = s.tocLabel ? `${sectionId} (${s.tocLabel})` : sectionId;
-      const spoiler = isAhead ? " [ahead of reader]" : "";
-      const radii = `snippet=${s.radiusGuide.snippet} · section=${s.radiusGuide.section} · full=${s.radiusGuide.full}`;
-      return (
-        `- ${label}${spoiler}\n` +
-        `  Type: ${typeTag} · ~${s.estimatedTokens.toLocaleString()} tokens\n` +
-        `  Radii: ${radii}\n` +
-        `  ${s.summary}`
-      );
+      const sectionName = s.tocLabel ?? hrefCol(s);
+      const radii = `snippet=${s.radiusGuide.snippet} section=${s.radiusGuide.section} full=${s.radiusGuide.full}`;
+      const ahead = isAhead ? " [ahead]" : "";
+      return `  ${hrefCol(s)} | "${sectionName}" · spine ${s.spineIndex} · ${typeTag} · ${radii}${ahead}`;
     });
     systemParts.push(
-      `Available sections (call get_section_summary with the spine_href to retrieve):\n\n${entries.join("\n\n")}\n\n` +
-        "For get_context calls, use the Radii values above as char_radius guidance: " +
-        "snippet for a single passage, section for meaningful surrounding context, full for the whole spine item. " +
-        "Sections marked [ahead of reader] contain content the reader has not yet reached — " +
-        "only use them if the reader explicitly asks about something ahead, and flag the spoiler."
+      `--- SECTION INDEX ---\n` +
+        `Use spine_href (first column) with get_section_summary or get_section_text. Summaries are not inlined; call the tool when needed.\n` +
+        `Reader's current position maps to spine index ${currentSpineIndex}; sections with [ahead] are past the reader.\n\n` +
+        sectionIndexLines.join("\n") +
+        `\n\nFor get_context: use radii above as char_radius (snippet / section / full). Only use [ahead] sections if the reader asks about content ahead; flag spoilers.`
     );
   }
+  // --- TOOLS & CONTEXT ---
   systemParts.push(
+    "--- TOOLS & CONTEXT ---\n" +
+    "The reader never sees tool results. When you call get_context, get_section_summary, or get_section_text, the returned content is for you only. " +
+    "You must quote or paraphrase whatever is relevant in your reply so the reader gets the answer; do not refer to 'what I pulled', 'as the section shows', or assume they can see the fetched text.\n" +
     "Your default state is the selected passage and the reader's question. " +
-      "Do not assume knowledge of the broader book beyond what you are given. " +
-      "You have a tool — get_context — to fetch surrounding text if the question genuinely needs it. " +
+    "Do not assume knowledge of the broader book beyond what you are given. " +
+    "You have a tool — get_context — to fetch surrounding text if the question genuinely needs it. " +
       "Use it when the reader asks about 'the previous section', 'earlier in the chapter', 'what came before', or how the passage relates to nearby text: call get_context (with a larger char_radius to include prior content) rather than asking the user to supply or paste text. " +
       "When you need more context, call get_context in this turn — do not only say you will fetch text or that you need to see more; actually invoke the tool so the next response can use the result. " +
       "Use the tool sparingly for other questions; most can be answered from the passage alone." +
       "And even if you have more context, don't assume the reader has read past the excerpt passed by the user. You don't want spoiling the book unless explicit in the question. Perhaps hint at the possible explanation like 'this will be clearer as you read further' especially if the passed passage is at the start of the section being read."
-  )
-  
+  );
+  // --- RESPONSE RULES ---
   systemParts.push(
+    "--- RESPONSE RULES ---\n" +
     "Respond as a thoughtful reading companion, not an assistant. " +
     "Never narrate your own actions or observations about the interface: do not say 'I can see you've highlighted', 'I notice the passage', 'you've selected', or any variant. " +
     "Do not narrate using the book structure or tools: do not say 'Looking at the book structure', 'Based on the section summary', 'I checked the contents', 'spine 6', 'spine 7', or expose token counts or spine indices. Use that information to answer; do not describe that you used it. " +
@@ -301,7 +288,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     "Begin directly with the substance of your response. " +
     "Be concise. Favour depth over comprehensiveness — one sharp observation beats five adequate ones. " +
     "Do not use bullet points unless the content is genuinely list-like. Prefer prose."
-  )
+  );
   systemParts.push(
     "Do not treat follow-up questions as corrections or pushback. " +
     "If the reader asks why, or questions something you said, engage with the question directly — " +
@@ -312,8 +299,18 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
 "Uncertainty should come from the text being genuinely ambiguous, not from the reader asking questions."
   );
 
+  // --- CLOSURE SIGNALS ---
   systemParts.push(
-    "CITATIONS (required when you quote the book): When your answer includes a specific quoted passage from the book " +
+    "--- CLOSURE SIGNALS ---\n" +
+    "When the reader says \"its fine,\" \"no worries,\" \"never mind,\" \"skip it,\" or similar closure signals — stop. " +
+    "Do not acknowledge the signal, do not summarize what you learned, do not express gratitude or wrap up the topic. " +
+    "Just stop and wait for the next thing. Treat closure as a full stop, not permission to land the plane."
+  );
+
+  // --- CITATIONS ---
+  systemParts.push(
+    "--- CITATIONS ---\n" +
+    "When your answer includes a specific quoted passage from the book " +
     "(a verbatim phrase or sentence you copy from the text), place an HTML comment IMMEDIATELY after the closing quotation mark of that quote — " +
     "on the same line, no space before it. Do not add a citation block at the end of the message. " +
     "One comment per quote. The comment must never appear in visible text.\n" +
@@ -433,6 +430,39 @@ export type AskClaudeThreadParams = ThreadContextParams & {
 
 const MAX_TOOL_ROUNDS = 3;
 
+/** Format system blocks + messages as a single string for debugging (full prompt sent to Claude). */
+function formatThreadPromptForLog(
+  systemBlocks: Array<{ text: string; cacheControl?: string }>,
+  messages: Array<{ role: string; content: ThreadMessageContent }>
+): string {
+  const parts: string[] = [];
+  parts.push("=== SYSTEM ===");
+  for (let i = 0; i < systemBlocks.length; i++) {
+    parts.push(`--- system block ${i + 1} ---`);
+    parts.push(systemBlocks[i].text);
+  }
+  parts.push("=== MESSAGES ===");
+  for (let j = 0; j < messages.length; j++) {
+    const m = messages[j];
+    parts.push(`--- message ${j + 1} [${m.role}] ---`);
+    if (typeof m.content === "string") {
+      parts.push(m.content);
+    } else if (Array.isArray(m.content)) {
+      for (const block of m.content) {
+        const b = block as { type?: string; text?: string; [k: string]: unknown };
+        if (b.type === "text" && typeof b.text === "string") {
+          parts.push(b.text);
+        } else {
+          parts.push(JSON.stringify(block));
+        }
+      }
+    } else {
+      parts.push(String(m.content));
+    }
+  }
+  return parts.join("\n");
+}
+
 /** Returns true when the user's question likely requires broader book context. */
 function isContextSeekingQuery(msg: string): boolean {
   const q = msg.toLowerCase();
@@ -491,6 +521,20 @@ export async function askClaudeThread(
       tools.push(SUGGEST_SMART_SCAN_TOOL);
     }
 
+    const roundRequest = {
+      apiKey,
+      model,
+      systemBlocks: assembled.systemBlocks.map((b) => ({
+        text: b.text,
+        cacheControl: b.cacheControl ?? undefined,
+      })),
+      messages,
+      tools,
+      toolChoice: forceToolChoice && round === 0 ? "any" : "auto",
+    };
+    const fullPromptRound = formatThreadPromptForLog(roundRequest.systemBlocks, messages);
+    console.log("[Claude thread] full prompt (round %d):\n%s", round, fullPromptRound);
+
     const data = await invoke<{
       answer: string;
       toolCalls?: Array<{ name: string; id: string; input: Record<string, unknown> }>;
@@ -498,17 +542,7 @@ export async function askClaudeThread(
       model: string;
       usage?: ClaudeResponse["usage"];
     }>("ask_claude_thread_proxy", {
-      request: {
-        apiKey,
-        model,
-        systemBlocks: assembled.systemBlocks.map((b) => ({
-          text: b.text,
-          cacheControl: b.cacheControl ?? undefined,
-        })),
-        messages,
-        tools,
-        toolChoice: forceToolChoice && round === 0 ? "any" : "auto",
-      },
+      request: roundRequest,
     });
 
     const hasToolCalls = (data.toolCalls?.length ?? 0) > 0;
@@ -606,20 +640,24 @@ export async function askClaudeThread(
     ];
   }
 
+  const finalRequest = {
+    apiKey,
+    model,
+    systemBlocks: assembled.systemBlocks.map((b) => ({
+      text: b.text,
+      cacheControl: b.cacheControl ?? undefined,
+    })),
+    messages,
+  };
+  const fullPromptFinal = formatThreadPromptForLog(finalRequest.systemBlocks, messages);
+  console.log("[Claude thread] full prompt (final, after tool rounds):\n%s", fullPromptFinal);
+
   const finalData = await invoke<{
     answer: string;
     model: string;
     usage?: ClaudeResponse["usage"];
   }>("ask_claude_thread_proxy", {
-    request: {
-      apiKey,
-      model,
-      systemBlocks: assembled.systemBlocks.map((b) => ({
-        text: b.text,
-        cacheControl: b.cacheControl ?? undefined,
-      })),
-      messages,
-    },
+    request: finalRequest,
   });
   return {
     answer: finalData.answer ?? "",

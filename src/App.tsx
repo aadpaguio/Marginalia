@@ -269,7 +269,14 @@ function App() {
   const [threadChatInput, setThreadChatInput] = useState("");
   const [threadChatAsking, setThreadChatAsking] = useState(false);
   const [threadChatError, setThreadChatError] = useState<string | null>(null);
-  const [pendingContextFetch, setPendingContextFetch] = useState(false);
+  /** When the model is running a tool, show this message in chat; null when thinking or done. */
+  const [pendingToolMessage, setPendingToolMessage] = useState<string | null>(null);
+  const TOOL_CHAT_LABELS: Record<string, string> = {
+    get_context: "Reading nearby text…",
+    get_section_summary: "Fetching section summary…",
+    get_section_text: "Loading section text…",
+    suggest_smart_scan: "Suggesting Smart Scan…",
+  };
   const threadChatInputRef = useRef<HTMLInputElement | null>(null);
   const threadChatMessagesScrollRef = useRef<HTMLDivElement | null>(null);
   /** User message shown immediately on send; cleared when reply is persisted. */
@@ -277,7 +284,6 @@ function App() {
   /** Assistant reply text revealed sequentially; cleared when done. */
   const [pendingAssistantContent, setPendingAssistantContent] = useState("");
   const revealIntervalRef = useRef<number | null>(null);
-  const [savingSession, setSavingSession] = useState(false);
   const [archivingThreadId, setArchivingThreadId] = useState<string | null>(null);
   const [archiveToast, setArchiveToast] = useState<string | null>(null);
   const archiveToastTimeoutRef = useRef<number | null>(null);
@@ -717,39 +723,13 @@ function App() {
 
   useEffect(() => {
     const unlistenPromise = listen("marginalia-prepare-close", async () => {
-      if (
-        activeThreadId &&
-        currentBookId &&
-        bookDoc &&
-        activeThreadMessages.length >= 3
-      ) {
-        setSavingSession(true);
-        const thread = threads.find((t) => t.id === activeThreadId);
-        try {
-          await runCompactionForThread({
-            threadId: activeThreadId,
-            threadTitle: thread?.title ?? "Discussion",
-            threadMessages: activeThreadMessages,
-            bookId: currentBookId,
-            bookTitle: bookDoc.metadata?.title ?? "Book",
-            author: bookDoc.metadata?.author ?? "",
-          });
-        } finally {
-          setSavingSession(false);
-        }
-      }
+      // Compaction only runs when archiving a thread; no auto-compaction on close
       await invoke("allow_window_close");
     });
     return () => {
       void unlistenPromise.then((u) => u());
     };
-  }, [
-    activeThreadId,
-    activeThreadMessages,
-    bookDoc,
-    currentBookId,
-    threads,
-  ]);
+  }, []);
 
   useEffect(() => {
     if (!scrollToNoteCfi || !isNotesOpen) return;
@@ -948,17 +928,7 @@ function App() {
             });
           }
         }
-        if (currentBookId && bookDoc && newMessages.length >= 15) {
-          const thread = threads.find((t) => t.id === threadId);
-          await runCompactionForThread({
-            threadId,
-            threadTitle: thread?.title ?? "Discussion",
-            threadMessages: newMessages,
-            bookId: currentBookId,
-            bookTitle: bookDoc.metadata?.title ?? "Book",
-            author: bookDoc.metadata?.author ?? "",
-          });
-        }
+        // Compaction only runs when archiving; no auto-compaction on message save
       })
     );
   };
@@ -1030,8 +1000,8 @@ function App() {
           threadTitle: thread.title ?? "Discussion",
           threadMessages: msgs,
           bookId: currentBookId,
-          bookTitle: bookDoc.metadata?.title ?? "Book",
-          author: bookDoc.metadata?.author ?? "",
+          bookTitle: toDisplayString(bookDoc.metadata?.title, "Book"),
+          author: toDisplayString(bookDoc.metadata?.author, "Unknown"),
         });
       }
       await dbArchiveThread(threadId);
@@ -1085,7 +1055,7 @@ function App() {
     setThreadChatInput("");
     setPendingUserMessage(userMessage);
     setPendingAssistantContent("");
-    setPendingContextFetch(false);
+    setPendingToolMessage(null);
     if (revealIntervalRef.current != null) {
       window.clearInterval(revealIntervalRef.current);
       revealIntervalRef.current = null;
@@ -1101,8 +1071,8 @@ function App() {
           messages: activeThreadMessages,
           attachedHighlights: activeThreadHighlights.filter((h) => h.bookId === currentBookId),
           userMessage,
-          bookTitle: bookDoc.metadata?.title ?? "Book",
-          author: bookDoc.metadata?.author ?? "",
+          bookTitle: toDisplayString(bookDoc.metadata?.title, "Book"),
+          author: toDisplayString(bookDoc.metadata?.author, "Unknown"),
           bookId: currentBookId,
           bookMemory: bookMemory ?? undefined,
           readerProfile: readerProfile ?? undefined,
@@ -1115,7 +1085,8 @@ function App() {
           onSuggestSmartScan: () => setShowSmartScanBanner(true),
           getContextAroundCfi: getContextAroundCfiRef.current ?? (() => ""),
           getSectionTextByHref,
-          onToolCall: () => setPendingContextFetch(true),
+          onToolCall: (toolName) =>
+            setPendingToolMessage(TOOL_CHAT_LABELS[toolName] ?? "Working…"),
           onContextFetched: (text: string) => {
             const arr = workingContextRef.current;
             arr.push(text);
@@ -1152,7 +1123,7 @@ function App() {
           handleMessagePair(userMessage, fullAnswer, excerpt);
           setPendingUserMessage(null);
           setPendingAssistantContent("");
-          setPendingContextFetch(false);
+          setPendingToolMessage(null);
           setThreadChatAsking(false);
           threadChatInputRef.current?.focus();
         }
@@ -1161,7 +1132,7 @@ function App() {
       setThreadChatError(e instanceof Error ? e.message : String(e));
       setPendingUserMessage(null);
       setPendingAssistantContent("");
-      setPendingContextFetch(false);
+      setPendingToolMessage(null);
       setThreadChatAsking(false);
       threadChatInputRef.current?.focus();
     }
@@ -1257,16 +1228,6 @@ function App() {
           color: chrome.appFg,
         }}
       >
-        {savingSession && (
-          <div className={appStyles.savingBar}>
-            <div className={appStyles.savingDots} aria-hidden>
-              <span />
-              <span />
-              <span />
-            </div>
-            <span>Saving your reading session…</span>
-          </div>
-        )}
         <FoliateViewer
           bookKey={epubPath ?? "current"}
           bookDoc={bookDoc}
@@ -1951,7 +1912,7 @@ function App() {
                                   <div className="thread-context-fetch">
                                     <span className="thread-context-fetch__dot" /><span className="thread-context-fetch__dot" /><span className="thread-context-fetch__dot" />
                                     <span className="thread-context-fetch__label">
-                                      {pendingContextFetch ? "Reading nearby text" : "Thinking…"}
+                                      {pendingToolMessage ?? "Thinking…"}
                                     </span>
                                   </div>
                                 ) : (

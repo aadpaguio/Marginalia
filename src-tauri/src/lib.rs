@@ -1447,6 +1447,10 @@ async fn ask_claude_thread_proxy(
         .as_deref()
         .unwrap_or("thread_proxy");
     eprintln!("[{}] outgoing body tool_choice={:?} tools_len={}", log_prefix, body.get("tool_choice"), body.get("tools").and_then(|t| t.as_array()).map(|a| a.len()).unwrap_or(0));
+    // Full prompt (system + messages) sent to Claude — entire request body for debugging
+    if let Ok(pretty) = serde_json::to_string_pretty(&body) {
+        eprintln!("[{}] full request body (entire prompt):\n{}", log_prefix, pretty);
+    }
 
     let client = reqwest::Client::new();
     let response = client
