@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
@@ -31,6 +31,8 @@ import {
   dbUpsertBookmark,
   dbUpsertBook,
   dbUpsertHighlight,
+  dbGetSectionSummaries,
+  dbSetBookScanStatus,
   memoryEnsureDirs,
   memoryListBooks,
   memoryReadBook,
@@ -39,7 +41,9 @@ import {
   memoryWriteReader,
   type StoredBookmark,
   type StoredBook,
+  type SectionSummary,
 } from "@/services/db";
+import { runSmartScan } from "@/services/smartScan";
 import {
   compactThreadToJournal,
   extractReaderProfile,
@@ -47,7 +51,7 @@ import {
   parseReaderMd,
 } from "@/services/compaction";
 import { askClaudeThread, generateThreadTitle } from "@/services/claude";
-import { ArrowLeft, ArrowRight, ArrowUp, BookOpenText, MoreVertical, NotepadText, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUp, BookOpenText, MoreVertical, NotepadText, Sparkles, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "@/components/ThreadsPanel/ThreadsPanel.css";
@@ -168,6 +172,7 @@ function App() {
   const [threadChatInput, setThreadChatInput] = useState("");
   const [threadChatAsking, setThreadChatAsking] = useState(false);
   const [threadChatError, setThreadChatError] = useState<string | null>(null);
+  const [pendingContextFetch, setPendingContextFetch] = useState(false);
   const threadChatInputRef = useRef<HTMLInputElement | null>(null);
   const threadChatMessagesScrollRef = useRef<HTMLDivElement | null>(null);
   /** User message shown immediately on send; cleared when reply is persisted. */
@@ -191,7 +196,47 @@ function App() {
   } | null>(null);
   /** Message IDs whose excerpt card is expanded (click toggles). */
   const [excerptExpandedIds, setExcerptExpandedIds] = useState<Set<string>>(new Set());
+  const [scanStatus, setScanStatus] = useState<"none" | "in_progress" | "done">("none");
+  const [sectionSummaries, setSectionSummaries] = useState<SectionSummary[]>([]);
+  const [bookSummary, setBookSummary] = useState<string | null>(null);
+  const [bookStructureType, setBookStructureType] = useState<string | null>(null);
+  const [scanProgress, setScanProgress] = useState<{ done: number; total: number } | null>(null);
+  const [showSmartScanBanner, setShowSmartScanBanner] = useState(false);
+  /** When true, open the next book and immediately trigger a Smart Scan. */
+  const pendingScanAfterOpenRef = useRef(false);
   const getSectionTextRef = useRef<((tocHref?: string) => string) | null>(null);
+  const getContextAroundCfiRef = useRef<
+    ((cfi: string, charRadius: number) => string) | null
+  >(null);
+  /** Session-only working context: last 1–2 get_context results for follow-up continuity. Evicted on new fetch; not persisted. */
+  const workingContextRef = useRef<string[]>([]);
+  /** Fetches full text of a section by spine_href for get_section_text tool (e.g. to quote from "On origins"). Resolves "spine-N" by index when EPUB has no href. */
+  const getSectionTextByHref = useCallback(
+    async (spineHref: string): Promise<string> => {
+      if (!bookDoc?.sections) return "";
+      const hrefNorm = spineHref.split("#")[0].trim();
+      const spineItems = bookDoc.sections.filter((s) => s.linear !== "no");
+      let section: (typeof spineItems)[0] | undefined;
+      const spineIndexMatch = hrefNorm.match(/^spine-(\d+)$/);
+      if (spineIndexMatch) {
+        const index = parseInt(spineIndexMatch[1], 10);
+        section = spineItems[index];
+      } else {
+        section = bookDoc.sections.find((s) => {
+          const sBase = (s.href ?? "").split("#")[0].trim();
+          return sBase === hrefNorm || sBase.endsWith(hrefNorm) || hrefNorm.endsWith(sBase);
+        });
+      }
+      if (!section) return "";
+      try {
+        const doc = await section.createDocument();
+        return doc.body?.innerText?.trim() ?? "";
+      } catch {
+        return "";
+      }
+    },
+    [bookDoc]
+  );
   const highlightRefs = useRef<Record<string, HTMLDetailsElement | null>>({});
   const progressLastWriteAtRef = useRef(0);
   const progressTimeoutRef = useRef<number | null>(null);
@@ -306,6 +351,12 @@ function App() {
     setCurrentPageCurrent(null);
     setCurrentPageTotal(null);
     setCurrentCfi(null);
+    setScanStatus("none");
+    setSectionSummaries([]);
+    setBookSummary(null);
+    setBookStructureType(null);
+    setScanProgress(null);
+    setShowSmartScanBanner(false);
 
     const bookId = preferredBookId ?? (await hashString(path));
     setOpeningBookId(bookId);
@@ -369,9 +420,56 @@ function App() {
       setStandaloneHighlights(loadedStandalone);
       setActiveThreadId(loadedThreads[0]?.id ?? null);
       setBookmarks(await dbGetBookmarks(bookId));
+
+      // Load Smart Scan data
+      const bookData = await dbGetBook(bookId);
+      let storedScanStatus = (bookData?.smartScanStatus ?? "none") as "none" | "in_progress" | "done";
+      // Stale "in_progress" (e.g. app crashed or was closed during scan) — reset so the button is clickable again
+      if (storedScanStatus === "in_progress") {
+        await dbSetBookScanStatus(bookId, "none");
+        storedScanStatus = "none";
+      }
+      const storedBookSummary = bookData?.bookSummary ?? null;
+      const storedBookStructureType = bookData?.bookStructureType ?? null;
+      setScanStatus(storedScanStatus);
+      setBookSummary(storedBookSummary);
+      setBookStructureType(storedBookStructureType);
+      const storedSummaries = await dbGetSectionSummaries(bookId);
+      setSectionSummaries(storedSummaries);
+
       setBookDoc(book);
       console.log("[OpenBook] Done");
       await refreshLibrary();
+
+      // Auto-trigger scan if requested from library card
+      if (pendingScanAfterOpenRef.current) {
+        pendingScanAfterOpenRef.current = false;
+        const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+        if (apiKey) {
+          void runSmartScan({
+            bookId,
+            bookDoc: book,
+            apiKey,
+            onProgress: (done, total) => setScanProgress({ done, total }),
+            onScanStatusChange: (status) => {
+              setScanStatus(status);
+              void refreshLibrary();
+            },
+            onSectionSummaryAdded: (summary) =>
+              setSectionSummaries((prev) => {
+                const idx = prev.findIndex((s) => s.id === summary.id);
+                if (idx >= 0) {
+                  const next = [...prev];
+                  next[idx] = summary;
+                  return next;
+                }
+                return [...prev, summary];
+              }),
+            onBookSummarySet: setBookSummary,
+            onBookStructureTypeSet: setBookStructureType,
+          });
+        }
+      }
     } catch (e) {
       console.error("[OpenBook] Error", e);
       const msg = e instanceof Error ? e.message : String(e);
@@ -849,6 +947,7 @@ function App() {
     setThreadChatInput("");
     setPendingUserMessage(userMessage);
     setPendingAssistantContent("");
+    setPendingContextFetch(false);
     if (revealIntervalRef.current != null) {
       window.clearInterval(revealIntervalRef.current);
       revealIntervalRef.current = null;
@@ -858,27 +957,32 @@ function App() {
         memoryReadBook(currentBookId),
         memoryReadReader(),
       ]);
-      const chapterText = getSectionTextRef.current?.(currentTocHref ?? undefined)?.trim() ?? "";
-      const currentPassage =
-        chapterText ||
-        (activeThreadHighlights.length > 0
-          ? activeThreadHighlights[activeThreadHighlights.length - 1].selectedText
-          : "");
-      // Always use the chapter text — the excerpt is already in attachedHighlights.
-      // centeredWindow in assembleThreadContext will center it on the highlight.
-      const passageForThisMessage = currentPassage;
       const result = await askClaudeThread(
         {
           threadId: activeThreadId,
           messages: activeThreadMessages,
           attachedHighlights: activeThreadHighlights,
-          currentPassage: passageForThisMessage,
           userMessage,
           bookTitle: bookDoc.metadata?.title ?? "Book",
           author: bookDoc.metadata?.author ?? "",
           bookId: currentBookId,
           bookMemory: bookMemory ?? undefined,
           readerProfile: readerProfile ?? undefined,
+          workingContext: workingContextRef.current.join("\n\n---\n\n"),
+          bookSummary: bookSummary ?? undefined,
+          sectionSummaries: sectionSummaries.length > 0 ? sectionSummaries : undefined,
+          scanStatus,
+          bookStructureType: bookStructureType ?? undefined,
+          currentCfi: currentTocHref ?? currentCfi ?? undefined,
+          onSuggestSmartScan: () => setShowSmartScanBanner(true),
+          getContextAroundCfi: getContextAroundCfiRef.current ?? (() => ""),
+          getSectionTextByHref,
+          onToolCall: () => setPendingContextFetch(true),
+          onContextFetched: (text: string) => {
+            const arr = workingContextRef.current;
+            arr.push(text);
+            if (arr.length > 2) arr.shift();
+          },
         },
         apiKey
       );
@@ -910,6 +1014,7 @@ function App() {
           handleMessagePair(userMessage, fullAnswer, excerpt);
           setPendingUserMessage(null);
           setPendingAssistantContent("");
+          setPendingContextFetch(false);
           setThreadChatAsking(false);
           threadChatInputRef.current?.focus();
         }
@@ -918,6 +1023,7 @@ function App() {
       setThreadChatError(e instanceof Error ? e.message : String(e));
       setPendingUserMessage(null);
       setPendingAssistantContent("");
+      setPendingContextFetch(false);
       setThreadChatAsking(false);
       threadChatInputRef.current?.focus();
     }
@@ -945,6 +1051,49 @@ function App() {
     };
     setBookmarks((prev) => [bookmark, ...prev]);
     void dbUpsertBookmark(bookmark);
+  };
+
+  const handleRunSmartScan = async () => {
+    if (!currentBookId || !bookDoc || scanStatus === "in_progress") return;
+    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      alert("Add VITE_ANTHROPIC_API_KEY to .env and restart.");
+      return;
+    }
+    const isRescan = scanStatus === "done";
+    const confirmed = window.confirm(
+      isRescan
+        ? "Replace existing scan with a fresh one?"
+        : "Smart Scan reads every section of this book and generates summaries (~30 seconds, one-time cost). Run it?"
+    );
+    if (!confirmed) return;
+    if (isRescan) {
+      setSectionSummaries([]);
+      setBookSummary(null);
+    }
+    setScanProgress(null);
+    void runSmartScan({
+      bookId: currentBookId,
+      bookDoc,
+      apiKey,
+      onProgress: (done, total) => setScanProgress({ done, total }),
+      onScanStatusChange: (status) => {
+        setScanStatus(status);
+        void refreshLibrary();
+      },
+      onSectionSummaryAdded: (summary) =>
+        setSectionSummaries((prev) => {
+          const idx = prev.findIndex((s) => s.id === summary.id);
+          if (idx >= 0) {
+            const next = [...prev];
+            next[idx] = summary;
+            return next;
+          }
+          return [...prev, summary];
+        }),
+      onBookSummarySet: setBookSummary,
+      onBookStructureTypeSet: setBookStructureType,
+    });
   };
 
   if (bookDoc) {
@@ -1005,6 +1154,9 @@ function App() {
           threads={threads}
           onRegisterGetSectionText={(fn) => {
             getSectionTextRef.current = fn;
+          }}
+          onRegisterGetContextAroundCfi={(fn) => {
+            getContextAroundCfiRef.current = fn;
           }}
           onTocNavigateComplete={(payload) => {
             if (!currentBookId || !payload) return;
@@ -1104,6 +1256,54 @@ function App() {
             }}
           >
             <BookOpenText size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleRunSmartScan()}
+            disabled={scanStatus === "in_progress"}
+            aria-label={
+              scanStatus === "none"
+                ? "Run Smart Scan"
+                : scanStatus === "in_progress"
+                  ? scanProgress
+                    ? `Scanning… ${scanProgress.done}/${scanProgress.total}`
+                    : "Scanning…"
+                  : "Smart Scan complete · Re-scan"
+            }
+            title={
+              scanStatus === "none"
+                ? "Run Smart Scan"
+                : scanStatus === "in_progress"
+                  ? scanProgress
+                    ? `Scanning… ${scanProgress.done}/${scanProgress.total}`
+                    : "Scanning…"
+                  : "Smart Scan complete · Re-scan"
+            }
+            style={{
+              width: 34,
+              height: 34,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: scanStatus === "in_progress" ? "default" : "pointer",
+              border: `1px solid ${chrome.controlBorder}`,
+              borderRadius: 8,
+              background:
+                scanStatus === "done"
+                  ? theme === "dark"
+                    ? "rgba(31,111,235,0.25)"
+                    : "rgba(31,111,235,0.1)"
+                  : chrome.controlBg,
+              color:
+                scanStatus === "done"
+                  ? "#1f6feb"
+                  : scanStatus === "in_progress"
+                    ? chrome.muted
+                    : chrome.controlFg,
+              opacity: scanStatus === "in_progress" ? 0.7 : 1,
+            }}
+          >
+            <Sparkles size={16} />
           </button>
         </div>
         {backCfi && (
@@ -1580,8 +1780,11 @@ function App() {
                                 {isUser ? (
                                   <div className="thread-msg-text">{m.content}</div>
                                 ) : showTypingDots ? (
-                                  <div className="thread-typing-dots">
-                                    <span /><span /><span />
+                                  <div className="thread-context-fetch">
+                                    <span className="thread-context-fetch__dot" /><span className="thread-context-fetch__dot" /><span className="thread-context-fetch__dot" />
+                                    <span className="thread-context-fetch__label">
+                                      {pendingContextFetch ? "Reading nearby text" : "Thinking…"}
+                                    </span>
                                   </div>
                                 ) : (
                                   <div className="thread-msg-content">
@@ -1868,6 +2071,48 @@ function App() {
             )}
           </aside>
         )}
+        {showSmartScanBanner && (
+          <div
+            aria-live="polite"
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: 50,
+              transform: "translateX(-50%)",
+              zIndex: 135,
+              padding: "10px 14px",
+              borderRadius: 8,
+              border: `1px solid ${chrome.panelBorder}`,
+              background: chrome.panelBg,
+              color: chrome.appFg,
+              fontSize: 13,
+              fontWeight: 500,
+              boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <Sparkles size={14} style={{ flexShrink: 0 }} />
+            <span>Marginalia thinks a Smart Scan would improve answers. Start one from the toolbar above.</span>
+            <button
+              type="button"
+              onClick={() => setShowSmartScanBanner(false)}
+              aria-label="Dismiss"
+              style={{
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
+                color: chrome.muted,
+                padding: "2px 4px",
+                fontSize: 13,
+              }}
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
         {archiveToast && (
           <div
             aria-live="polite"
@@ -1929,6 +2174,18 @@ function App() {
           await refreshLibrary();
         }}
         openingBookId={openingBookId}
+        onScanBook={(book) => {
+          if (book.smartScanStatus === "in_progress") return;
+          const isRescan = book.smartScanStatus === "done";
+          const confirmed = window.confirm(
+            isRescan
+              ? "Replace existing scan with a fresh one?"
+              : "Smart Scan reads every section of this book and generates summaries (~30 seconds, one-time cost). Run it?"
+          );
+          if (!confirmed) return;
+          pendingScanAfterOpenRef.current = true;
+          void openBookFromPath(book.filePath, book.id);
+        }}
       />
       {openingBookId && (
         <div

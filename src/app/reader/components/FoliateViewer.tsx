@@ -70,6 +70,8 @@ type Props = {
   threads?: Array<{ id: string; title?: string }>;
   /** Called when view is ready so parent can get current chapter text (pass tocHref to get that chapter only). */
   onRegisterGetSectionText?: (fn: ((tocHref?: string) => string) | null) => void;
+  /** Called when view is ready so parent can get text around a CFI (for get_context tool). */
+  onRegisterGetContextAroundCfi?: (fn: ((cfi: string, charRadius: number) => string) | null) => void;
   theme?: ReaderTheme;
   onThemeChange?: (theme: ReaderTheme) => void;
   isCurrentBookmarked?: boolean;
@@ -106,6 +108,7 @@ export default function FoliateViewer({
   onOpenAiPanel,
   threads = [],
   onRegisterGetSectionText,
+  onRegisterGetContextAroundCfi,
   theme = "light",
   onThemeChange,
   isCurrentBookmarked = false,
@@ -369,6 +372,34 @@ export default function FoliateViewer({
     return firstDoc?.doc?.body?.innerText?.trim() ?? "";
   }, []);
 
+  /** Get text around a CFI for the get_context tool. Uses highlight's selectedText to find anchor. */
+  const getContextAroundCfi = useCallback((cfi: string, charRadius: number): string => {
+    const v = viewRef.current;
+    const contents = v?.renderer?.getContents?.() ?? [];
+    if (contents.length === 0) return "";
+
+    // CFI format: epubcfi(/6/4[spine-id]!/...) — spine-id bracket is optional
+    const spineId = cfi.match(/\[([^\]]+)\]/)?.[1] ?? "";
+    const doc = spineId
+      ? (contents.find((entry) => {
+          const uri = (entry.doc as Document & { documentURI?: string })?.documentURI ?? "";
+          return uri.includes(spineId);
+        }) ?? contents[0])
+      : contents[0];
+
+    const fullText = doc?.doc?.body?.innerText?.trim() ?? "";
+    if (!fullText) return "";
+
+    const anchorHighlight = (highlightsRef.current ?? []).find((h) => h.cfi === cfi);
+    const anchor = anchorHighlight?.selectedText ?? "";
+    const idx = anchor ? fullText.indexOf(anchor) : -1;
+    const center = idx !== -1 ? idx : Math.floor(fullText.length / 2);
+
+    const start = Math.max(0, center - charRadius);
+    const end = Math.min(fullText.length, center + charRadius);
+    return fullText.slice(start, end);
+  }, []);
+
   useEffect(() => {
     if (view && onRegisterGetSectionText) {
       onRegisterGetSectionText(getCurrentSectionText);
@@ -377,6 +408,15 @@ export default function FoliateViewer({
       onRegisterGetSectionText?.(null);
     };
   }, [view, onRegisterGetSectionText, getCurrentSectionText]);
+
+  useEffect(() => {
+    if (view && onRegisterGetContextAroundCfi) {
+      onRegisterGetContextAroundCfi(getContextAroundCfi);
+    }
+    return () => {
+      onRegisterGetContextAroundCfi?.(null);
+    };
+  }, [view, onRegisterGetContextAroundCfi, getContextAroundCfi]);
 
   const {
     handleInstantAnnotationPointerDown,

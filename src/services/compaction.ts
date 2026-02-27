@@ -55,6 +55,7 @@ ${threadBlock}
 ${existingBlock ? `${existingBlock}\n\nIntegrate this thread's insights into the existing journal. Do not repeat what's already there. Extend it.` : ""}
 
 Write a reading journal entry. Refer to yourself as I and the user as "you". 50-100 words. Include:
+- Specific chapter/section/page number if known (e.g. 'Chapter 3, page 10').
 - The central question or passage that sparked the thread
 - Key insight or connection that emerged
 - Any unresolved question worth returning to

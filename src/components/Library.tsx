@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Menu, MenuItem } from "@tauri-apps/api/menu";
+import { Sparkles } from "lucide-react";
 import type { StoredBook } from "@/services/db";
 
 type LibraryBook = StoredBook & {
@@ -13,9 +14,10 @@ type Props = {
   onSelectBook: (book: LibraryBook) => void;
   onDeleteBook: (book: LibraryBook) => void;
   openingBookId?: string | null;
+  onScanBook?: (book: LibraryBook) => void;
 };
 
-export default function Library({ books, onOpenBook, onSelectBook, onDeleteBook, openingBookId }: Props) {
+export default function Library({ books, onOpenBook, onSelectBook, onDeleteBook, openingBookId, onScanBook }: Props) {
   const [hoveredBookId, setHoveredBookId] = useState<string | null>(null);
 
   const handleContextMenu = async (e: React.MouseEvent, book: LibraryBook) => {
@@ -123,6 +125,49 @@ export default function Library({ books, onOpenBook, onSelectBook, onDeleteBook,
                   <div style={{ width: `${Math.round(progress * 100)}%`, height: "100%", background: "#1f6feb" }} />
                 </div>
               </button>
+              {onScanBook && !book.isMissingFile && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onScanBook(book);
+                  }}
+                  aria-label={
+                    book.smartScanStatus === "done"
+                      ? "Smart Scan complete · Re-scan"
+                      : book.smartScanStatus === "in_progress"
+                        ? "Scanning…"
+                        : "Run Smart Scan"
+                  }
+                  title={
+                    book.smartScanStatus === "done"
+                      ? "Smart Scan complete · Re-scan"
+                      : book.smartScanStatus === "in_progress"
+                        ? "Scanning…"
+                        : "Run Smart Scan"
+                  }
+                  disabled={book.smartScanStatus === "in_progress"}
+                  style={{
+                    position: "absolute",
+                    bottom: 32,
+                    right: 8,
+                    width: 24,
+                    height: 24,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "1px solid rgba(0,0,0,0.12)",
+                    borderRadius: 6,
+                    background: book.smartScanStatus === "done" ? "rgba(31,111,235,0.1)" : "rgba(255,255,255,0.9)",
+                    color: book.smartScanStatus === "done" ? "#1f6feb" : book.smartScanStatus === "in_progress" ? "#999" : "#555",
+                    cursor: book.smartScanStatus === "in_progress" ? "default" : "pointer",
+                    opacity: book.smartScanStatus === "in_progress" ? 0.6 : 1,
+                    padding: 0,
+                  }}
+                >
+                  <Sparkles size={12} />
+                </button>
+              )}
             </div>
           );
         })}

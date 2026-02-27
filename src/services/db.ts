@@ -11,6 +11,55 @@ export interface StoredBook {
   progressFraction: number;
   addedAt: number;
   lastOpenedAt?: number | null;
+  smartScanStatus?: "none" | "in_progress" | "done";
+  bookSummary?: string | null;
+  /** Inferred from scan: "essays" | "narrative" | "journal_entries" | "other" — used to simplify structure map for linear books. */
+  bookStructureType?: string | null;
+}
+
+export type SectionStructureType =
+  | "narrative"
+  | "journal_entries"
+  | "essay"
+  | "reference"
+  | "prefatory"
+  | "other";
+
+export interface SectionSummary {
+  id: string;
+  bookId: string;
+  spineHref: string;
+  spineIndex: number;
+  tocLabel: string | null;
+  charCount: number;
+  estimatedTokens: number;
+  structureType: SectionStructureType;
+  entryCount: number | null;
+  summary: string;
+  radiusGuide: {
+    snippet: number;
+    section: number;
+    full: number;
+  };
+  createdAt: number;
+}
+
+/** Flat row shape returned from Rust (camelCase from snake_case serde rename). */
+interface DbSectionSummaryRow {
+  id: string;
+  bookId: string;
+  spineHref: string;
+  spineIndex: number;
+  tocLabel: string | null;
+  summary: string;
+  charCount: number;
+  estimatedTokens: number;
+  structureType: string;
+  entryCount: number | null;
+  radiusSnippet: number;
+  radiusSection: number;
+  radiusFull: number;
+  createdAt: number;
 }
 
 export async function dbGetAllBooks(): Promise<StoredBook[]> {
@@ -154,6 +203,93 @@ export async function memoryReadReader(): Promise<string | null> {
 
 export async function memoryWriteReader(content: string): Promise<void> {
   await invoke("memory_write_reader", { content });
+}
+
+const VALID_STRUCTURE_TYPES: SectionStructureType[] = [
+  "narrative",
+  "journal_entries",
+  "essay",
+  "reference",
+  "prefatory",
+  "other",
+];
+
+function toSectionSummary(row: DbSectionSummaryRow): SectionSummary {
+  return {
+    id: row.id,
+    bookId: row.bookId,
+    spineHref: row.spineHref,
+    spineIndex: row.spineIndex,
+    tocLabel: row.tocLabel,
+    charCount: row.charCount ?? 0,
+    estimatedTokens: row.estimatedTokens ?? 0,
+    structureType: VALID_STRUCTURE_TYPES.includes(row.structureType as SectionStructureType)
+      ? (row.structureType as SectionStructureType)
+      : "other",
+    entryCount: row.entryCount ?? null,
+    summary: row.summary,
+    radiusGuide: {
+      snippet: row.radiusSnippet ?? 1500,
+      section: row.radiusSection ?? 8000,
+      full: row.radiusFull ?? 0,
+    },
+    createdAt: row.createdAt,
+  };
+}
+
+export async function dbGetSectionSummaries(bookId: string): Promise<SectionSummary[]> {
+  const rows = await invoke<DbSectionSummaryRow[]>("db_get_section_summaries", { bookId });
+  return rows.map(toSectionSummary);
+}
+
+export async function dbUpsertSectionSummary(summary: SectionSummary): Promise<void> {
+  await invoke("db_upsert_section_summary", {
+    summary: {
+      id: summary.id,
+      bookId: summary.bookId,
+      spineHref: summary.spineHref,
+      spineIndex: summary.spineIndex,
+      tocLabel: summary.tocLabel ?? null,
+      summary: summary.summary,
+      charCount: summary.charCount,
+      estimatedTokens: summary.estimatedTokens,
+      structureType: summary.structureType,
+      entryCount: summary.entryCount ?? null,
+      radiusSnippet: summary.radiusGuide.snippet,
+      radiusSection: summary.radiusGuide.section,
+      radiusFull: summary.radiusGuide.full,
+      createdAt: summary.createdAt,
+    },
+  });
+}
+
+export async function dbGetBookScanStatus(bookId: string): Promise<string> {
+  return invoke<string>("db_get_book_scan_status", { bookId });
+}
+
+export async function dbSetBookScanStatus(
+  bookId: string,
+  status: string
+): Promise<void> {
+  await invoke("db_set_book_scan_status", { bookId, status });
+}
+
+export async function dbGetBookSummary(bookId: string): Promise<string | null> {
+  return invoke<string | null>("db_get_book_summary", { bookId });
+}
+
+export async function dbSetBookSummary(bookId: string, summary: string): Promise<void> {
+  await invoke("db_set_book_summary", { bookId, summary });
+}
+
+export async function dbSetBookStructureType(
+  bookId: string,
+  structureType: string | null
+): Promise<void> {
+  await invoke("db_set_book_structure_type", {
+    bookId,
+    structureType: structureType ?? undefined,
+  });
 }
 
 export interface StoredBookmark {

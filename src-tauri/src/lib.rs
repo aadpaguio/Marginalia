@@ -60,6 +60,47 @@ struct DbBook {
     progress_fraction: f64,
     added_at: i64,
     last_opened_at: Option<i64>,
+    smart_scan_status: String,
+    book_summary: Option<String>,
+    book_structure_type: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct DbSectionSummary {
+    id: String,
+    book_id: String,
+    spine_href: String,
+    spine_index: i64,
+    toc_label: Option<String>,
+    summary: String,
+    char_count: i64,
+    estimated_tokens: i64,
+    structure_type: String,
+    entry_count: Option<i64>,
+    radius_snippet: i64,
+    radius_section: i64,
+    radius_full: i64,
+    created_at: i64,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DbSectionSummaryInput {
+    id: String,
+    book_id: String,
+    spine_href: String,
+    spine_index: i64,
+    toc_label: Option<String>,
+    summary: String,
+    char_count: i64,
+    estimated_tokens: i64,
+    structure_type: String,
+    entry_count: Option<i64>,
+    radius_snippet: i64,
+    radius_section: i64,
+    radius_full: i64,
+    created_at: i64,
 }
 
 #[derive(Debug, Deserialize)]
@@ -238,6 +279,27 @@ fn init_db(db_path: &Path) -> Result<(), String> {
           FOREIGN KEY(thread_id) REFERENCES threads(id) ON DELETE CASCADE
         );
         CREATE INDEX IF NOT EXISTS idx_thread_messages_thread_id ON thread_messages(thread_id);
+
+        CREATE TABLE IF NOT EXISTS section_summaries (
+          id TEXT PRIMARY KEY,
+          book_id TEXT NOT NULL,
+          spine_href TEXT NOT NULL,
+          spine_index INTEGER NOT NULL,
+          toc_label TEXT,
+          summary TEXT NOT NULL,
+          char_count INTEGER NOT NULL DEFAULT 0,
+          estimated_tokens INTEGER NOT NULL DEFAULT 0,
+          structure_type TEXT NOT NULL DEFAULT 'other',
+          entry_count INTEGER,
+          radius_snippet INTEGER NOT NULL DEFAULT 1500,
+          radius_section INTEGER NOT NULL DEFAULT 8000,
+          radius_full INTEGER NOT NULL DEFAULT 0,
+          created_at INTEGER NOT NULL,
+          FOREIGN KEY(book_id) REFERENCES books(id) ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_section_summaries_book_id
+          ON section_summaries(book_id);
         "#,
     )
     .map_err(|e| e.to_string())?;
@@ -254,6 +316,20 @@ fn init_db(db_path: &Path) -> Result<(), String> {
     let _ = conn.execute("ALTER TABLE thread_messages ADD COLUMN excerpt_color TEXT", ());
     let _ = conn.execute("ALTER TABLE thread_messages ADD COLUMN excerpt_page TEXT", ());
 
+    // Migration: add Smart Scan columns to books (ignore if already present)
+    let _ = conn.execute("ALTER TABLE books ADD COLUMN smart_scan_status TEXT NOT NULL DEFAULT 'none'", ());
+    let _ = conn.execute("ALTER TABLE books ADD COLUMN book_summary TEXT", ());
+    let _ = conn.execute("ALTER TABLE books ADD COLUMN book_structure_type TEXT", ());
+
+    // Migration: add navigation columns to section_summaries (ignore if already present)
+    let _ = conn.execute("ALTER TABLE section_summaries ADD COLUMN char_count INTEGER NOT NULL DEFAULT 0", ());
+    let _ = conn.execute("ALTER TABLE section_summaries ADD COLUMN estimated_tokens INTEGER NOT NULL DEFAULT 0", ());
+    let _ = conn.execute("ALTER TABLE section_summaries ADD COLUMN structure_type TEXT NOT NULL DEFAULT 'other'", ());
+    let _ = conn.execute("ALTER TABLE section_summaries ADD COLUMN entry_count INTEGER", ());
+    let _ = conn.execute("ALTER TABLE section_summaries ADD COLUMN radius_snippet INTEGER NOT NULL DEFAULT 1500", ());
+    let _ = conn.execute("ALTER TABLE section_summaries ADD COLUMN radius_section INTEGER NOT NULL DEFAULT 8000", ());
+    let _ = conn.execute("ALTER TABLE section_summaries ADD COLUMN radius_full INTEGER NOT NULL DEFAULT 0", ());
+
     Ok(())
 }
 
@@ -262,7 +338,8 @@ fn db_get_all_books(state: State<DbState>) -> Result<Vec<DbBook>, String> {
     let conn = open_db(&state)?;
     let mut stmt = conn
         .prepare(
-            "SELECT id, title, author, file_path, cover_path, last_read_cfi, progress_fraction, added_at, last_opened_at
+            "SELECT id, title, author, file_path, cover_path, last_read_cfi, progress_fraction, added_at, last_opened_at,
+                    COALESCE(smart_scan_status, 'none'), book_summary, book_structure_type
              FROM books
              ORDER BY COALESCE(last_opened_at, added_at) DESC, added_at DESC",
         )
@@ -279,6 +356,9 @@ fn db_get_all_books(state: State<DbState>) -> Result<Vec<DbBook>, String> {
                 progress_fraction: row.get(6)?,
                 added_at: row.get(7)?,
                 last_opened_at: row.get(8)?,
+                smart_scan_status: row.get::<_, Option<String>>(9)?.unwrap_or_else(|| "none".to_string()),
+                book_summary: row.get(10)?,
+                book_structure_type: row.get(11)?,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -291,7 +371,8 @@ fn db_get_all_books(state: State<DbState>) -> Result<Vec<DbBook>, String> {
 fn db_get_book(state: State<DbState>, id: String) -> Result<Option<DbBook>, String> {
     let conn = open_db(&state)?;
     conn.query_row(
-        "SELECT id, title, author, file_path, cover_path, last_read_cfi, progress_fraction, added_at, last_opened_at
+        "SELECT id, title, author, file_path, cover_path, last_read_cfi, progress_fraction, added_at, last_opened_at,
+                COALESCE(smart_scan_status, 'none'), book_summary, book_structure_type
          FROM books WHERE id = ?1",
         params![id],
         |row| {
@@ -305,6 +386,9 @@ fn db_get_book(state: State<DbState>, id: String) -> Result<Option<DbBook>, Stri
                 progress_fraction: row.get(6)?,
                 added_at: row.get(7)?,
                 last_opened_at: row.get(8)?,
+                smart_scan_status: row.get::<_, Option<String>>(9)?.unwrap_or_else(|| "none".to_string()),
+                book_summary: row.get(10)?,
+                book_structure_type: row.get(11)?,
             })
         },
     )
@@ -735,6 +819,164 @@ fn db_update_reading_progress(
     Ok(())
 }
 
+#[tauri::command]
+fn db_get_section_summaries(
+    state: State<DbState>,
+    book_id: String,
+) -> Result<Vec<DbSectionSummary>, String> {
+    let conn = open_db(&state)?;
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, book_id, spine_href, spine_index, toc_label, summary,
+                    COALESCE(char_count, 0), COALESCE(estimated_tokens, 0),
+                    COALESCE(structure_type, 'other'), entry_count,
+                    COALESCE(radius_snippet, 1500), COALESCE(radius_section, 8000), COALESCE(radius_full, 0),
+                    created_at
+             FROM section_summaries WHERE book_id = ?1 ORDER BY spine_index ASC",
+        )
+        .map_err(|e| e.to_string())?;
+    let rows = stmt
+        .query_map(params![book_id], |row| {
+            Ok(DbSectionSummary {
+                id: row.get(0)?,
+                book_id: row.get(1)?,
+                spine_href: row.get(2)?,
+                spine_index: row.get(3)?,
+                toc_label: row.get(4)?,
+                summary: row.get(5)?,
+                char_count: row.get(6)?,
+                estimated_tokens: row.get(7)?,
+                structure_type: row.get::<_, Option<String>>(8)?.unwrap_or_else(|| "other".to_string()),
+                entry_count: row.get(9)?,
+                radius_snippet: row.get(10)?,
+                radius_section: row.get(11)?,
+                radius_full: row.get(12)?,
+                created_at: row.get(13)?,
+            })
+        })
+        .map_err(|e| e.to_string())?;
+    rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn db_upsert_section_summary(
+    state: State<DbState>,
+    summary: DbSectionSummaryInput,
+) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    conn.execute(
+        r#"
+        INSERT INTO section_summaries (
+          id, book_id, spine_href, spine_index, toc_label, summary,
+          char_count, estimated_tokens, structure_type, entry_count,
+          radius_snippet, radius_section, radius_full, created_at
+        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)
+        ON CONFLICT(id) DO UPDATE SET
+          spine_href = excluded.spine_href,
+          spine_index = excluded.spine_index,
+          toc_label = excluded.toc_label,
+          summary = excluded.summary,
+          char_count = excluded.char_count,
+          estimated_tokens = excluded.estimated_tokens,
+          structure_type = excluded.structure_type,
+          entry_count = excluded.entry_count,
+          radius_snippet = excluded.radius_snippet,
+          radius_section = excluded.radius_section,
+          radius_full = excluded.radius_full,
+          created_at = excluded.created_at
+        "#,
+        params![
+            summary.id,
+            summary.book_id,
+            summary.spine_href,
+            summary.spine_index,
+            summary.toc_label,
+            summary.summary,
+            summary.char_count,
+            summary.estimated_tokens,
+            summary.structure_type,
+            summary.entry_count,
+            summary.radius_snippet,
+            summary.radius_section,
+            summary.radius_full,
+            summary.created_at,
+        ],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn db_get_book_scan_status(state: State<DbState>, book_id: String) -> Result<String, String> {
+    let conn = open_db(&state)?;
+    conn.query_row(
+        "SELECT COALESCE(smart_scan_status, 'none') FROM books WHERE id = ?1",
+        params![book_id],
+        |row| row.get::<_, String>(0),
+    )
+    .optional()
+    .map_err(|e| e.to_string())
+    .map(|opt| opt.unwrap_or_else(|| "none".to_string()))
+}
+
+#[tauri::command]
+fn db_set_book_scan_status(
+    state: State<DbState>,
+    book_id: String,
+    status: String,
+) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    conn.execute(
+        "UPDATE books SET smart_scan_status = ?1 WHERE id = ?2",
+        params![status, book_id],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn db_get_book_summary(state: State<DbState>, book_id: String) -> Result<Option<String>, String> {
+    let conn = open_db(&state)?;
+    conn.query_row(
+        "SELECT book_summary FROM books WHERE id = ?1",
+        params![book_id],
+        |row| row.get::<_, Option<String>>(0),
+    )
+    .optional()
+    .map_err(|e| e.to_string())
+    .map(|opt| opt.flatten())
+}
+
+#[tauri::command]
+fn db_set_book_summary(
+    state: State<DbState>,
+    book_id: String,
+    summary: String,
+) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    conn.execute(
+        "UPDATE books SET book_summary = ?1 WHERE id = ?2",
+        params![summary, book_id],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn db_set_book_structure_type(
+    state: State<DbState>,
+    book_id: String,
+    structure_type: Option<String>,
+) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    conn.execute(
+        "UPDATE books SET book_structure_type = ?1 WHERE id = ?2",
+        params![structure_type, book_id],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 fn chrono_like_now() -> i64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -867,7 +1109,8 @@ struct ClaudeThreadSystemBlock {
 #[serde(rename_all = "camelCase")]
 struct ClaudeThreadMessage {
     role: String,
-    content: String,
+    #[serde(default)]
+    content: serde_json::Value,
 }
 
 /// Minimal request for titling etc.: no passage/context blocks, just system + one user message.
@@ -887,6 +1130,14 @@ struct ClaudeThreadProxyRequest {
     model: String,
     system_blocks: Vec<ClaudeThreadSystemBlock>,
     messages: Vec<ClaudeThreadMessage>,
+    #[serde(default)]
+    tools: Option<Vec<serde_json::Value>>,
+    /// "auto" | "any" | "none" — maps to Anthropic's tool_choice.type
+    #[serde(default)]
+    tool_choice: Option<String>,
+    /// Optional log prefix (e.g. "smart_scan") so logs are distinguishable from thread chat.
+    #[serde(default)]
+    log_label: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -902,6 +1153,16 @@ struct ClaudeUsage {
 #[serde(rename_all = "camelCase")]
 struct ClaudeProxyResponse {
     answer: String,
+    model: String,
+    usage: Option<ClaudeUsage>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ClaudeThreadProxyResponse {
+    answer: String,
+    tool_calls: Vec<serde_json::Value>,
+    raw_content: Vec<serde_json::Value>,
     model: String,
     usage: Option<ClaudeUsage>,
 }
@@ -1071,11 +1332,29 @@ async fn ask_claude_simple_proxy(request: ClaudeSimpleProxyRequest) -> Result<Cl
     })
 }
 
+/// Thread-aware proxy: accepts pre-assembled system blocks and messages. Supports tools and
+/// structured message content (tool_use / tool_result). Returns answer, tool_calls, raw_content.
+fn normalize_message_content(content: &serde_json::Value) -> Option<serde_json::Value> {
+    if let Some(s) = content.as_str() {
+        if s.trim().is_empty() {
+            return None;
+        }
+        return Some(serde_json::json!([{ "type": "text", "text": s }]));
+    }
+    if let Some(arr) = content.as_array() {
+        if arr.is_empty() {
+            return None;
+        }
+        return Some(serde_json::Value::Array(arr.clone()));
+    }
+    None
+}
+
 /// Thread-aware proxy: accepts pre-assembled system blocks (with optional cache) and full messages array.
 #[tauri::command]
 async fn ask_claude_thread_proxy(
     request: ClaudeThreadProxyRequest,
-) -> Result<ClaudeProxyResponse, String> {
+) -> Result<ClaudeThreadProxyResponse, String> {
     let model = request.model.clone();
     let system: Vec<serde_json::Value> = request
         .system_blocks
@@ -1093,17 +1372,39 @@ async fn ask_claude_thread_proxy(
             block
         })
         .collect();
+
     let messages: Vec<serde_json::Value> = request
         .messages
         .into_iter()
-        .filter(|m| (m.role == "user" || m.role == "assistant") && !m.content.trim().is_empty())
-        .map(|m| {
-            serde_json::json!({
-                "role": m.role,
-                "content": [{ "type": "text", "text": m.content }]
-            })
+        .filter_map(|m| {
+            if m.role != "user" && m.role != "assistant" {
+                return None;
+            }
+            let content = normalize_message_content(&m.content)?;
+            Some(serde_json::json!({ "role": m.role, "content": content }))
         })
         .collect();
+
+    let mut body = serde_json::json!({
+        "model": model.clone(),
+        "max_tokens": 4096,
+        "system": system,
+        "messages": messages
+    });
+    if let Some(ref tools) = request.tools {
+        if !tools.is_empty() {
+            body["tools"] = serde_json::Value::Array(tools.clone());
+            // Only apply tool_choice when there are tools; default to "auto".
+            let tc = request.tool_choice.as_deref().unwrap_or("auto");
+            body["tool_choice"] = serde_json::json!({ "type": tc });
+        }
+    }
+
+    let log_prefix = request
+        .log_label
+        .as_deref()
+        .unwrap_or("thread_proxy");
+    eprintln!("[{}] outgoing body tool_choice={:?} tools_len={}", log_prefix, body.get("tool_choice"), body.get("tools").and_then(|t| t.as_array()).map(|a| a.len()).unwrap_or(0));
 
     let client = reqwest::Client::new();
     let response = client
@@ -1112,34 +1413,60 @@ async fn ask_claude_thread_proxy(
         .header("x-api-key", request.api_key)
         .header("anthropic-version", "2023-06-01")
         .header("anthropic-beta", "prompt-caching-2024-07-31")
-        .json(&serde_json::json!({
-            "model": model.clone(),
-            "max_tokens": 900,
-            "system": system,
-            "messages": messages
-        }))
+        .json(&body)
         .send()
         .await
         .map_err(|e| e.to_string())?;
 
     let status = response.status();
-    let body = response.text().await.map_err(|e| e.to_string())?;
+    let body_res = response.text().await.map_err(|e| e.to_string())?;
+    // Truncate at 800 bytes on a char boundary to avoid panicking on multi-byte UTF-8 (e.g. '—').
+    let max_byte = body_res.len().min(800);
+    let end = body_res
+        .char_indices()
+        .find(|&(i, _)| i >= max_byte)
+        .map(|(i, _)| i)
+        .unwrap_or(body_res.len());
+    eprintln!("[{}] response status={} body={}", log_prefix, status, &body_res[..end]);
     if !status.is_success() {
-        return Err(format!("Anthropic request failed ({}): {}", status, body));
+        return Err(format!(
+            "Anthropic request failed ({}): {}",
+            status, body_res
+        ));
     }
 
-    let parsed: serde_json::Value = serde_json::from_str(&body).map_err(|e| e.to_string())?;
-    let answer = parsed
+    let parsed: serde_json::Value =
+        serde_json::from_str(&body_res).map_err(|e| e.to_string())?;
+    eprintln!("[{}] stop_reason={:?} content_blocks={}", log_prefix, parsed.get("stop_reason"), parsed.get("content").and_then(|c| c.as_array()).map(|a| a.len()).unwrap_or(0));
+    let content_blocks = parsed
         .get("content")
         .and_then(|v| v.as_array())
-        .map(|items| {
-            items
-                .iter()
-                .filter_map(|item| item.get("text").and_then(|t| t.as_str()))
-                .collect::<Vec<&str>>()
-                .join("\n")
-        })
+        .cloned()
         .unwrap_or_default();
+
+    let answer = content_blocks
+        .iter()
+        .filter_map(|b| {
+            if b.get("type").and_then(|t| t.as_str()) == Some("text") {
+                b.get("text").and_then(|t| t.as_str())
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<&str>>()
+        .join("\n");
+
+    let tool_calls: Vec<serde_json::Value> = content_blocks
+        .iter()
+        .filter(|b| b.get("type").and_then(|t| t.as_str()) == Some("tool_use"))
+        .map(|b| {
+            serde_json::json!({
+                "name": b.get("name"),
+                "id": b.get("id"),
+                "input": b.get("input"),
+            })
+        })
+        .collect();
 
     let usage = parsed.get("usage").and_then(|u| u.as_object()).map(|u| ClaudeUsage {
         cache_creation_input_tokens: u
@@ -1150,8 +1477,10 @@ async fn ask_claude_thread_proxy(
         output_tokens: u.get("output_tokens").and_then(|v| v.as_u64()),
     });
 
-    Ok(ClaudeProxyResponse {
+    Ok(ClaudeThreadProxyResponse {
         answer,
+        tool_calls,
+        raw_content: content_blocks,
         model,
         usage,
     })
@@ -1199,6 +1528,13 @@ pub fn run() {
             db_delete_bookmark,
             db_update_reading_progress,
             save_cover_image,
+            db_get_section_summaries,
+            db_upsert_section_summary,
+            db_get_book_scan_status,
+            db_set_book_scan_status,
+            db_get_book_summary,
+            db_set_book_summary,
+            db_set_book_structure_type,
             memory_ensure_dirs,
             memory_list_books,
             memory_read_book,
