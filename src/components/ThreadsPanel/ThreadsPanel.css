@@ -15,9 +15,57 @@
   animation: threadPanelEnter 220ms var(--transition-spring) forwards;
 }
 
+.notes-panel.panelHidden {
+  animation: panelExitRight 180ms var(--transition-fast) forwards;
+}
+
 @keyframes threadPanelEnter {
   from { opacity: 0; transform: translateX(16px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes panelExitRight {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(16px); }
+}
+
+/* Paper tab on right edge when Notes Panel is closed — folder/notebook tab */
+.notesPanelTab {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  width: 28px;
+  height: 52px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-moderate);
+  border-right: none;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  box-shadow:
+    -2px 0 6px rgba(30, 24, 14, 0.08),
+    inset -1px 0 0 rgba(30, 24, 14, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 150;
+  transition: background var(--transition-fast), width var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.notesPanelTab:hover {
+  width: 32px;
+  background: var(--surface-sunken);
+  box-shadow:
+    -3px 0 10px rgba(30, 24, 14, 0.12),
+    inset -1px 0 0 rgba(30, 24, 14, 0.06);
+}
+
+.notesPanelTabIcon {
+  color: var(--ink-tertiary);
+  transition: color var(--transition-fast);
+}
+
+.notesPanelTab:hover .notesPanelTabIcon {
+  color: var(--ink-secondary);
 }
 
 /* Title bar */
@@ -38,29 +86,37 @@
   color: var(--accent);
 }
 
-/* Tab bar */
+/* Tab bar — §6 underline active state */
 .threads-tab-bar {
   border-bottom: 1px solid var(--border-subtle);
+  padding: 0 var(--space-4);
+  gap: var(--space-1);
+  display: flex;
 }
 
-.threads-tab-bar button {
-  background: transparent;
-  border: 1px solid var(--border-moderate);
+.notes-tab {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-tertiary);
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: none;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.notes-tab:hover {
   color: var(--ink-secondary);
-  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
 }
 
-.threads-tab-bar button:hover {
-  border-color: var(--accent-border);
-  color: var(--accent);
-}
-
-.threads-tab-bar button[data-active="true"] {
-  border-color: var(--accent-border);
-  color: var(--accent);
-  background: var(--accent-dim);
+.notes-tab-active {
+  color: var(--ink-primary);
+  border-bottom-color: var(--accent);
   font-weight: 600;
 }
+
 
 /* Thread chat header */
 .thread-chat-header {
@@ -544,6 +600,148 @@
   color: var(--ink-tertiary);
   font-size: 12px;
 }
+
+/* Standalone highlights section (below threads in Threads tab) — §6.1 */
+.notes-highlights-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-tertiary);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.notes-standalone-highlight-row {
+  display: flex;
+  align-items: stretch;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-page);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  margin-bottom: var(--space-2);
+  min-height: 0;
+}
+
+.notes-standalone-highlight-row:hover {
+  background: var(--surface-sunken);
+  border-color: var(--border-moderate);
+}
+
+.notes-standalone-highlight-swatch {
+  width: 3px;
+  flex-shrink: 0;
+  border-radius: 1px;
+  margin-right: var(--space-3);
+}
+
+.notes-standalone-highlight-text {
+  font-size: 12px;
+  color: var(--ink-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+
+.notes-standalone-highlight-chapter {
+  font-size: 11px;
+  color: var(--ink-tertiary);
+  margin-top: var(--space-1);
+}
+
+/* Highlights tab — §6.3 highlight row */
+.notes-highlight-row {
+  display: flex;
+  align-items: stretch;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-page);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  margin-bottom: var(--space-2);
+  min-height: 0;
+}
+
+.notes-highlight-row:hover {
+  background: var(--surface-sunken);
+  border-color: var(--border-moderate);
+}
+
+.notes-highlight-row-swatch {
+  width: 3px;
+  flex-shrink: 0;
+  border-radius: 1px;
+  margin-right: var(--space-3);
+}
+
+.notes-highlight-row-quote {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+
+.notes-highlight-row-meta {
+  font-size: 11px;
+  color: var(--ink-tertiary);
+  margin-top: var(--space-1);
+}
+
+.notes-highlights-tab-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.notes-highlights-tab-count {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  color: var(--ink-tertiary);
+}
+
+.notes-highlights-chapter-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-tertiary);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.notes-highlights-chapter-label:first-child {
+  margin-top: 0;
+}
+
+/* Highlight swatch colors — map to --highlight-* tokens */
+.notes-standalone-highlight-swatch[data-swatch="yellow"],
+.notes-highlight-row-swatch[data-swatch="yellow"] { background: var(--highlight-yellow); }
+.notes-standalone-highlight-swatch[data-swatch="blue"],
+.notes-highlight-row-swatch[data-swatch="blue"] { background: var(--highlight-blue); }
+.notes-standalone-highlight-swatch[data-swatch="green"],
+.notes-highlight-row-swatch[data-swatch="green"] { background: var(--highlight-green); }
+.notes-standalone-highlight-swatch[data-swatch="pink"],
+.notes-highlight-row-swatch[data-swatch="pink"] { background: var(--highlight-pink); }
+.notes-standalone-highlight-swatch:not([data-swatch]),
+.notes-highlight-row-swatch:not([data-swatch]) { background: var(--highlight-yellow); }
 
 /* New thread button — ghost with accent on hover */
 .threads-new-thread-btn {

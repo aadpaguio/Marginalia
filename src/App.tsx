@@ -52,11 +52,12 @@ import {
   parseReaderMd,
 } from "@/services/compaction";
 import { askClaudeThread, generateThreadTitle } from "@/services/claude";
-import { ArrowLeft, ArrowRight, ArrowUp, BookOpenText, MoreVertical, NotepadText, Sparkles, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUp, BookMarked, LogOut, MoreVertical, NotepadText, PanelLeft, PanelLeftClose, ScanText, Settings, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "@/components/ThreadsPanel/ThreadsPanel.css";
 import readerChromeStyles from "@/app/reader/ReaderChrome.module.css";
+import tocPanelStyles from "@/app/reader/TocPanel.module.css";
 import appStyles from "@/App.module.css";
 
 function base64ToFile(base64: string, filename: string): File {
@@ -290,7 +291,7 @@ const CitationJumpButton: FC<{
 };
 
 function App() {
-  type PanelTab = "threads" | "highlights" | "bookmarks";
+  type PanelTab = "threads" | "highlights" | "annotations";
   type NotesFilter = "all" | "highlights" | "ai";
   type HighlightColorFilter = "all" | "yellow" | "blue" | "green" | "pink";
   const HIGHLIGHT_COLOR_HEX: Record<Exclude<HighlightColorFilter, "all">, string> = {
@@ -318,7 +319,9 @@ function App() {
   const [notesFilter, setNotesFilter] = useState<NotesFilter>("all");
   const [highlightColorFilter, setHighlightColorFilter] = useState<HighlightColorFilter>("all");
   const [isNotesOpen, setIsNotesOpen] = useState(false);
+  const [isNotesClosing, setIsNotesClosing] = useState(false);
   const [isTocOpen, setIsTocOpen] = useState(false);
+  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [jumpToCfi, setJumpToCfi] = useState<string | null>(null);
   const [backCfi, setBackCfi] = useState<string | null>(null);
   const currentCfiRef = useRef<string | null>(null);
@@ -1300,6 +1303,144 @@ function App() {
           color: chrome.appFg,
         }}
       >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            height: "100%",
+            width: "100%",
+            overflow: "hidden",
+          }}
+        >
+          {/* TOC panel — §7: rail + expandable content */}
+          <div
+            className={`${tocPanelStyles.panel} ${!isTocOpen ? tocPanelStyles.panelCollapsed : ""}`}
+            style={{ height: "100%" }}
+          >
+            <div className={tocPanelStyles.rail}>
+              <button
+                type="button"
+                className={tocPanelStyles.tocToggle}
+                onClick={() => setIsTocOpen((prev) => !prev)}
+                aria-label={isTocOpen ? "Hide table of contents" : "Show table of contents"}
+                title={isTocOpen ? "Hide table of contents" : "Show table of contents"}
+              >
+                {isTocOpen ? <PanelLeftClose size={18} /> : <PanelLeft size={18} />}
+              </button>
+              <div className={tocPanelStyles.actionStrip}>
+                <div style={{ position: "relative" }}>
+                  <button
+                    type="button"
+                    className={tocPanelStyles.actionButton}
+                    onClick={() => setIsThemeMenuOpen((o) => !o)}
+                    title="Display options"
+                    aria-label="Display options (theme)"
+                    aria-expanded={isThemeMenuOpen}
+                  >
+                    <SlidersHorizontal size={18} />
+                  </button>
+                  {isThemeMenuOpen && (
+                    <div className={tocPanelStyles.railThemeMenu}>
+                      {(["light", "sepia", "dark"] as const).map((t) => (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => {
+                            setTheme(t);
+                            setIsThemeMenuOpen(false);
+                          }}
+                          title={`${t.charAt(0).toUpperCase() + t.slice(1)} theme`}
+                          aria-label={`${t.charAt(0).toUpperCase() + t.slice(1)} theme`}
+                          className={`${tocPanelStyles.railThemeButton} ${theme === t ? tocPanelStyles.railThemeButtonActive : ""}`}
+                        >
+                          {t.charAt(0).toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className={scanStatus === "done" ? tocPanelStyles.actionButtonActive : tocPanelStyles.actionButton}
+                  onClick={() => void handleRunSmartScan()}
+                  disabled={scanStatus === "in_progress"}
+                  title={
+                    scanStatus === "none"
+                      ? "Run Smart Scan"
+                      : scanStatus === "in_progress"
+                        ? "Scanning…"
+                        : "Smart Scan complete · Re-scan"
+                  }
+                  aria-label="Smart Scan"
+                >
+                  <ScanText size={18} />
+                </button>
+                <button
+                  type="button"
+                  className={tocPanelStyles.actionButton}
+                  title="Settings"
+                  aria-label="Settings"
+                >
+                  <Settings size={18} />
+                </button>
+                <button
+                  type="button"
+                  className={`${tocPanelStyles.actionButton} ${tocPanelStyles.railCloseButton}`}
+                  onClick={() => {
+                    void flushPendingProgressWrite();
+                    progressWriteBlockRef.current = null;
+                    setBookDoc(null);
+                    setCurrentBookId(null);
+                    setHighlights([]);
+                    setBookmarks([]);
+                    setCurrentCfi(null);
+                    setBackCfi(null);
+                    currentCfiRef.current = null;
+                    void refreshLibrary();
+                  }}
+                  title="Close"
+                  aria-label="Close"
+                >
+                  <LogOut size={18} />
+                </button>
+              </div>
+            </div>
+            <div className={tocPanelStyles.content}>
+              <div className={tocPanelStyles.sectionLabel}>CONTENTS</div>
+              {tocEntries.length === 0 ? (
+                <div style={{ fontSize: 12, color: "var(--ink-tertiary)", padding: "0 var(--space-3)" }}>No TOC available</div>
+              ) : (
+                tocEntries.map((item, idx) => {
+                  const renderTocItem = (toc: TOCItem, depth: number) => {
+                    const active =
+                      (currentTocHref && toc.href === currentTocHref) ||
+                      (currentTocLabel && toc.label === currentTocLabel);
+                    const depthClass =
+                      depth === 0 ? tocPanelStyles.tocDepth0 : depth === 1 ? tocPanelStyles.tocDepth1 : tocPanelStyles.tocDepth2;
+                    return (
+                      <div key={`${toc.href}-${depth}-${toc.id}`}>
+                        <button
+                          type="button"
+                          className={`${tocPanelStyles.tocItem} ${depthClass} ${active ? tocPanelStyles.tocItemActive : ""}`}
+                          onClick={() => {
+                            if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
+                            setJumpToCfi(toc.href);
+                            setIsTocOpen(false);
+                          }}
+                        >
+                          {toc.label || `Section ${idx + 1}`}
+                        </button>
+                        {toc.subitems?.map((sub) => renderTocItem(sub, depth + 1))}
+                      </div>
+                    );
+                  };
+                  return renderTocItem(item, 0);
+                })
+              )}
+            </div>
+          </div>
+          {/* Reading area */}
+          <div style={{ flex: 1, minWidth: 0, position: "relative" }}>
         <FoliateViewer
           bookKey={epubPath ?? "current"}
           bookDoc={bookDoc}
@@ -1401,112 +1542,46 @@ function App() {
             void refreshLibrary();
           }}
         />
-        <div
-          style={{
-            position: "absolute",
-            top: 88,
-            left: 8,
-            zIndex: 130,
-            display: "flex",
-            alignItems: "flex-start",
-            gap: 8,
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => setIsTocOpen((prev) => !prev)}
-            aria-label={isTocOpen ? "Hide table of contents" : "Show table of contents"}
-            title={isTocOpen ? "Hide table of contents" : "Show table of contents"}
+        {/* Smart Scan status strip: show in reading area when scanning (optional, or keep in rail) */}
+        {scanStatus === "in_progress" && (
+          <div
             style={{
-              width: 34,
-              height: 34,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              border: `1px solid ${chrome.controlBorder}`,
-              borderRadius: 8,
-              background: chrome.controlBg,
-              color: chrome.controlFg,
+              position: "absolute",
+              top: 88,
+              left: 8,
+              zIndex: 130,
             }}
           >
-            <BookOpenText size={16} />
-          </button>
-          <div className={readerChromeStyles.scanToolbarCluster}>
-            <button
-              type="button"
-              onClick={() => void handleRunSmartScan()}
-              disabled={scanStatus === "in_progress"}
-              aria-label={
-                scanStatus === "none"
-                  ? "Run Smart Scan"
-                  : scanStatus === "in_progress"
-                    ? scanProgress
-                      ? `Scanning… ${scanProgress.done}/${scanProgress.total}`
-                      : "Scanning…"
-                    : "Smart Scan complete · Re-scan"
-              }
-              title={
-                scanStatus === "none"
-                  ? "Run Smart Scan"
-                  : scanStatus === "in_progress"
-                    ? scanProgress
-                      ? `Scanning… ${scanProgress.done}/${scanProgress.total}`
-                      : "Scanning…"
-                    : "Smart Scan complete · Re-scan"
-              }
-              className={[
-                readerChromeStyles.scanButton,
-                scanStatus === "in_progress"
-                  ? readerChromeStyles.scanButtonInProgress
-                  : scanStatus === "done"
-                    ? readerChromeStyles.scanButtonDone
-                    : readerChromeStyles.scanButtonDefault,
-              ].join(" ")}
-              style={
-                theme === "dark" && scanStatus !== "done"
-                  ? {
-                      borderColor: chrome.controlBorder,
-                      background: chrome.controlBg,
-                      color: chrome.controlFg,
-                    }
-                  : undefined
-              }
-            >
-              <Sparkles size={16} />
-            </button>
-            {scanStatus === "in_progress" && (
-              <div className={readerChromeStyles.scanStatusStrip}>
-                <span className={readerChromeStyles.scanStatusLabel}>Smart Scan</span>
-                {scanRetryInSeconds !== null ? (
-                  <span className={readerChromeStyles.scanRateLimitMessage}>
-                    {scanRetryInSeconds > 0 ? (
-                      <>Rate limited. <strong>Retrying in {scanRetryInSeconds}s…</strong></>
-                    ) : (
-                      <strong>Retrying…</strong>
-                    )}
+            <div className={readerChromeStyles.scanStatusStrip}>
+              <span className={readerChromeStyles.scanStatusLabel}>Smart Scan</span>
+              {scanRetryInSeconds !== null ? (
+                <span className={readerChromeStyles.scanRateLimitMessage}>
+                  {scanRetryInSeconds > 0 ? (
+                    <>Rate limited. <strong>Retrying in {scanRetryInSeconds}s…</strong></>
+                  ) : (
+                    <strong>Retrying…</strong>
+                  )}
+                </span>
+              ) : scanProgress ? (
+                <>
+                  <span className={readerChromeStyles.scanProgressText}>
+                    {scanProgress.done} / {scanProgress.total} sections
                   </span>
-                ) : scanProgress ? (
-                  <>
-                    <span className={readerChromeStyles.scanProgressText}>
-                      {scanProgress.done} / {scanProgress.total} sections
-                    </span>
-                    <div className={readerChromeStyles.scanProgressTrack}>
-                      <div
-                        className={readerChromeStyles.scanProgressFill}
-                        style={{
-                          width: `${scanProgress.total > 0 ? (100 * scanProgress.done) / scanProgress.total : 0}%`,
-                        }}
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <span className={readerChromeStyles.scanProgressText}>Scanning…</span>
-                )}
-              </div>
-            )}
+                  <div className={readerChromeStyles.scanProgressTrack}>
+                    <div
+                      className={readerChromeStyles.scanProgressFill}
+                      style={{
+                        width: `${scanProgress.total > 0 ? (100 * scanProgress.done) / scanProgress.total : 0}%`,
+                      }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <span className={readerChromeStyles.scanProgressText}>Scanning…</span>
+              )}
+            </div>
           </div>
-        </div>
+        )}
         {backCfi && (
           <div
             style={{
@@ -1542,64 +1617,26 @@ function App() {
             </button>
           </div>
         )}
-        <div
-          style={{
-            position: "absolute",
-            top: 8,
-            right: 92,
-            zIndex: 130,
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
+        {!isNotesOpen && !isNotesClosing && (
           <button
             type="button"
-            onClick={() => setIsNotesOpen((prev) => !prev)}
-            aria-label={isNotesOpen ? "Hide notes panel" : "Show notes panel"}
-            title={isNotesOpen ? "Hide notes panel" : "Show notes panel"}
-            style={{
-              width: 34,
-              height: 34,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              border: `1px solid ${chrome.controlBorder}`,
-              borderRadius: 8,
-              background: chrome.controlBg,
-              color: chrome.controlFg,
-            }}
+            className="notesPanelTab"
+            onClick={() => setIsNotesOpen(true)}
+            aria-label="Open notes panel"
           >
-            <NotepadText size={16} />
+            <BookMarked size={14} className="notesPanelTabIcon" />
           </button>
-          <span
-            style={{
-              minWidth: 18,
-              height: 18,
-              borderRadius: 999,
-              padding: "0 6px",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 11,
-              background: chrome.badgeBg,
-              color: chrome.controlFg,
-            }}
-          >
-            {highlights.length}
-          </span>
-        </div>
-        {isNotesOpen && (
+        )}
+        {(isNotesOpen || isNotesClosing) && (
           <>
             <button
               type="button"
               aria-label="Close notes panel"
-              onClick={() => setIsNotesOpen(false)}
+              onClick={() => !isNotesClosing && setIsNotesClosing(true)}
               style={{
                 position: "absolute",
                 inset: 0,
-                zIndex: 129,
+                zIndex: 199,
                 border: "none",
                 background: "transparent",
                 padding: 0,
@@ -1607,20 +1644,25 @@ function App() {
               }}
             />
             <aside
-              className={`notes-panel panelVisible ${panelTab === "threads" ? "notes-panel--threads" : ""}`}
+              className={`notes-panel ${isNotesClosing ? "panelHidden" : "panelVisible"} ${panelTab === "threads" ? "notes-panel--threads" : ""}`}
               style={{
                 position: "absolute",
-                top: 44,
-                right: 8,
-                bottom: 8,
-                zIndex: 130,
-                borderRadius: 10,
+                top: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 200,
                 overflow: "hidden",
                 display: "flex",
                 flexDirection: "column",
               }}
               onClick={(e) => e.stopPropagation()}
               onWheelCapture={(e) => e.stopPropagation()}
+              onAnimationEnd={(e) => {
+                if (e.animationName === "panelExitRight") {
+                  setIsNotesOpen(false);
+                  setIsNotesClosing(false);
+                }
+              }}
             >
               <div
                 className="threads-panel-title-bar"
@@ -1633,17 +1675,11 @@ function App() {
                   justifyContent: "space-between",
                 }}
               >
-                <span>
-                  {panelTab === "bookmarks"
-                    ? `Bookmarks (${bookmarks.length})`
-                    : panelTab === "highlights"
-                      ? `Highlights (${standaloneHighlights.length})`
-                      : "Threads"}
-                </span>
+                <span>Notes</span>
                 <button
                   type="button"
                   className="threads-close-btn"
-                  onClick={() => setIsNotesOpen(false)}
+                  onClick={() => !isNotesClosing && setIsNotesClosing(true)}
                   style={{
                     borderRadius: "var(--radius-sm)",
                     padding: "var(--space-1) var(--space-2)",
@@ -1654,20 +1690,12 @@ function App() {
                   Close
                 </button>
               </div>
-              <div
-                className="threads-tab-bar"
-                style={{
-                  padding: "var(--space-2) var(--space-3)",
-                  display: "flex",
-                  gap: "var(--space-2)",
-                  flexWrap: "wrap",
-                }}
-              >
+              <div className="threads-tab-bar">
                 {(
                   [
-                    { key: "threads", label: "Threads" },
-                    { key: "highlights", label: `Highlights (${standaloneHighlights.length})` },
-                    { key: "bookmarks", label: `Bookmarks (${bookmarks.length})` },
+                    { key: "threads" as const, label: "Threads" },
+                    { key: "highlights" as const, label: `Highlights (${standaloneHighlights.length})` },
+                    { key: "annotations" as const, label: "Annotations" },
                   ] as const
                 ).map((tab) => {
                   const active = panelTab === tab.key;
@@ -1675,15 +1703,8 @@ function App() {
                     <button
                       key={tab.key}
                       type="button"
-                      data-active={active}
+                      className={active ? "notes-tab notes-tab-active" : "notes-tab"}
                       onClick={() => setPanelTab(tab.key)}
-                      style={{
-                        borderRadius: "var(--radius-pill)",
-                        padding: "var(--space-1) var(--space-3)",
-                        fontSize: 12,
-                        fontWeight: active ? 600 : 500,
-                        cursor: "pointer",
-                      }}
                     >
                       {tab.label}
                     </button>
@@ -1787,76 +1808,10 @@ function App() {
                   flexDirection: "column",
                 }}
               >
-                {panelTab === "bookmarks" ? (
-                  bookmarks.length === 0 ? (
-                    <p style={{ margin: 0, color: chrome.muted }}>No bookmarks yet.</p>
-                  ) : (
-                    bookmarks.map((bookmark) => (
-                      <div
-                        key={bookmark.id}
-                        style={{
-                          marginBottom: 8,
-                          border: `1px solid ${chrome.panelBorder}`,
-                          borderRadius: 8,
-                          padding: "8px 10px",
-                          background: chrome.cardBg,
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          gap: 8,
-                        }}
-                      >
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4 }}>
-                            {bookmark.chapterLabel || "Bookmark"}
-                          </div>
-                          <div style={{ color: chrome.muted, fontSize: 11 }}>
-                            Saved {formatBookmarkTimestamp(bookmark.createdAt)}
-                          </div>
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
-                              setJumpToCfi(bookmark.cfi);
-                            }}
-                            style={{
-                              border: `1px solid ${chrome.controlBorder}`,
-                              borderRadius: 6,
-                              padding: "4px 8px",
-                              background: chrome.controlBg,
-                              color: chrome.controlFg,
-                              cursor: "pointer",
-                              fontSize: 12,
-                            }}
-                          >
-                            Go to
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setBookmarks((prev) =>
-                                prev.filter((existingBookmark) => existingBookmark.id !== bookmark.id)
-                              );
-                              void dbDeleteBookmark(bookmark.id);
-                            }}
-                            style={{
-                              border: `1px solid ${chrome.controlBorder}`,
-                              borderRadius: 6,
-                              padding: "4px 8px",
-                              background: chrome.controlBg,
-                              color: "#b42318",
-                              cursor: "pointer",
-                              fontSize: 12,
-                            }}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )
+                {panelTab === "annotations" ? (
+                  <p style={{ margin: 0, color: "var(--ink-tertiary)", fontSize: 13, textAlign: "center" }}>
+                    Coming soon
+                  </p>
                 ) : panelTab === "threads" && activeThreadId ? (
                   <>
                     <div className="thread-chat-messages-label" style={{ marginBottom: 8, fontWeight: 600, fontSize: 12, color: chrome.muted }}>Messages</div>
@@ -2120,41 +2075,63 @@ function App() {
                     )}
                   </div>
                 ) : panelTab === "highlights" ? (
-                  <>
-                    <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 6, color: chrome.muted }}>Highlights</div>
-                    {standaloneHighlights.length === 0 ? (
-                      <p style={{ margin: 0, color: chrome.muted, fontSize: 12 }}>No standalone highlights. Select text in the book and highlight it, or add a passage to a thread with Add to thread.</p>
+                  (() => {
+                    const highlightsByChapter = (() => {
+                      const map = new Map<string, typeof standaloneHighlights>();
+                      for (const h of standaloneHighlights) {
+                        const ch = h.chapterLabel ?? "Other";
+                        if (!map.has(ch)) map.set(ch, []);
+                        map.get(ch)!.push(h);
+                      }
+                      return Array.from(map.entries());
+                    })();
+                    return standaloneHighlights.length === 0 ? (
+                      <p style={{ margin: 0, color: "var(--ink-tertiary)", fontSize: 13, textAlign: "center" }}>
+                        No highlights yet. Select text to start.
+                      </p>
                     ) : (
-                      standaloneHighlights.map((h) => {
-                        const colorHex = HIGHLIGHT_COLOR_HEX[h.color === "blue" || h.color === "green" || h.color === "pink" ? h.color : "yellow"];
-                        return (
-                          <div
-                            key={h.id}
-                            style={{
-                              marginBottom: 8,
-                              padding: "6px 8px",
-                              borderLeft: `3px solid ${colorHex}`,
-                              background: theme === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
-                              borderRadius: 4,
-                              fontSize: 12,
-                            }}
-                          >
-                            {h.selectedText.slice(0, 80)}{h.selectedText.length > 80 ? "…" : ""}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
-                                setJumpToCfi(h.cfi);
-                              }}
-                              style={{ marginLeft: 8, fontSize: 11, padding: "2px 6px" }}
-                            >
-                              Go to
-                            </button>
+                      <>
+                        <div className="notes-highlights-tab-header">
+                          <span className="threads-section-label">Highlights</span>
+                          <span className="notes-highlights-tab-count">{standaloneHighlights.length}</span>
+                        </div>
+                        {highlightsByChapter.map(([chapterName, chapterHighlights]) => (
+                          <div key={chapterName}>
+                            <div className="notes-highlights-chapter-label">{chapterName}</div>
+                            {chapterHighlights.map((h) => {
+                              const swatch = (h.color === "blue" || h.color === "green" || h.color === "pink" ? h.color : "yellow") as "yellow" | "blue" | "green" | "pink";
+                              return (
+                                <div
+                                  key={h.id}
+                                  className="notes-highlight-row"
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={() => {
+                                    if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
+                                    setJumpToCfi(h.cfi);
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
+                                      setJumpToCfi(h.cfi);
+                                    }
+                                  }}
+                                >
+                                  <div className="notes-highlight-row-swatch" data-swatch={swatch} />
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div className="notes-highlight-row-quote">"{h.selectedText}"</div>
+                                    <div className="notes-highlight-row-meta">
+                                      {[chapterName, new Date(h.createdAt).toLocaleDateString()].filter(Boolean).join(" · ")}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
-                        );
-                      })
-                    )}
-                  </>
+                        ))}
+                      </>
+                    );
+                  })()
                 ) : null}
               </div>
               {panelTab === "threads" && activeThreadId && (
@@ -2221,98 +2198,6 @@ function App() {
               )}
             </aside>
           </>
-        )}
-        {isTocOpen && (
-          <aside
-            style={{
-              position: "absolute",
-              top: 44,
-              left: 8,
-              bottom: 8,
-              width: 320,
-              maxWidth: "42vw",
-              zIndex: 130,
-              borderRadius: 10,
-              border: `1px solid ${chrome.panelBorder}`,
-              background: chrome.panelBg,
-              boxShadow: "0 6px 22px rgba(0,0,0,0.12)",
-              overflow: "auto",
-              padding: 10,
-              color: chrome.appFg,
-            }}
-            onClick={(e) => e.stopPropagation()}
-            onWheelCapture={(e) => e.stopPropagation()}
-          >
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 600,
-                marginBottom: 8,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <span>Table of contents</span>
-              <button
-                type="button"
-                onClick={() => setIsTocOpen(false)}
-                style={{
-                  border: `1px solid ${chrome.controlBorder}`,
-                  borderRadius: 6,
-                  padding: "2px 8px",
-                  background: chrome.controlBg,
-                  color: chrome.controlFg,
-                  cursor: "pointer",
-                  fontSize: 12,
-                }}
-              >
-                Close
-              </button>
-            </div>
-            {tocEntries.length === 0 ? (
-              <div style={{ fontSize: 12, color: chrome.muted }}>No TOC available</div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                {tocEntries.map((item, idx) => {
-                  const renderItem = (toc: TOCItem, depth: number) => {
-                    const active =
-                      (currentTocHref && toc.href === currentTocHref) ||
-                      (currentTocLabel && toc.label === currentTocLabel);
-                    return (
-                      <div key={`${toc.href}-${depth}-${toc.id}`}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
-                            setJumpToCfi(toc.href);
-                            setIsTocOpen(false);
-                          }}
-                          style={{
-                            width: "100%",
-                            textAlign: "left",
-                            padding: "6px 8px",
-                            marginLeft: depth * 10,
-                            borderRadius: 6,
-                            border: "none",
-                            background: active ? "rgba(31,111,235,0.15)" : "transparent",
-                            color: active ? "#0b4fb3" : chrome.appFg,
-                            cursor: "pointer",
-                            fontSize: 12,
-                            fontWeight: active ? 600 : 400,
-                          }}
-                        >
-                          {toc.label || `Section ${idx + 1}`}
-                        </button>
-                        {toc.subitems?.map((sub) => renderItem(sub, depth + 1))}
-                      </div>
-                    );
-                  };
-                  return renderItem(item, 0);
-                })}
-              </div>
-            )}
-          </aside>
         )}
         {showSmartScanBanner && (
           <div
@@ -2401,6 +2286,8 @@ function App() {
             : currentPageCurrent != null && currentPageTotal != null
               ? `Page ${currentPageCurrent + 1}/${currentPageTotal}`
               : "Page —"}
+        </div>
+          </div>
         </div>
       </div>
     );

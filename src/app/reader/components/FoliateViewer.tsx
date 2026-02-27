@@ -18,7 +18,8 @@ import { getReaderStyles, type ReaderTheme } from "../utils/readerStyles";
 import { useInstantAnnotation } from "../hooks/useInstantAnnotation";
 import Annotator from "./annotator/Annotator";
 import type { CitationPayload, Highlight } from "@/types/book";
-import { Bookmark, ChevronDown, Plus, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, Plus } from "lucide-react";
+import readerChromeStyles from "../ReaderChrome.module.css";
 
 /** Normalize for fuzzy match: smart quotes → straight, collapse whitespace. */
 function normalizeForMatch(s: string): string {
@@ -274,11 +275,12 @@ export default function FoliateViewer({
 }: Props) {
   // Keep config in the barebones API surface for compatibility with upcoming phases.
   void config;
+  void isCurrentBookmarked;
+  void onToggleBookmark;
   const viewRef = useRef<FoliateView | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const hoverPromptRef = useRef<HTMLDivElement | null>(null);
   const selectionToolbarRef = useRef<HTMLDivElement | null>(null);
-  const displayMenuRef = useRef<HTMLDivElement | null>(null);
   const doubleClickDisabled = useRef(true);
   const highlightsRef = useRef<Highlight[]>(highlights);
   highlightsRef.current = highlights;
@@ -298,30 +300,46 @@ export default function FoliateViewer({
   const [pendingSelection, setPendingSelection] = useState<ToolbarSelection | null>(null);
   const [addToThreadDropdownOpen, setAddToThreadDropdownOpen] = useState(false);
   const [hoveredNote, setHoveredNote] = useState<ToolbarSelection | null>(null);
-  const [isDisplayMenuOpen, setIsDisplayMenuOpen] = useState(false);
   const interactionBlocked = pendingSelection != null;
   const chrome =
     theme === "dark"
       ? {
-          controlBg: "rgba(255,255,255,0.08)",
-          controlBorder: "rgba(255,255,255,0.24)",
+          controlBg: "rgba(255,255,255,0.07)",
+          controlBorder: "rgba(255,255,255,0.18)",
           controlFg: "#f3f3f3",
           menuBg: "rgba(26,26,26,0.96)",
-          menuItemBg: "rgba(255,255,255,0.08)",
-          menuItemActiveBg: "rgba(255,255,255,0.2)",
+          menuItemBg: "rgba(255,255,255,0.06)",
+          menuItemActiveBg: "rgba(255,255,255,0.18)",
+          toolbarBg: "rgba(26,24,20,0.96)",
+          toolbarBorder: "rgba(255,255,255,0.12)",
           navBg: "rgba(32,32,32,0.9)",
           navBorder: "rgba(255,255,255,0.24)",
         }
-      : {
-          controlBg: "rgba(0,0,0,0.06)",
-          controlBorder: "rgba(0,0,0,0.1)",
-          controlFg: "#222",
-          menuBg: "rgba(255,255,255,0.96)",
-          menuItemBg: "rgba(0,0,0,0.05)",
-          menuItemActiveBg: "rgba(0,0,0,0.12)",
-          navBg: "rgba(250,249,247,0.85)",
-          navBorder: "rgba(0,0,0,0.15)",
-        };
+      : theme === "sepia"
+        ? {
+            controlBg: "rgba(30,24,14,0.05)",
+            controlBorder: "rgba(30,24,14,0.12)",
+            controlFg: "#5C5040",
+            menuBg: "rgba(250,246,238,0.97)",
+            menuItemBg: "rgba(30,24,14,0.04)",
+            menuItemActiveBg: "rgba(30,24,14,0.12)",
+            toolbarBg: "rgba(250,246,238,0.98)",
+            toolbarBorder: "rgba(30,24,14,0.12)",
+            navBg: "rgba(250,249,247,0.85)",
+            navBorder: "rgba(0,0,0,0.15)",
+          }
+        : {
+            controlBg: "rgba(0,0,0,0.05)",
+            controlBorder: "rgba(0,0,0,0.10)",
+            controlFg: "#2a2a2a",
+            menuBg: "rgba(255,255,255,0.97)",
+            menuItemBg: "rgba(0,0,0,0.05)",
+            menuItemActiveBg: "rgba(0,0,0,0.12)",
+            toolbarBg: "rgba(255,255,255,0.98)",
+            toolbarBorder: "rgba(0,0,0,0.10)",
+            navBg: "rgba(250,249,247,0.85)",
+            navBorder: "rgba(0,0,0,0.15)",
+          };
 
   const goPrev = useCallback(async () => {
     const v = viewRef.current;
@@ -859,18 +877,6 @@ export default function FoliateViewer({
   }, [hoveredNote, pendingSelection]);
 
   useEffect(() => {
-    if (!isDisplayMenuOpen) return;
-    const onWindowPointerDown = (event: MouseEvent) => {
-      const target = event.target;
-      if (!(target instanceof Node)) return;
-      if (displayMenuRef.current?.contains(target)) return;
-      setIsDisplayMenuOpen(false);
-    };
-    window.addEventListener("mousedown", onWindowPointerDown);
-    return () => window.removeEventListener("mousedown", onWindowPointerDown);
-  }, [isDisplayMenuOpen]);
-
-  useEffect(() => {
     if (!jumpToCfi) return;
     const v = viewRef.current;
     if (!v) return;
@@ -1107,139 +1113,6 @@ export default function FoliateViewer({
     >
       <Annotator view={view} highlights={highlights} />
       {/* Chrome overlay: inside viewer so it stacks above foliate-view and receives clicks */}
-      {onClose != null && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 100,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 8,
-            padding: "8px 8px 0",
-            pointerEvents: "auto",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onClose();
-              }}
-              style={{
-                padding: "6px 12px",
-                fontSize: 13,
-                cursor: "pointer",
-                background: chrome.controlBg,
-                border: `1px solid ${chrome.controlBorder}`,
-                borderRadius: 6,
-                color: chrome.controlFg,
-              }}
-            >
-              Close
-            </button>
-            {onToggleBookmark && (
-              <button
-                type="button"
-                aria-label={isCurrentBookmarked ? "Remove bookmark" : "Add bookmark"}
-                title={isCurrentBookmarked ? "Remove bookmark" : "Add bookmark"}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleBookmark();
-                }}
-                style={{
-                  width: 34,
-                  height: 34,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  border: `1px solid ${chrome.controlBorder}`,
-                  borderRadius: 8,
-                  background: chrome.controlBg,
-                  color: isCurrentBookmarked ? "#d97706" : chrome.controlFg,
-                }}
-              >
-                <Bookmark size={16} fill={isCurrentBookmarked ? "currentColor" : "none"} />
-              </button>
-            )}
-          </div>
-          {onThemeChange != null && (
-            <div ref={displayMenuRef} style={{ position: "relative" }}>
-              <button
-                type="button"
-                aria-label="Display options"
-                title="Display options"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsDisplayMenuOpen((prev) => !prev);
-                }}
-                style={{
-                  width: 34,
-                  height: 34,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  border: `1px solid ${chrome.controlBorder}`,
-                  borderRadius: 8,
-                  background: chrome.controlBg,
-                  color: chrome.controlFg,
-                }}
-              >
-                <SlidersHorizontal size={16} />
-              </button>
-              {isDisplayMenuOpen && (
-                <div
-                  style={{
-                    position: "absolute",
-                    right: 0,
-                    top: 40,
-                    zIndex: 140,
-                    display: "flex",
-                    gap: 4,
-                    padding: 6,
-                    borderRadius: 8,
-                    border: `1px solid ${chrome.controlBorder}`,
-                    background: chrome.menuBg,
-                    boxShadow: "0 6px 18px rgba(0,0,0,0.12)",
-                  }}
-                >
-                  {(["light", "sepia", "dark"] as const).map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onThemeChange(t);
-                        setIsDisplayMenuOpen(false);
-                      }}
-                      title={`${t.charAt(0).toUpperCase() + t.slice(1)} theme`}
-                      aria-label={`${t.charAt(0).toUpperCase() + t.slice(1)} theme`}
-                      style={{
-                        padding: "6px 8px",
-                        fontSize: 12,
-                        cursor: "pointer",
-                        background: theme === t ? chrome.menuItemActiveBg : chrome.menuItemBg,
-                        border: `1px solid ${chrome.controlBorder}`,
-                        borderRadius: 6,
-                        fontWeight: theme === t ? 600 : 400,
-                        color: chrome.controlFg,
-                      }}
-                    >
-                      {t.charAt(0).toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
       {loading && (
         <div
           aria-live="polite"
@@ -1344,48 +1217,29 @@ export default function FoliateViewer({
           />
           <div
             ref={hoverPromptRef}
+            className={readerChromeStyles.hoverPrompt}
             style={{
               position: "absolute",
               left: getHoverPromptPosition(hoveredNote).left,
               top: getHoverPromptPosition(hoveredNote).top,
               zIndex: 124,
-              borderRadius: 999,
-              background: "rgba(34,34,34,0.92)",
-              color: "#fff",
-              padding: "5px 8px",
-              fontSize: 12,
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
+              className={readerChromeStyles.hoverPromptButton}
               onClick={openNotesFromHover}
-              style={{
-                border: "none",
-                background: "transparent",
-                color: "#fff",
-                cursor: "pointer",
-                fontSize: 12,
-              }}
             >
               {hoveredNote.isAiNote ? "Check AI note" : "Check highlights"}
             </button>
             {!hoveredNote.isAiNote && (
               <>
-                <span style={{ opacity: 0.5 }}>|</span>
+                <div className={readerChromeStyles.hoverPromptDivider} aria-hidden />
                 <button
                   type="button"
+                  className={readerChromeStyles.hoverPromptButton}
                   onClick={() => void removeHighlightFromHover()}
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    color: "#fff",
-                    cursor: "pointer",
-                    fontSize: 12,
-                  }}
                 >
                   Remove highlight
                 </button>
@@ -1414,20 +1268,13 @@ export default function FoliateViewer({
             ref={selectionToolbarRef}
             role="dialog"
             aria-label="Selection actions"
+            className={`${readerChromeStyles.selectionToolbar} ${theme === "dark" ? readerChromeStyles.selectionToolbarDark : ""}`}
             style={{
               position: "absolute",
               left: getToolbarPosition(pendingSelection).left,
               top: getToolbarPosition(pendingSelection).top,
               zIndex: 125,
               width: getToolbarPosition(pendingSelection).width,
-              borderRadius: 999,
-              border: "1px solid rgba(0,0,0,0.12)",
-              background: "rgba(255,255,255,0.97)",
-              boxShadow: "0 10px 24px rgba(0,0,0,0.16)",
-              padding: "6px 8px",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -1439,67 +1286,26 @@ export default function FoliateViewer({
                   type="button"
                   aria-label={`Highlight ${swatch}`}
                   onClick={() => void handleQuickHighlight(swatch)}
-                  style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: "999px",
-                    border: selected ? "2px solid #111" : "1px solid rgba(0,0,0,0.2)",
-                    background:
-                      swatch === "yellow"
-                        ? "#fde047"
-                        : swatch === "blue"
-                          ? "#93c5fd"
-                          : swatch === "green"
-                            ? "#86efac"
-                            : "#f9a8d4",
-                    cursor: "pointer",
-                  }}
+                  className={`${readerChromeStyles.swatch} ${readerChromeStyles[`swatch${swatch.charAt(0).toUpperCase() + swatch.slice(1)}` as keyof typeof readerChromeStyles]} ${selected ? readerChromeStyles.swatchSelected : ""} ${theme === "dark" ? readerChromeStyles.swatchDark : ""}`}
                 />
               );
             })}
-            <div style={{ width: 1, height: 20, background: "rgba(0,0,0,0.12)" }} />
+            <div className={`${readerChromeStyles.toolbarDivider} ${theme === "dark" ? readerChromeStyles.toolbarDividerDark : ""}`} />
             <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 4 }}>
               <button
                 type="button"
                 onClick={() => setAddToThreadDropdownOpen((o) => !o)}
                 aria-label="Add to thread"
                 aria-expanded={addToThreadDropdownOpen}
-                style={{
-                  border: "1px solid rgba(0,0,0,0.12)",
-                  borderRadius: 999,
-                  padding: "4px 8px 4px 10px",
-                  fontSize: 12,
-                  background: "#fff",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 4,
-                }}
+                className={readerChromeStyles.threadDropdownButton}
               >
                 Add to thread
                 <ChevronDown size={14} style={{ opacity: addToThreadDropdownOpen ? 0.7 : 0.5 }} />
               </button>
               {addToThreadDropdownOpen && (
-                <div
-                  role="menu"
-                  style={{
-                    position: "absolute",
-                    left: 0,
-                    top: "100%",
-                    marginTop: 4,
-                    minWidth: 160,
-                    maxHeight: 200,
-                    overflow: "auto",
-                    borderRadius: 8,
-                    border: "1px solid rgba(0,0,0,0.12)",
-                    background: "rgba(255,255,255,0.98)",
-                    boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
-                    padding: 4,
-                    zIndex: 130,
-                  }}
-                >
+                <div role="menu" className={readerChromeStyles.threadMenu}>
                   {threads.length === 0 ? (
-                    <div style={{ padding: "8px 10px", fontSize: 12, color: "#666" }}>
+                    <div style={{ padding: "8px 10px", fontSize: 12, color: "var(--ink-tertiary)" }}>
                       No threads yet
                     </div>
                   ) : (
@@ -1509,22 +1315,7 @@ export default function FoliateViewer({
                         type="button"
                         role="menuitem"
                         onClick={() => handleAddToThread(t.id)}
-                        style={{
-                          width: "100%",
-                          textAlign: "left",
-                          padding: "6px 10px",
-                          border: "none",
-                          borderRadius: 6,
-                          background: "transparent",
-                          fontSize: 12,
-                          cursor: "pointer",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "rgba(0,0,0,0.06)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = "transparent";
-                        }}
+                        className={readerChromeStyles.threadMenuItem}
                       >
                         {t.title?.trim() || "New thread"}
                       </button>
@@ -1536,16 +1327,7 @@ export default function FoliateViewer({
                 type="button"
                 onClick={() => handleAddToThread(null)}
                 aria-label="New thread"
-                style={{
-                  border: "1px solid rgba(0,0,0,0.12)",
-                  borderRadius: 999,
-                  padding: 4,
-                  background: "#fff",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                className={readerChromeStyles.newThreadButton}
               >
                 <Plus size={16} />
               </button>

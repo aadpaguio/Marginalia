@@ -1,0 +1,197 @@
+/* TOC Panel (Left) — §7. Rail + expandable content. */
+
+.panel {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 220px;
+  transition: width var(--transition-spring);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--surface-raised);
+  border-right: 1px solid var(--border-moderate);
+}
+
+.panelCollapsed {
+  width: 44px;
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 44px;
+  flex-shrink: 0;
+  height: 100%;
+}
+
+.tocToggle {
+  width: 44px;
+  height: 40px;
+  margin-top: var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--ink-tertiary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.tocToggle:hover {
+  color: var(--ink-secondary);
+  background: var(--border-subtle);
+}
+
+.actionStrip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding-bottom: var(--space-3);
+}
+
+.actionButton {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-tertiary);
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.actionButton:hover {
+  color: var(--ink-secondary);
+  background: var(--border-subtle);
+  border-color: var(--border-moderate);
+}
+
+.actionButtonActive {
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+}
+
+.railCloseButton {
+  color: var(--ink-tertiary);
+  transition: color var(--transition-fast);
+}
+
+.railCloseButton:hover {
+  color: var(--ink-primary);
+}
+
+/* Theme menu in rail — stacks upward, slightly thinner so not clipped when panel collapsed */
+.railThemeMenu {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  margin-bottom: 4px;
+  width: 32px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-moderate);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-md);
+  z-index: 140;
+}
+
+.railThemeButton {
+  width: 100%;
+  min-height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-secondary);
+  font-size: 12px;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.railThemeButton:hover {
+  background: var(--border-subtle);
+  color: var(--ink-primary);
+}
+
+.railThemeButtonActive {
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* TOC content — §7.2 */
+.content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: var(--space-3) var(--space-2) var(--space-3) 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-moderate) transparent;
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-tertiary);
+  padding: 0 var(--space-3) var(--space-2);
+}
+
+.tocItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-family: var(--font-ui);
+  color: var(--ink-secondary);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.tocItem:hover {
+  color: var(--ink-primary);
+  background: var(--border-subtle);
+}
+
+.tocItemActive {
+  color: var(--accent);
+  font-weight: 500;
+  background: var(--accent-dim);
+}
+
+.tocDepth0 {
+  padding-left: var(--space-3);
+}
+
+.tocDepth1 {
+  padding-left: var(--space-6);
+  font-size: 12px;
+}
+
+.tocDepth2 {
+  padding-left: var(--space-8);
+  font-size: 11px;
+  color: var(--ink-tertiary);
+}

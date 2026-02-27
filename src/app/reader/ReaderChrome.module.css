@@ -100,3 +100,263 @@
 .scanRateLimitMessage strong {
   color: var(--accent);
 }
+
+/* §9.1 Top bar — chromeButton base */
+.chromeButton {
+  height: 34px;
+  min-width: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(30, 24, 14, 0.12);
+  background: rgba(30, 24, 14, 0.05);
+  color: var(--ink-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: var(--font-ui);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.chromeButton:hover {
+  background: rgba(30, 24, 14, 0.09);
+  border-color: rgba(30, 24, 14, 0.2);
+}
+
+.chromeButtonDark {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.07);
+  color: #f3f3f3;
+}
+
+.chromeButtonDark:hover {
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.chromeButtonClose {
+  min-width: 34px;
+  padding: 0;
+  color: var(--ink-tertiary);
+  transition: color var(--transition-fast);
+}
+
+.chromeButtonClose:hover {
+  color: var(--ink-primary);
+}
+
+.chromeButtonDark.chromeButtonClose {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.chromeButtonDark.chromeButtonClose:hover {
+  color: #f3f3f3;
+}
+
+.chromeButtonNotes {
+  height: 44px;
+  min-width: 44px;
+}
+
+.chromeButtonActive {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+/* §9.1 Display dropdown */
+.displayMenu {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(30, 24, 14, 0.12);
+  background: rgba(250, 246, 238, 0.97);
+  box-shadow: var(--shadow-md);
+  z-index: 140;
+}
+
+.displayMenuDark {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(26, 26, 26, 0.96);
+}
+
+.themeButton {
+  padding: var(--space-1) var(--space-2);
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(30, 24, 14, 0.1);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  color: var(--ink-secondary);
+  transition: background var(--transition-fast);
+}
+
+.themeButton:hover {
+  background: rgba(30, 24, 14, 0.07);
+}
+
+.themeButtonActive {
+  background: rgba(30, 24, 14, 0.12);
+  font-weight: 600;
+  color: var(--ink-primary);
+}
+
+.themeButtonDark.themeButtonActive {
+  background: rgba(255, 255, 255, 0.18);
+  color: #f3f3f3;
+}
+
+/* §9.2 Selection toolbar */
+.selectionToolbar {
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(30, 24, 14, 0.12);
+  background: rgba(250, 246, 238, 0.98);
+  box-shadow: 0 10px 24px rgba(30, 24, 14, 0.16);
+  padding: var(--space-1) var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.selectionToolbarDark {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(26, 24, 20, 0.96);
+}
+
+.swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(30, 24, 14, 0.18);
+  cursor: pointer;
+}
+
+.swatchSelected {
+  border-width: 2px;
+  border-color: var(--ink-primary);
+}
+
+.swatchDark.swatchSelected {
+  border-color: #f3f3f3;
+}
+
+.swatchYellow { background: #fde047; }
+.swatchBlue { background: #93c5fd; }
+.swatchGreen { background: #86efac; }
+.swatchPink { background: #f9a8d4; }
+
+.toolbarDivider {
+  width: 1px;
+  height: 20px;
+  background: rgba(30, 24, 14, 0.1);
+}
+
+.toolbarDividerDark {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.threadDropdownButton {
+  border: 1px solid rgba(30, 24, 14, 0.12);
+  border-radius: var(--radius-pill);
+  padding: var(--space-1) var(--space-2);
+  font-size: 12px;
+  font-family: var(--font-ui);
+  background: transparent;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.threadDropdownButton:hover {
+  background: rgba(30, 24, 14, 0.06);
+  color: var(--ink-primary);
+}
+
+.threadMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 160px;
+  max-height: 200px;
+  overflow-y: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(30, 24, 14, 0.1);
+  background: rgba(250, 246, 238, 0.99);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-1);
+  z-index: 130;
+}
+
+.threadMenuItem {
+  width: 100%;
+  text-align: left;
+  padding: var(--space-1) var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-size: 12px;
+  font-family: var(--font-ui);
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.threadMenuItem:hover {
+  background: rgba(30, 24, 14, 0.06);
+  color: var(--ink-primary);
+}
+
+.newThreadButton {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(30, 24, 14, 0.12);
+  background: transparent;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.newThreadButton:hover {
+  background: rgba(30, 24, 14, 0.06);
+}
+
+/* §9.3 Hover prompt (existing highlight) — dark regardless of theme */
+.hoverPrompt {
+  border-radius: var(--radius-pill);
+  border: none;
+  background: rgba(20, 18, 12, 0.82);
+  backdrop-filter: blur(4px);
+  padding: var(--space-1) var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.hoverPromptButton {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: var(--font-ui);
+  padding: var(--space-1) 0;
+  transition: color var(--transition-fast);
+}
+
+.hoverPromptButton:hover {
+  color: #fff;
+}
+
+.hoverPromptDivider {
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.25);
+}
