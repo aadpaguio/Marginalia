@@ -97,6 +97,29 @@ function toDisplayString(value: unknown, fallback: string): string {
   return asString && asString !== "[object Object]" ? asString : fallback;
 }
 
+/** Extract author from foliate-js metadata (author can be array of { name: string | Record<lang,string> }). */
+function metadataAuthor(meta: { author?: unknown } | null | undefined, fallback: string): string {
+  const a = meta?.author;
+  if (typeof a === "string") return a.trim() || fallback;
+  if (Array.isArray(a) && a.length > 0) {
+    const parts = a.map((entry) => {
+      if (typeof entry === "string") return entry.trim();
+      if (entry && typeof entry === "object" && "name" in entry) {
+        const name = (entry as { name?: unknown }).name;
+        if (typeof name === "string") return name.trim();
+        if (name && typeof name === "object" && !Array.isArray(name)) {
+          const first = Object.values(name).find((v): v is string => typeof v === "string");
+          return first?.trim() ?? "";
+        }
+      }
+      return "";
+    });
+    const joined = parts.filter(Boolean).join(", ");
+    return joined || fallback;
+  }
+  return fallback;
+}
+
 function formatBookmarkTimestamp(timestamp: number): string {
   try {
     return new Intl.DateTimeFormat(undefined, {
@@ -331,7 +354,7 @@ function App() {
         section = spineItems[index];
       } else {
         section = bookDoc.sections.find((s) => {
-          const sBase = (s.href ?? "").split("#")[0].trim();
+          const sBase = (s.href ?? s.id ?? "").split("#")[0].trim();
           return sBase === hrefNorm || sBase.endsWith(hrefNorm) || hrefNorm.endsWith(sBase);
         });
       }
@@ -366,7 +389,7 @@ function App() {
 
       for (let i = 0; i < spineItems.length; i++) {
         const section = spineItems[i];
-        const href = section.href?.split("#")[0].trim() || `spine-${i}`;
+        const href = (section.href ?? section.id)?.split("#")[0].trim() || `spine-${i}`;
         const text = await getSectionTextByHref(href);
         if (!text) continue;
         const normText = normalizeForQuoteMatch(text);
@@ -518,7 +541,7 @@ function App() {
       const { book } = await new DocumentLoader(file).open();
       console.log("[OpenBook] EPUB parsed", { sectionCount: book.sections?.length ?? 0 });
       const normalizedTitle = toDisplayString(book.metadata.title, filename);
-      const normalizedAuthor = toDisplayString(book.metadata.author, "Unknown");
+      const normalizedAuthor = metadataAuthor(book.metadata, "Unknown");
 
       const existing = await dbGetBook(bookId);
       let coverPath = existing?.coverPath ?? null;
@@ -601,12 +624,8 @@ function App() {
             onSectionSummaryAdded: (summary) =>
               setSectionSummaries((prev) => {
                 const idx = prev.findIndex((s) => s.id === summary.id);
-                if (idx >= 0) {
-                  const next = [...prev];
-                  next[idx] = summary;
-                  return next;
-                }
-                return [...prev, summary];
+                const next = idx >= 0 ? [...prev.slice(0, idx), summary, ...prev.slice(idx + 1)] : [...prev, summary];
+                return next.sort((a, b) => a.spineIndex - b.spineIndex);
               }),
             onBookSummarySet: setBookSummary,
             onBookStructureTypeSet: setBookStructureType,
@@ -1001,7 +1020,7 @@ function App() {
           threadMessages: msgs,
           bookId: currentBookId,
           bookTitle: toDisplayString(bookDoc.metadata?.title, "Book"),
-          author: toDisplayString(bookDoc.metadata?.author, "Unknown"),
+          author: metadataAuthor(bookDoc.metadata, "Unknown"),
         });
       }
       await dbArchiveThread(threadId);
@@ -1072,7 +1091,7 @@ function App() {
           attachedHighlights: activeThreadHighlights.filter((h) => h.bookId === currentBookId),
           userMessage,
           bookTitle: toDisplayString(bookDoc.metadata?.title, "Book"),
-          author: toDisplayString(bookDoc.metadata?.author, "Unknown"),
+          author: metadataAuthor(bookDoc.metadata, "Unknown"),
           bookId: currentBookId,
           bookMemory: bookMemory ?? undefined,
           readerProfile: readerProfile ?? undefined,
@@ -1202,12 +1221,8 @@ function App() {
       onSectionSummaryAdded: (summary) =>
         setSectionSummaries((prev) => {
           const idx = prev.findIndex((s) => s.id === summary.id);
-          if (idx >= 0) {
-            const next = [...prev];
-            next[idx] = summary;
-            return next;
-          }
-          return [...prev, summary];
+          const next = idx >= 0 ? [...prev.slice(0, idx), summary, ...prev.slice(idx + 1)] : [...prev, summary];
+          return next.sort((a, b) => a.spineIndex - b.spineIndex);
         }),
       onBookSummarySet: setBookSummary,
       onBookStructureTypeSet: setBookStructureType,

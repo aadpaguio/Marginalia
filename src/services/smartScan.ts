@@ -33,6 +33,24 @@ function metaString(val: unknown, fallback: string): string {
   return fallback;
 }
 
+/** Extract author from foliate-js metadata (author can be array of { name: string | Record<lang,string> }). */
+function metaAuthor(meta: { author?: unknown } | null | undefined, fallback: string): string {
+  const a = meta?.author;
+  if (typeof a === "string") return a.trim() || fallback;
+  if (Array.isArray(a) && a.length > 0) {
+    const first = a[0];
+    if (first && typeof first === "object" && "name" in first) {
+      const name = (first as { name?: unknown }).name;
+      if (typeof name === "string") return name.trim() || fallback;
+      if (name && typeof name === "object" && !Array.isArray(name)) {
+        const v = Object.values(name).find((x): x is string => typeof x === "string");
+        return (v?.trim() ?? "") || fallback;
+      }
+    }
+  }
+  return fallback;
+}
+
 const RATE_LIMIT_RETRY_DELAYS_SEC = [60, 90, 120];
 const MAX_RATE_LIMIT_RETRIES = 3;
 /** ~3k tokens input; keeps under 50k/min with many sections. */
@@ -270,9 +288,15 @@ export async function generateBookSummary(params: {
   return answer;
 }
 
+/** Normalize href for TOC/spine matching: strip fragment, leading ./, trim. */
+function normalizeHref(href: string): string {
+  return href.split("#")[0].replace(/^\.\//, "").trim() || "";
+}
+
 function flattenToc(items: TOCItem[], map: Map<string, string>) {
   for (const item of items) {
-    map.set(item.href.split("#")[0], item.label);
+    const key = normalizeHref(item.href);
+    if (key) map.set(key, item.label);
     if (item.subitems) flattenToc(item.subitems, map);
   }
 }
@@ -305,6 +329,12 @@ export async function runSmartScan(params: {
 
   const tocLabelMap = new Map<string, string>();
   flattenToc(bookDoc.toc ?? [], tocLabelMap);
+  /** Fallback: map path tail (e.g. "chapter1.xhtml") to label when full path doesn't match. */
+  const tocByTail = new Map<string, string>();
+  for (const [path, label] of tocLabelMap) {
+    const tail = path.replace(/^.*\//, "");
+    if (tail && !tocByTail.has(tail)) tocByTail.set(tail, label);
+  }
 
   const spineItems = (bookDoc.sections ?? []).filter((s) => s.linear !== "no");
   const existingSummaries = await dbGetSectionSummaries(bookId);
@@ -312,7 +342,7 @@ export async function runSmartScan(params: {
   const results = new Map<number, SectionSummary>();
   const limiter = new TokenLimiter();
   const bookTitle = metaString(bookDoc.metadata?.title, "Book");
-  const author = metaString(bookDoc.metadata?.author, "");
+  const author = metaAuthor(bookDoc.metadata, "");
 
   for (const s of existingSummaries) {
     onSectionSummaryAdded?.(s);
@@ -344,8 +374,11 @@ export async function runSmartScan(params: {
 
   const processSection = async (i: number): Promise<void> => {
     const section = spineItems[i];
-    const hrefBase = (section.href ?? "").split("#")[0];
-    const tocLabel = tocLabelMap.get(hrefBase) ?? null;
+    // foliate-js exposes the spine document path as section.id (not href); prefer id for TOC lookup
+    const hrefBase = normalizeHref(section.href ?? section.id ?? "");
+    const hrefTail = hrefBase.replace(/^.*\//, "");
+    const tocLabel =
+      tocLabelMap.get(hrefBase) ?? (hrefTail ? (tocByTail.get(hrefTail) ?? null) : null);
     let sectionText = "";
     try {
       const doc = await section.createDocument();
