@@ -154,47 +154,80 @@ function buildBookmarkLocationLabel(args: {
 
 type CitationSegment = { text: string; citation?: CitationPayload };
 
-/** Strip citation comments (and any trailing incomplete <!--) so streamed text can be shown without raw refs. */
-function stripCitationCommentsForDisplay(text: string): string {
-  const withoutComplete = text.replace(/<!--cite:[\s\S]*?-->/g, "");
-  return withoutComplete.replace(/<!--[\s\S]*$/, "").trim();
+/** Hide a trailing unfinished HTML comment while the assistant text is still streaming. */
+function stripTrailingIncompleteHtmlComment(text: string): string {
+  const lastOpen = text.lastIndexOf("<!--");
+  const lastClose = text.lastIndexOf("-->");
+  return lastOpen > lastClose ? text.slice(0, lastOpen) : text;
+}
+
+/** Extract one quoted passage at the start of a chunk (if present), preserving the remaining prose. */
+function extractLeadingQuotedPassage(chunk: string): { quote: string | null; remainder: string } {
+  const leadingWhitespace = (chunk.match(/^\s*/) ?? [""])[0];
+  const start = chunk.slice(leadingWhitespace.length);
+  if (!start) return { quote: null, remainder: chunk };
+  const open = start[0];
+  const close =
+    open === '"' ? '"' :
+    open === "'" ? "'" :
+    open === "\u201c" ? "\u201d" :
+    open === "\u2018" ? "\u2019" :
+    null;
+  if (!close) return { quote: null, remainder: chunk };
+  const closeIdx = start.indexOf(close, 1);
+  if (closeIdx < 0) return { quote: null, remainder: chunk };
+  const rawQuoted = start.slice(0, closeIdx + 1).trim();
+  const quote =
+    rawQuoted.length >= 2 && rawQuoted[0] === open && rawQuoted[rawQuoted.length - 1] === close
+      ? rawQuoted.slice(1, -1).trim()
+      : rawQuoted;
+  const remainder = `${leadingWhitespace}${start.slice(closeIdx + 1)}`;
+  return { quote, remainder };
 }
 
 /** Split message text at inline <!--cite:{...}--> markers into renderable segments.
- * Citation comment precedes the quote: the text after the comment is the cited passage (quote filled from that). */
+ * Citation comment precedes the quote: consume the quoted passage into a clickable citation card. */
 function parseCitationSegments(text: string): CitationSegment[] {
+  const safeText = stripTrailingIncompleteHtmlComment(text);
   const citeRegex = /<!--cite:([\s\S]*?)-->/g;
-  const matches = [...text.matchAll(citeRegex)];
+  const matches = [...safeText.matchAll(citeRegex)];
   if (matches.length > 0) {
     const segments: CitationSegment[] = [];
+    let cursor = 0;
     for (let i = 0; i < matches.length; i++) {
       const match = matches[i];
-      const beforeStart = i === 0 ? 0 : (matches[i - 1].index ?? 0) + matches[i - 1][0].length;
-      const beforeEnd = match.index ?? 0;
-      const afterStart = (match.index ?? 0) + match[0].length;
-      const afterEnd = i < matches.length - 1 ? (matches[i + 1].index ?? text.length) : text.length;
-      const textBefore = text.slice(beforeStart, beforeEnd);
-      const quotedText = text.slice(afterStart, afterEnd).trim();
+      const markerStart = match.index ?? 0;
+      const markerEnd = markerStart + match[0].length;
+      const nextMarkerStart =
+        i < matches.length - 1 ? (matches[i + 1].index ?? safeText.length) : safeText.length;
+      const textBefore = safeText.slice(cursor, markerStart);
+      const chunkAfterMarker = safeText.slice(markerEnd, nextMarkerStart);
       if (textBefore) segments.push({ text: textBefore });
       let citation: CitationPayload | undefined;
       try {
         citation = JSON.parse(match[1]) as CitationPayload;
-        if (!citation.quote && quotedText) citation = { ...citation, quote: quotedText };
+        const { quote, remainder } = extractLeadingQuotedPassage(chunkAfterMarker);
+        if (quote && !citation.quote) citation = { ...citation, quote };
+        if (citation) segments.push({ text: "", citation });
+        if (remainder) segments.push({ text: remainder });
       } catch { /* skip */ }
-      if (quotedText) segments.push({ text: quotedText, citation });
+      if (!citation && chunkAfterMarker) {
+        segments.push({ text: chunkAfterMarker });
+      }
+      cursor = nextMarkerStart;
     }
     return segments;
   }
 
   // Legacy end-block format: <!--citations:{...}--> at the end
-  const endMatch = text.match(/<!--\s*citations:\s*([\s\S]*?)\s*-->/);
+  const endMatch = safeText.match(/<!--\s*citations:\s*([\s\S]*?)\s*-->/);
   if (endMatch) {
     let citations: CitationPayload[] = [];
     try {
       const parsed = JSON.parse(endMatch[1]) as { items?: CitationPayload[]; citations?: CitationPayload[] };
       citations = parsed.items ?? parsed.citations ?? [];
     } catch { /* ignore */ }
-    const cleanText = text.replace(endMatch[0], "").trim();
+    const cleanText = safeText.replace(endMatch[0], "").trim();
     // Return as a single text segment followed by individual citation-only segments
     return [
       { text: cleanText },
@@ -202,7 +235,7 @@ function parseCitationSegments(text: string): CitationSegment[] {
     ];
   }
 
-  return [{ text }];
+  return [{ text: safeText }];
 }
 
 type CitationJumpStatus = "idle" | "resolving" | "error";
@@ -233,7 +266,7 @@ const CitationJumpButton: FC<{
       onClick={handleClick}
       disabled={status === "resolving"}
     >
-      <span className="thread-citation-quote">"{citation.quote ?? "(passage)"}"</span>
+      <span className="thread-citation-quote">"{(() => { const q = citation.quote ?? "(passage)"; return q.length > 120 ? q.slice(0, 120).trim() + "…" : q; })()}"</span>
       <span className="thread-citation-jump">
         {status === "resolving" ? (
           <>
@@ -388,11 +421,25 @@ function App() {
       .trim();
   }, []);
 
+  /** Strip one layer of surrounding quote chars so "passage" matches passage in the book. */
+  const stripWrappingQuotes = useCallback((s: string): string => {
+    const t = s.trim();
+    if (t.length < 2) return t;
+    if ((t[0] === '"' && t[t.length - 1] === '"') || (t[0] === "'" && t[t.length - 1] === "'"))
+      return t.slice(1, -1).trim();
+    if (t[0] === "\u201c" && t[t.length - 1] === "\u201d") return t.slice(1, -1).trim();
+    if (t[0] === "\u2018" && t[t.length - 1] === "\u2019") return t.slice(1, -1).trim();
+    return t;
+  }, []);
+
   /** Find which section contains the citation quote (by fetching section text via createDocument). Returns index in bookDoc.sections for view.goTo(index). */
   const getSectionContainingQuote = useCallback(
     async (citation: CitationPayload): Promise<{ spineIndex: number } | null> => {
-      const quote = citation.quote?.trim();
+      let quote = citation.quote?.trim();
+      if (quote && quote.length > 400) quote = citation.anchorBefore ?? quote;
+      if (!quote) quote = citation.anchorBefore ?? "";
       if (!quote || !bookDoc?.sections) return null;
+      quote = stripWrappingQuotes(quote);
 
       const spineItems = bookDoc.sections.filter((s) => s.linear !== "no");
       const normQuote = normalizeForQuoteMatch(quote);
@@ -410,7 +457,7 @@ function App() {
       }
       return null;
     },
-    [bookDoc, getSectionTextByHref, normalizeForQuoteMatch]
+    [bookDoc, getSectionTextByHref, normalizeForQuoteMatch, stripWrappingQuotes]
   );
   const highlightRefs = useRef<Record<string, HTMLDetailsElement | null>>({});
   const progressLastWriteAtRef = useRef(0);
@@ -1942,9 +1989,26 @@ function App() {
                                   </div>
                                 ) : isPendingAssistant ? (
                                   <div className="thread-msg-content">
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                      {stripCitationCommentsForDisplay(m.content) || "\u00a0"}
-                                    </ReactMarkdown>
+                                    {parseCitationSegments(m.content).map((seg, segIdx) => (
+                                      <div key={segIdx}>
+                                        {seg.text && (
+                                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{seg.text}</ReactMarkdown>
+                                        )}
+                                        {seg.citation && (
+                                          <CitationJumpButton
+                                            citation={seg.citation}
+                                            onResolve={async (c) => {
+                                              const cfi = await resolveCitationRef.current?.(c) ?? null;
+                                              if (cfi) {
+                                                if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
+                                                setJumpToCfi(cfi);
+                                              }
+                                              return cfi;
+                                            }}
+                                          />
+                                        )}
+                                      </div>
+                                    ))}
                                   </div>
                                 ) : (
                                   <div className="thread-msg-content">

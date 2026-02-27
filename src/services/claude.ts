@@ -272,15 +272,13 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
   // --- TOOLS & CONTEXT ---
   systemParts.push(
     "--- TOOLS & CONTEXT ---\n" +
-    "The reader never sees tool results. When you call get_context, get_section_summary, or get_section_text, the returned content is for you only. " +
-    "You must quote or paraphrase whatever is relevant in your reply so the reader gets the answer; do not refer to 'what I pulled', 'as the section shows', or assume they can see the fetched text.\n" +
-    "Your default state is the selected passage and the reader's question. " +
-    "Do not assume knowledge of the broader book beyond what you are given. " +
-    "You have a tool — get_context — to fetch surrounding text if the question genuinely needs it. " +
-      "Use it when the reader asks about 'the previous section', 'earlier in the chapter', 'what came before', or how the passage relates to nearby text: call get_context (with a larger char_radius to include prior content) rather than asking the user to supply or paste text. " +
-      "When you need more context, call get_context in this turn — do not only say you will fetch text or that you need to see more; actually invoke the tool so the next response can use the result. " +
-      "Use the tool sparingly for other questions; most can be answered from the passage alone." +
-      "And even if you have more context, don't assume the reader has read past the excerpt passed by the user. You don't want spoiling the book unless explicit in the question. Perhaps hint at the possible explanation like 'this will be clearer as you read further' especially if the passed passage is at the start of the section being read."
+    "The reader only ever sees your final message. They do not see tool calls, tool output, or any text you fetched. So: never imply they can see it. Do not say 'as you can see from the context', 'what I retrieved shows', 'the passage I pulled', 'in the text I fetched', or similar. Answer as if the relevant content were already in front of you — quote or paraphrase it in your reply; that is the only way the reader gets the information.\n" +
+    "Default: you have the selected passage and the reader's question. Do not assume they have read beyond that.\n" +
+    "When to use tools:\n" +
+    "- get_context (CFI + char_radius): Use when the question needs text around the reader's current passage — e.g. 'the previous section', 'earlier in the chapter', 'what came before', or how the passage relates to nearby text. Pass the EPUB CFI from the user's message and a char_radius (see section index for snippet/section/full). Call it in this turn if you need it; do not only say you will fetch. For most questions the passage alone is enough.\n" +
+    "- get_section_summary (spine_href): Use to get the summary of a section by its spine_href (from the section index). Helps with thematic questions or deciding if you need that section's full text.\n" +
+    "- get_section_text (spine_href): Use when the reader wants exact quotes or specific lines from a section they have not reached. Pass the spine_href from the section index.\n" +
+    "Spoilers: Do not assume the reader has read past the excerpt. If the answer would spoil later content and they did not ask for it, hint instead (e.g. 'this becomes clearer as you read further')."
   );
   // --- RESPONSE RULES ---
   systemParts.push(
@@ -314,12 +312,9 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
   // --- CITATIONS ---
   systemParts.push(
     "--- CITATIONS ---\n" +
-    "When your answer includes a specific quoted passage from the book, put the citation comment immediately BEFORE the quote. " +
-    "The reader will see the quote; the comment is invisible. One comment per quote. Do not add a citation block at the end.\n" +
-    "Use a short lead-in then the comment then the verbatim quote, e.g. \"The author writes: \" then the comment then \" the exact words from the book.\" " +
-    "CRITICAL — the visible quote must be a CONTINUOUS VERBATIM substring from the book. No '...' or paraphrasing. " +
-    "If long, quote only the most distinctive phrase (under 240 chars).\n" +
-    "Format: lead-in (e.g. \"X says:\" or \"It goes: \") then <!--cite:{\"anchorBefore\":\"...\",\"anchorAfter\":\"...\",\"spineHint\":null}--> then the quote. Do not repeat the quote inside the comment."
+    "When your answer includes a quoted passage from the book, put the citation comment immediately before the quote. " +
+    "Format: <!--cite:{\"anchorBefore\":\"...\",\"anchorAfter\":\"...\"}--> then the quote wrapped in double quotes. " +
+    "Do not repeat the same quoted passage elsewhere in plain text. One comment per quote."
   );
 
   const highlightedSections =

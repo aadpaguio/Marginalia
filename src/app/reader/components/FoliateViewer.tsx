@@ -30,9 +30,22 @@ function normalizeForMatch(s: string): string {
 }
 
 /**
+/** Strip one layer of surrounding quote characters so "passage" matches passage in the book. */
+function stripWrappingQuotes(s: string): string {
+  const t = s.trim();
+  if (t.length < 2) return t;
+  if ((t[0] === '"' && t[t.length - 1] === '"') || (t[0] === "'" && t[t.length - 1] === "'"))
+    return t.slice(1, -1).trim();
+  if (t[0] === "\u201c" && t[t.length - 1] === "\u201d") return t.slice(1, -1).trim();
+  if (t[0] === "\u2018" && t[t.length - 1] === "\u2019") return t.slice(1, -1).trim();
+  return t;
+}
+
+/**
  * Find quote in document and return a Range covering it, or null.
  * Uses text-node walk + optional normalized match so citations work when
  * Window.find() is unavailable (e.g. in iframes) or quote has smart quotes.
+ * Strips surrounding quote characters so "passage" matches passage in the book.
  */
 function findQuoteRangeInDocument(doc: Document, quote: string): Range | null {
   const body = doc.body;
@@ -62,7 +75,7 @@ function findQuoteRangeInDocument(doc: Document, quote: string): Range | null {
     .join("");
   if (fullText.length === 0) return null;
 
-  const quoteTrim = quote.trim();
+  const quoteTrim = stripWrappingQuotes(quote.trim());
   if (quoteTrim.length === 0) return null;
 
   let startIdx = fullText.indexOf(quoteTrim);
@@ -569,7 +582,10 @@ export default function FoliateViewer({
       const v = viewRef.current;
       if (!v) return null;
 
-      const quote = citation.quote?.trim();
+      // Use short quote for search; when model only sends anchors or quote is huge, use anchorBefore.
+      let quote = citation.quote?.trim();
+      if (!quote || quote.length > 400) quote = citation.anchorBefore ?? "";
+      quote = stripWrappingQuotes(quote);
       if (!quote) return null;
 
       const contents = v.renderer.getContents?.() ?? [];
