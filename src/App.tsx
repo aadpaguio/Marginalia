@@ -155,6 +155,35 @@ function buildBookmarkLocationLabel(args: {
 
 type CitationSegment = { text: string; citation?: CitationPayload };
 
+/** Parse citation payload with small repairs for common LLM formatting glitches (e.g. one extra trailing "}"). */
+function parseCitationPayloadLenient(raw: string): CitationPayload | null {
+  const attempts: string[] = [];
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  attempts.push(trimmed);
+
+  // Common model glitch: one or more extra trailing "}" before "-->"
+  let repaired = trimmed;
+  let openCount = (repaired.match(/\{/g) ?? []).length;
+  let closeCount = (repaired.match(/\}/g) ?? []).length;
+  while (closeCount > openCount && repaired.endsWith("}")) {
+    repaired = repaired.slice(0, -1).trimEnd();
+    attempts.push(repaired);
+    openCount = (repaired.match(/\{/g) ?? []).length;
+    closeCount = (repaired.match(/\}/g) ?? []).length;
+  }
+
+  for (const candidate of attempts) {
+    try {
+      const parsed = JSON.parse(candidate) as CitationPayload;
+      if (parsed && typeof parsed === "object") return parsed;
+    } catch {
+      // try next repair
+    }
+  }
+  return null;
+}
+
 /** Hide a trailing unfinished HTML comment while the assistant text is still streaming. */
 function stripTrailingIncompleteHtmlComment(text: string): string {
   const lastOpen = text.lastIndexOf("<!--");
@@ -204,14 +233,15 @@ function parseCitationSegments(text: string): CitationSegment[] {
       const textBefore = safeText.slice(cursor, markerStart);
       const chunkAfterMarker = safeText.slice(markerEnd, nextMarkerStart);
       if (textBefore) segments.push({ text: textBefore });
+      const parsedCitation = parseCitationPayloadLenient(match[1]);
       let citation: CitationPayload | undefined;
-      try {
-        citation = JSON.parse(match[1]) as CitationPayload;
+      if (parsedCitation) {
+        citation = parsedCitation;
         const { quote, remainder } = extractLeadingQuotedPassage(chunkAfterMarker);
         if (quote && !citation.quote) citation = { ...citation, quote };
         if (citation) segments.push({ text: "", citation });
         if (remainder) segments.push({ text: remainder });
-      } catch { /* skip */ }
+      }
       if (!citation && chunkAfterMarker) {
         segments.push({ text: chunkAfterMarker });
       }
