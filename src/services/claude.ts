@@ -310,14 +310,12 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
   // --- CITATIONS ---
   systemParts.push(
     "--- CITATIONS ---\n" +
-    "When your answer includes a specific quoted passage from the book " +
-    "(a verbatim phrase or sentence you copy from the text), place an HTML comment IMMEDIATELY after the closing quotation mark of that quote — " +
-    "on the same line, no space before it. Do not add a citation block at the end of the message. " +
-    "One comment per quote. The comment must never appear in visible text.\n" +
-    "CRITICAL — the quote field must be a CONTINUOUS VERBATIM SUBSTRING copied character-for-character from the book. " +
-    "NEVER use '...' or '…' to skip over words. NEVER paraphrase. NEVER combine two separate sentences. " +
-    "If the passage is longer than 240 characters, quote only the most distinctive opening phrase — keep it short and exact rather than long and truncated.\n" +
-    'Format:\n"some quoted passage"<!--cite:{"quote":"some quoted passage","anchorBefore":"optional 10–20 words before","anchorAfter":"optional 10–20 words after","spineHint":null}-->'
+    "When your answer includes a specific quoted passage from the book, put the citation comment immediately BEFORE the quote. " +
+    "The reader will see the quote; the comment is invisible. One comment per quote. Do not add a citation block at the end.\n" +
+    "Use a short lead-in then the comment then the verbatim quote, e.g. \"The author writes: \" then the comment then \" the exact words from the book.\" " +
+    "CRITICAL — the visible quote must be a CONTINUOUS VERBATIM substring from the book. No '...' or paraphrasing. " +
+    "If long, quote only the most distinctive phrase (under 240 chars).\n" +
+    "Format: lead-in (e.g. \"X says:\" or \"It goes: \") then <!--cite:{\"anchorBefore\":\"...\",\"anchorAfter\":\"...\",\"spineHint\":null}--> then the quote. Do not repeat the quote inside the comment."
   );
 
   const highlightedSections =

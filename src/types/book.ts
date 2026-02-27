@@ -76,9 +76,9 @@ export interface ThreadWithMessages extends Thread {
   highlights: Highlight[];
 }
 
-/** Citation payload from assistant (HTML comment); used for jump-to-passage resolution. */
+/** Citation payload from assistant (HTML comment); used for jump-to-passage resolution. Quote may be omitted when comment precedes the passage (parser fills it). */
 export interface CitationPayload {
-  quote: string;
+  quote?: string;
   anchorBefore?: string;
   anchorAfter?: string;
   spineHint?: string | null;
