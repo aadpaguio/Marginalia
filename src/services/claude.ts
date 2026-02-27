@@ -238,13 +238,16 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     params.sectionSummaries &&
     params.sectionSummaries.length > 0
   ) {
+    const sortedSummaries = [...params.sectionSummaries].sort(
+      (a, b) => a.spineIndex - b.spineIndex
+    );
     const currentSpineIndex = currentSpineIndexForCfi(
       params.currentCfi,
-      params.sectionSummaries
+      sortedSummaries
     );
     const hrefCol = (s: { spineHref: string; spineIndex: number }) =>
       (s.spineHref ?? "").trim() || `spine-${s.spineIndex}`;
-    const sectionIndexLines = params.sectionSummaries.map((s) => {
+    const sectionIndexLines = sortedSummaries.map((s) => {
       const isAhead = s.spineIndex > currentSpineIndex;
       const typeTag =
         s.structureType === "prefatory" || s.structureType === "reference"
@@ -259,6 +262,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     });
     systemParts.push(
       `--- SECTION INDEX ---\n` +
+      `The section index is ordered by spine index. ` +
         `Use spine_href (first column) with get_section_summary or get_section_text. Summaries are not inlined; call the tool when needed.\n` +
         `Reader's current position maps to spine index ${currentSpineIndex}; sections with [ahead] are past the reader.\n\n` +
         sectionIndexLines.join("\n") +

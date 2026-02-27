@@ -611,7 +611,7 @@ function App() {
       setBookSummary(storedBookSummary);
       setBookStructureType(storedBookStructureType);
       const storedSummaries = await dbGetSectionSummaries(bookId);
-      setSectionSummaries(storedSummaries);
+      setSectionSummaries([...storedSummaries].sort((a, b) => a.spineIndex - b.spineIndex));
 
       setBookDoc(book);
       console.log("[OpenBook] Done");
