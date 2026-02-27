@@ -57,6 +57,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "@/components/ThreadsPanel/ThreadsPanel.css";
 import readerChromeStyles from "@/app/reader/ReaderChrome.module.css";
+import appStyles from "@/App.module.css";
 
 function base64ToFile(base64: string, filename: string): File {
   const binary = atob(base64);
@@ -947,7 +948,7 @@ function App() {
             });
           }
         }
-        if (currentBookId && bookDoc && newMessages.length >= 40) {
+        if (currentBookId && bookDoc && newMessages.length >= 15) {
           const thread = threads.find((t) => t.id === threadId);
           await runCompactionForThread({
             threadId,
@@ -1257,22 +1258,13 @@ function App() {
         }}
       >
         {savingSession && (
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              right: 0,
-              zIndex: 9999,
-              padding: "12px 16px",
-              background: chrome.panelBg,
-              borderBottom: `1px solid ${chrome.panelBorder}`,
-              textAlign: "center",
-              fontSize: 13,
-              color: chrome.appFg,
-            }}
-          >
-            Saving your reading session…
+          <div className={appStyles.savingBar}>
+            <div className={appStyles.savingDots} aria-hidden>
+              <span />
+              <span />
+              <span />
+            </div>
+            <span>Saving your reading session…</span>
           </div>
         )}
         <FoliateViewer
