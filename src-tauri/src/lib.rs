@@ -170,6 +170,7 @@ struct DbThread {
     created_at: i64,
     updated_at: i64,
     archived: i64,
+    flushed_at: Option<i64>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -417,6 +418,9 @@ fn init_db(db_path: &Path) -> Result<(), String> {
     // Migration: add annotation to highlights (Phase 29)
     let _ = conn.execute("ALTER TABLE highlights ADD COLUMN annotation TEXT", ());
 
+    // Migration: mid-thread memory flush idempotency (Phase 30)
+    let _ = conn.execute("ALTER TABLE threads ADD COLUMN flushed_at INTEGER", ());
+
     Ok(())
 }
 
@@ -615,7 +619,7 @@ fn db_get_threads(state: State<DbState>, book_id: String) -> Result<Vec<DbThread
     let conn = open_db(&state)?;
     let mut stmt = conn
         .prepare(
-            "SELECT id, book_id, title, created_at, updated_at, archived
+            "SELECT id, book_id, title, created_at, updated_at, archived, flushed_at
              FROM threads WHERE book_id = ?1 AND (archived = 0 OR archived IS NULL)
              ORDER BY updated_at DESC",
         )
@@ -629,10 +633,19 @@ fn db_get_threads(state: State<DbState>, book_id: String) -> Result<Vec<DbThread
                 created_at: row.get(3)?,
                 updated_at: row.get(4)?,
                 archived: row.get::<_, Option<i64>>(5)?.unwrap_or(0),
+                flushed_at: row.get(6)?,
             })
         })
         .map_err(|e| e.to_string())?;
     rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn db_mark_thread_flushed(state: State<DbState>, id: String, flushed_at: i64) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    conn.execute("UPDATE threads SET flushed_at = ?1 WHERE id = ?2", params![flushed_at, id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 #[tauri::command]
@@ -1887,6 +1900,7 @@ pub fn run() {
             db_create_thread,
             db_update_thread_title,
             db_archive_thread,
+            db_mark_thread_flushed,
             db_delete_thread,
             db_clear_all_threads,
             db_get_thread_messages,

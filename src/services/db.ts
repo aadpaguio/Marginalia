@@ -125,13 +125,23 @@ export async function dbGetHighlightsForThread(threadId: string): Promise<Highli
   return invoke<Highlight[]>("db_get_highlights_for_thread", { threadId });
 }
 
-// Threads (Rust returns archived as 0/1)
-interface DbThreadRow extends Omit<Thread, "archived"> {
+// Threads (Rust returns archived as 0/1, flushedAt as flushed_at -> camelCase)
+interface DbThreadRow extends Omit<Thread, "archived" | "flushedAt"> {
   archived: number;
+  flushedAt?: number | null;
 }
 export async function dbGetThreads(bookId: string): Promise<Thread[]> {
   const rows = await invoke<DbThreadRow[]>("db_get_threads", { bookId });
-  return rows.map((t) => ({ ...t, archived: t.archived !== 0 }));
+  return rows.map((t) => ({
+    ...t,
+    archived: t.archived !== 0,
+    flushedAt: t.flushedAt ?? null,
+  }));
+}
+
+export async function dbMarkThreadFlushed(threadId: string, flushedAt?: number): Promise<void> {
+  const ts = flushedAt ?? Date.now();
+  await invoke("db_mark_thread_flushed", { id: threadId, flushedAt: ts });
 }
 
 export async function dbCreateThread(thread: Thread): Promise<void> {

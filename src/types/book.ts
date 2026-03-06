@@ -56,6 +56,8 @@ export interface Thread {
   createdAt: number;
   updatedAt: number;
   archived: boolean;
+  /** Set when mid-thread memory flush has run (idempotency). null = not flushed yet. */
+  flushedAt?: number | null;
 }
 
 export interface ThreadMessage {

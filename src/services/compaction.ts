@@ -290,6 +290,86 @@ Rules:
   }
 }
 
+/** Mid-thread flush: partial extraction, high-confidence only. Same shape as extractMemoryItems; no journal writes. */
+export async function extractMemoryItemsPartial(params: {
+  thread: Thread;
+  messages: ThreadMessage[];
+  bookId: string;
+  bookTitle: string;
+  author: string;
+  apiKey: string;
+}): Promise<ExtractedMemoryItem[]> {
+  const { thread, messages, bookTitle, author, apiKey } = params;
+  const threadBlock = formatThreadForPrompt(messages);
+  const systemPrompt = `You are extracting structured memory from a reading discussion (partial read).
+
+Book: ${bookTitle} by ${author}
+Thread: ${thread.title ?? "Discussion"}
+
+${threadBlock}
+
+Only extract items with confidence >= 0.7.
+This is a partial read — be conservative.
+Prefer explicit reader statements over inferences.
+
+Extract 1–3 discrete memory items worth remembering. Focus on: explicit opinions, clear questions, stated preferences.
+
+Return ONLY a JSON array. No preamble, no markdown fences.
+
+[
+  {
+    "content": "single insight in second person, one sentence",
+    "type": "reading_identity|intellectual|emotional|preference|book_insight|book_question|book_reaction",
+    "confidence": 0.7,
+    "scope": "global|book|passage",
+    "passage_text": "exact quote if passage-specific, otherwise null"
+  }
+]
+
+Rules:
+- content must be second person ("You tend to...", "You said...")
+- Only include what is clearly evidenced — no inference beyond what's said
+- confidence: 0.7 minimum; 0.9 only for explicit user statements`;
+
+  const userPrompt = "Output only the JSON array of memory items.";
+  try {
+    const data = await invoke<{ answer: string }>("ask_claude_thread_proxy", {
+      request: {
+        apiKey,
+        model: COMPACTION_MODEL,
+        systemBlocks: [{ text: systemPrompt, cache_control: undefined }],
+        messages: [{ role: "user", content: userPrompt }],
+      },
+    });
+    const raw = (data.answer ?? "").trim();
+    const json = raw.replace(/^```\w*\n?|\n?```$/g, "").trim();
+    const parsed = JSON.parse(json) as unknown;
+    if (!Array.isArray(parsed)) {
+      console.warn("[extractMemoryItemsPartial] Response was not a JSON array");
+      return [];
+    }
+    const items: ExtractedMemoryItem[] = [];
+    for (const entry of parsed) {
+      if (entry && typeof entry === "object" && typeof (entry as { content?: unknown }).content === "string") {
+        const o = entry as { content: string; type?: string; confidence?: number; scope?: string; passage_text?: string | null };
+        const confidence = typeof o.confidence === "number" ? o.confidence : 0.7;
+        if (confidence < 0.7) continue;
+        items.push({
+          content: o.content,
+          type: typeof o.type === "string" ? o.type : "book_insight",
+          confidence,
+          scope: o.scope === "global" || o.scope === "book" || o.scope === "passage" ? o.scope : "book",
+          passage_text: o.passage_text != null && typeof o.passage_text === "string" ? o.passage_text : null,
+        });
+      }
+    }
+    return items;
+  } catch (e) {
+    console.warn("[extractMemoryItemsPartial] Parse or API error:", e);
+    return [];
+  }
+}
+
 /** Phase 30.1: Consolidate book memory when it exceeds ~600 words. Rewrites file to Reading Summary + Recent Threads. */
 export async function consolidateBookMemory(params: {
   bookId: string;

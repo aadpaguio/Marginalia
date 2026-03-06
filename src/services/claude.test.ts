@@ -108,6 +108,64 @@ describe("Phase 27 — assembleThreadContext (blind model posture)", () => {
     expect(result.messages).toHaveLength(1);
     expect((result.messages[0].content as string)).not.toContain("[MEMORY CONTEXT]");
   });
+
+  it("Phase 30.5: first turn with memoryItems -> memory block present", () => {
+    const result = assembleThreadContext({
+      ...baseParams,
+      messages: [],
+      memoryItems: [
+        {
+          id: "mi-1",
+          content: "You prefer concise answers.",
+          type: "preference",
+          confidence: 0.8,
+          observationCount: 2,
+          source: "compaction",
+          createdAt: 0,
+          lastReinforcedAt: 0,
+          anchors: [],
+        },
+      ],
+    });
+    expect(result.messages.length).toBeGreaterThanOrEqual(2);
+    const first = result.messages[0];
+    expect(first.content).toContain("[MEMORY CONTEXT]");
+    expect(first.content).toContain("You prefer concise answers.");
+  });
+
+  it("Phase 30.5: second turn without memoryItems -> memory block absent", () => {
+    const result = assembleThreadContext({
+      ...baseParams,
+      messages: [
+        { id: "m1", threadId: "t1", role: "user", content: "First question", createdAt: 0 },
+        { id: "m2", threadId: "t1", role: "assistant", content: "First reply", createdAt: 0 },
+      ],
+      memoryItems: undefined,
+      userMessage: "Second question",
+    });
+    const hasMemoryBlock = result.messages.some(
+      (m) => typeof m.content === "string" && (m.content as string).includes("[MEMORY CONTEXT]")
+    );
+    expect(hasMemoryBlock).toBe(false);
+    expect(result.messages.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("Phase 30.5: existing thread with prior messages -> no memory block reinjection", () => {
+    const result = assembleThreadContext({
+      ...baseParams,
+      messages: [
+        { id: "m1", threadId: "t1", role: "user", content: "Earlier", createdAt: 0 },
+        { id: "m2", threadId: "t1", role: "assistant", content: "Reply", createdAt: 0 },
+      ],
+      memoryItems: undefined,
+      userMessage: "Follow-up",
+    });
+    result.messages.forEach((m) => {
+      if (typeof m.content === "string") {
+        expect((m.content as string)).not.toContain("[MEMORY CONTEXT]");
+      }
+    });
+  });
 });
 
 describe("Phase 27 — askClaudeThread agentic loop", () => {

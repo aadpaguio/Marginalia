@@ -5,7 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { exists } from "@tauri-apps/plugin-fs";
 import { DocumentLoader } from "@/libs/document";
 import type { BookDoc, TOCItem } from "@/libs/document";
-import type { CitationPayload, Highlight, Thread, ThreadMessage } from "@/types/book";
+import type { CitationPayload, Highlight, MemoryItem, Thread, ThreadMessage } from "@/types/book";
 import type { ReaderTheme } from "@/app/reader/utils/readerStyles";
 import FoliateViewer from "@/app/reader/components/FoliateViewer";
 import Library from "@/components/Library";
@@ -18,6 +18,7 @@ import {
   dbGetStandaloneHighlights,
   dbGetThreadMessages,
   dbGetThreads,
+  dbMarkThreadFlushed,
   dbSaveThreadMessage,
   dbUpdateThreadTitle,
   dbDeleteBook,
@@ -51,6 +52,7 @@ import {
   consolidateBookMemory,
   extractChapterRange,
   extractMemoryItems,
+  extractMemoryItemsPartial,
   extractReaderProfile,
   formatReaderMd,
   parseReaderMd,
@@ -357,6 +359,9 @@ function App() {
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [activeThreadMessages, setActiveThreadMessages] = useState<ThreadMessage[]>([]);
   const [activeThreadHighlights, setActiveThreadHighlights] = useState<Highlight[]>([]);
+  /** Phase 30.5: memory items loaded once per thread at open; injected only on first turn. */
+  const [threadInitialMemoryItems, setThreadInitialMemoryItems] = useState<MemoryItem[]>([]);
+  const [threadMemoryLoadedForThreadId, setThreadMemoryLoadedForThreadId] = useState<string | null>(null);
   const [standaloneHighlights, setStandaloneHighlights] = useState<Highlight[]>([]);
   const [bookmarks, setBookmarks] = useState<StoredBookmark[]>([]);
   const [panelTab, setPanelTab] = useState<PanelTab>("threads");
@@ -437,6 +442,10 @@ function App() {
   >(null);
   /** Session-only working context: last 1–2 get_context results for follow-up continuity. Evicted on new fetch; not persisted. */
   const workingContextRef = useRef<string[]>([]);
+  /** Tracks which thread we're loading memory for; used to avoid applying stale memory when user switches thread before load completes. */
+  const activeThreadIdRef = useRef<string | null>(null);
+  /** Guards against duplicate in-flight mid-thread flush for the same thread. */
+  const flushingThreadIdsRef = useRef<Set<string>>(new Set());
   /** Fetches full text of a section by spine_href for get_section_text tool (e.g. to quote from "On origins"). Resolves "spine-N" by index when EPUB has no href. */
   const getSectionTextByHref = useCallback(
     async (spineHref: string): Promise<string> => {
@@ -817,17 +826,31 @@ function App() {
     if (!activeThreadId || !currentBookId) {
       setActiveThreadMessages([]);
       setActiveThreadHighlights([]);
+      setThreadInitialMemoryItems([]);
+      setThreadMemoryLoadedForThreadId(null);
       setThreadChatError(null);
       return;
     }
     setThreadChatError(null);
     workingContextRef.current = [];
+    const threadId = activeThreadId;
+    activeThreadIdRef.current = threadId;
     Promise.all([
       dbGetThreadMessages(activeThreadId),
       dbGetHighlightsForThread(activeThreadId),
     ]).then(([messages, threadHighlights]) => {
       setActiveThreadMessages(messages);
       setActiveThreadHighlights(threadHighlights);
+      const seedText =
+        messages.find((m) => m.role === "user")?.content?.trim() ||
+        threads.find((t) => t.id === threadId)?.title?.trim() ||
+        "What can you tell me about the passages I've highlighted?";
+      loadRelevantMemoryItems(currentBookId, seedText).then((items) => {
+        if (activeThreadIdRef.current === threadId) {
+          setThreadInitialMemoryItems(items);
+          setThreadMemoryLoadedForThreadId(threadId);
+        }
+      });
     });
   }, [activeThreadId, currentBookId]);
 
@@ -1067,7 +1090,49 @@ function App() {
             });
           }
         }
-        // Compaction only runs when archiving; no auto-compaction on message save
+
+        const userTurns = newMessages.filter((m) => m.role === "user").length;
+        const thread = threads.find((t) => t.id === threadId);
+        const apiKeyFlush = import.meta.env.VITE_ANTHROPIC_API_KEY;
+        const shouldFlush =
+          userTurns >= 5 &&
+          thread &&
+          !thread.archived &&
+          (thread.flushedAt == null || thread.flushedAt === undefined) &&
+          !!apiKeyFlush &&
+          currentBookId &&
+          bookDoc &&
+          !flushingThreadIdsRef.current.has(threadId);
+        if (shouldFlush) {
+          flushingThreadIdsRef.current.add(threadId);
+          void (async () => {
+            try {
+              const items = await extractMemoryItemsPartial({
+                thread: { ...thread, id: threadId, bookId: thread.bookId, title: thread.title, createdAt: thread.createdAt, updatedAt: thread.updatedAt, archived: thread.archived, flushedAt: thread.flushedAt ?? null },
+                messages: newMessages,
+                bookId: currentBookId,
+                bookTitle: toDisplayString(bookDoc.metadata?.title, "Book"),
+                author: metadataAuthor(bookDoc.metadata, "Unknown"),
+                apiKey: apiKeyFlush,
+              });
+              await persistExtractedMemoryItems({
+                items,
+                threadId,
+                bookId: currentBookId,
+                attachedHighlights: activeThreadHighlights,
+              });
+              const now = Date.now();
+              await dbMarkThreadFlushed(threadId, now);
+              setThreads((prev) =>
+                prev.map((t) => (t.id === threadId ? { ...t, flushedAt: now } : t))
+              );
+            } catch (e) {
+              console.warn("[Mid-thread flush]", e);
+            } finally {
+              flushingThreadIdsRef.current.delete(threadId);
+            }
+          })();
+        }
       })
     );
   };
@@ -1256,11 +1321,13 @@ function App() {
       window.clearInterval(revealIntervalRef.current);
       revealIntervalRef.current = null;
     }
+    const isFirstTurn = activeThreadMessages.length === 0;
+    const memoryItemsForTurn =
+      isFirstTurn && threadInitialMemoryItems.length > 0 ? threadInitialMemoryItems : undefined;
     try {
-      const [bookMemory, readerProfile, memoryItems] = await Promise.all([
+      const [bookMemory, readerProfile] = await Promise.all([
         memoryReadBook(currentBookId),
         memoryReadReader(),
-        loadRelevantMemoryItems(currentBookId, userMessage),
       ]);
       const result = await askClaudeThread(
         {
@@ -1280,7 +1347,7 @@ function App() {
           bookId: currentBookId,
           bookMemory: bookMemory ?? undefined,
           readerProfile: readerProfile ?? undefined,
-          memoryItems: memoryItems.length > 0 ? memoryItems : undefined,
+          memoryItems: memoryItemsForTurn,
           workingContext: workingContextRef.current.join("\n\n---\n\n"),
           bookSummary: bookSummary ?? undefined,
           sectionSummaries: sectionSummaries.length > 0 ? sectionSummaries : undefined,
