@@ -23,7 +23,7 @@
 }
 
 .appName {
-  font-family: var(--font-ui);
+  font-family: var(--font-brand);
   font-size: 17px;
   font-weight: 600;
   color: var(--ink-primary);
@@ -45,26 +45,29 @@
   gap: var(--space-2);
 }
 
-.btnOpenBook {
-  background: var(--surface-sunken);
-  color: var(--ink-tertiary);
-  border: 1px solid transparent;
+.btnAddBook {
+  height: 32px;
+  padding: 0 var(--space-3);
+  font-size: 13px;
+  font-family: var(--font-ui);
   border-radius: var(--radius-sm);
-  padding: var(--space-2);
+  border: 1px solid var(--border-moderate);
+  background: transparent;
+  color: var(--ink-secondary);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: var(--space-2);
   transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
 }
 
-.btnOpenBook:hover {
-  background: var(--surface-raised);
-  border-color: var(--border-moderate);
+.btnAddBook:hover {
+  background: var(--surface-sunken);
+  border-color: var(--border-strong);
   color: var(--ink-primary);
 }
 
-.btnOpenBook:active {
+.btnAddBook:active {
   transform: scale(0.97);
 }
 
@@ -91,6 +94,25 @@
   flex: 1;
   overflow: auto;
   padding: var(--space-8);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-moderate) transparent;
+}
+
+.gridWrap::-webkit-scrollbar {
+  width: 6px;
+}
+
+.gridWrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.gridWrap::-webkit-scrollbar-thumb {
+  background: var(--border-moderate);
+  border-radius: var(--radius-pill);
+}
+
+.gridWrap::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
 }
 
 .grid {
@@ -146,6 +168,31 @@
   position: relative;
 }
 
+.coverWrap.scanned::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 28px;
+  width: 1px;
+  height: 28px;
+  background: rgba(30, 24, 14, 0.15);
+  z-index: 11;
+}
+
+.coverWrap.scanned::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 28px 28px 0;
+  border-color: transparent var(--accent) transparent transparent;
+  z-index: 10;
+  opacity: 0.85;
+}
+
 .coverImg {
   width: 100%;
   height: 100%;
@@ -198,7 +245,7 @@
   font-family: var(--font-ui);
   font-size: 11px;
   color: var(--ink-tertiary);
-  margin: 0 0 var(--space-2);
+  margin: 0 0 var(--space-1);
 }
 
 .missingFile {
@@ -221,41 +268,6 @@
   background: var(--accent);
   border-radius: var(--radius-pill);
   transition: width 400ms var(--transition-spring);
-}
-
-.scanButton {
-  position: absolute;
-  top: var(--space-3);
-  right: var(--space-3);
-  width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border-moderate);
-  border-radius: var(--radius-sm);
-  background: var(--surface-raised);
-  color: var(--ink-tertiary);
-  cursor: pointer;
-  padding: 0;
-  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
-}
-
-.scanButton:hover:not(:disabled) {
-  border-color: var(--accent-border);
-  color: var(--accent);
-  background: var(--accent-dim);
-}
-
-.scanButton:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
-.scanButtonDone {
-  background: var(--accent-dim);
-  color: var(--accent);
-  border-color: var(--accent-border);
 }
 
 /* Empty state */

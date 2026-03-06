@@ -5,25 +5,26 @@
 
 export type ReaderTheme = "light" | "sepia" | "dark";
 
+/* Aligned with design tokens (tokens.css) so book page matches Page surface. */
 const THEMES: Record<
   ReaderTheme,
   { bg: string; fg: string; link: string; colorScheme: string }
 > = {
   light: {
-    bg: "#faf9f7",
-    fg: "#333",
+    bg: "#f5f0e8",
+    fg: "#1e1810",
     link: "#0066cc",
     colorScheme: "light",
   },
   sepia: {
-    bg: "#f4ecd8",
-    fg: "#5c4b37",
+    bg: "#ebe0d4",
+    fg: "#2a2218",
     link: "#0066cc",
     colorScheme: "light",
   },
   dark: {
-    bg: "#1a1a1a",
-    fg: "#e0e0e0",
+    bg: "#1c1914",
+    fg: "#f0e8dc",
     link: "#7eb8da",
     colorScheme: "dark",
   },

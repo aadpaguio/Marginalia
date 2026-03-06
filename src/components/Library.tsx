@@ -1,6 +1,6 @@
 import type { MouseEvent } from "react";
 import { Menu, MenuItem } from "@tauri-apps/api/menu";
-import { Plus, Settings, Sparkles } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 import type { StoredBook } from "@/services/db";
 import styles from "./Library.module.css";
 
@@ -53,12 +53,13 @@ export default function Library({
       <div className={styles.actions}>
         <button
           type="button"
-          className={styles.btnOpenBook}
+          className={styles.btnAddBook}
           onClick={onOpenBook}
           title="Import book"
-          aria-label="Import book"
+          aria-label="Add book"
         >
-          <Plus size={18} />
+          <Plus size={14} />
+          <span>Add book</span>
         </button>
         <button
           type="button"
@@ -99,8 +100,6 @@ export default function Library({
             const progress = Math.max(0, Math.min(1, book.progressFraction || 0));
             const isOpening = openingBookId === book.id;
             const isDisabled = book.isMissingFile || isOpening;
-            const isScanDone = book.smartScanStatus === "done";
-            const isScanning = book.smartScanStatus === "in_progress";
             return (
               <div
                 key={book.id}
@@ -113,7 +112,10 @@ export default function Library({
                   disabled={isDisabled}
                   onClick={() => onSelectBook(book)}
                 >
-                  <div className={styles.coverWrap}>
+                  <div
+                    className={`${styles.coverWrap} ${book.smartScanStatus === "done" ? styles.scanned : ""}`}
+                    title={book.smartScanStatus === "done" ? "Smart-Scanned" : undefined}
+                  >
                     {book.coverDataUrl ? (
                       <img
                         src={book.coverDataUrl}
@@ -128,7 +130,9 @@ export default function Library({
                   </div>
                   <div className={styles.meta}>
                     <div className={styles.title}>{book.title || "Untitled"}</div>
-                    <div className={styles.author}>{book.author || "Unknown author"}</div>
+                    {book.author && book.author !== "Unknown" && (
+                      <div className={styles.author}>{book.author}</div>
+                    )}
                     {book.isMissingFile && <div className={styles.missingFile}>File not found</div>}
                     <div className={styles.progressTrack}>
                       <div
@@ -138,25 +142,6 @@ export default function Library({
                     </div>
                   </div>
                 </button>
-                {onScanBook && !book.isMissingFile && (
-                  <button
-                    type="button"
-                    className={[styles.scanButton, isScanDone && styles.scanButtonDone].filter(Boolean).join(" ")}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onScanBook(book);
-                    }}
-                    disabled={isScanning}
-                    aria-label={
-                      isScanDone ? "Smart Scan complete · Re-scan" : isScanning ? "Scanning…" : "Run Smart Scan"
-                    }
-                    title={
-                      isScanDone ? "Smart Scan complete · Re-scan" : isScanning ? "Scanning…" : "Run Smart Scan"
-                    }
-                  >
-                    <Sparkles size={14} />
-                  </button>
-                )}
               </div>
             );
           })}

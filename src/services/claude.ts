@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { Highlight, ThreadMessage } from "@/types/book";
+import type { Highlight, MemoryItem, ThreadMessage } from "@/types/book";
 import type { SectionSummary } from "@/services/db";
+import { memoryGetItemsForBook, memoryGetItemsGlobal } from "@/services/db";
 
 export interface ClaudeRequest {
   selectedText: string;
@@ -26,6 +27,12 @@ export interface ThreadContextParams {
   threadId: string;
   messages: ThreadMessage[];
   attachedHighlights: Highlight[];
+  /** Selected passage attached for this turn only (e.g. Add to thread without creating highlight). */
+  pendingExcerpt?: {
+    text: string;
+    cfi: string;
+    chapter?: string | null;
+  };
   userMessage: string;
   bookTitle: string;
   author: string;
@@ -42,6 +49,8 @@ export interface ThreadContextParams {
   /** Current reader position (pass currentTocHref) — used to annotate sections ahead of reader. */
   currentCfi?: string | null;
   onSuggestSmartScan?: () => void;
+  /** Phase 30.5: relevant memory items to inject as prefill user block. */
+  memoryItems?: MemoryItem[];
 }
 
 /** Message content: string for normal turns, array of blocks for tool_result turns. */
@@ -157,6 +166,54 @@ export async function generateThreadTitle(topicOrQuestion: string, apiKey: strin
   return (data.answer ?? "").trim();
 }
 
+/** Phase 30.5: Load up to 5 relevant memory items (global high-obs + book-scoped + optional cross-book global). */
+export async function loadRelevantMemoryItems(
+  bookId: string,
+  userMessage: string
+): Promise<MemoryItem[]> {
+  const [bookItems, globalItems] = await Promise.all([
+    memoryGetItemsForBook(bookId),
+    memoryGetItemsGlobal(),
+  ]);
+  const globalHighObs = globalItems
+    .filter((i) => i.observationCount >= 3)
+    .sort((a, b) => b.confidence - a.confidence)
+    .slice(0, 3);
+  const topBook = bookItems
+    .sort((a, b) => b.confidence - a.confidence)
+    .slice(0, 3);
+  const crossBookSignals = /\b(have i seen this before|reminds me of|across books|other books|another book)\b/i.test(
+    userMessage
+  );
+  const seen = new Set<string>();
+  const out: MemoryItem[] = [];
+  for (const i of globalHighObs) {
+    if (out.length >= 5) break;
+    if (!seen.has(i.id)) {
+      seen.add(i.id);
+      out.push(i);
+    }
+  }
+  for (const i of topBook) {
+    if (out.length >= 5) break;
+    if (!seen.has(i.id)) {
+      seen.add(i.id);
+      out.push(i);
+    }
+  }
+  if (crossBookSignals && out.length < 5) {
+    const moreGlobal = globalItems
+      .sort((a, b) => b.confidence - a.confidence)
+      .filter((i) => !seen.has(i.id))
+      .slice(0, 5 - out.length);
+    for (const i of moreGlobal) {
+      out.push(i);
+      if (out.length >= 5) break;
+    }
+  }
+  return out.slice(0, 5);
+}
+
 /** Normalize href for comparison: strip fragment, leading ./, lowercase. */
 function normalizeHrefForMatch(href: string): string {
   const withoutFragment = href.split("#")[0].trim();
@@ -190,6 +247,78 @@ function currentSpineIndexForCfi(
   return 0;
 }
 
+/** Phase 30.2: Get current chapter label from CFI + section summaries (for chapter-proximate injection). */
+function getCurrentChapterLabel(
+  currentCfi: string | null | undefined,
+  sectionSummaries: Array<{ spineHref: string; spineIndex: number; tocLabel?: string | null }> | undefined
+): string | null {
+  if (!sectionSummaries?.length) return null;
+  const sorted = [...sectionSummaries].sort((a, b) => a.spineIndex - b.spineIndex);
+  const spineIndex = currentSpineIndexForCfi(currentCfi, sorted);
+  const section = sorted.find((s) => s.spineIndex === spineIndex);
+  const label = section?.tocLabel?.trim();
+  return label || null;
+}
+
+const CHAPTERS_LINE_REGEX = /^chapters:\s*(.+)$/m;
+
+/** Phase 30.2: Build reading history block; when current chapter is known, add chapter-proximate entries not already in recent. */
+function buildReadingHistoryBlock(
+  bookMemory: string,
+  currentChapterLabel: string | null
+): string {
+  const trimmed = bookMemory.trim();
+  if (!trimmed) return "";
+  if (!currentChapterLabel) return trimmed;
+
+  const sections = trimmed.split(/\n(?=## )/);
+  let summaryBlock = "";
+  const recentBodies: string[] = [];
+  const otherWithChapters: Array<{ body: string }> = [];
+  let inRecentThreads = false;
+  let recentCount = 0;
+
+  for (const s of sections) {
+    const titleMatch = s.match(/^## (.+?)(?:\n|$)/);
+    const title = titleMatch?.[1]?.trim() ?? "";
+    if (title === "Reading Summary") {
+      summaryBlock = s;
+      inRecentThreads = false;
+      continue;
+    }
+    if (title === "Recent Threads") {
+      inRecentThreads = true;
+      recentCount = 0;
+      if (summaryBlock) summaryBlock = `${summaryBlock}\n\n${s}`;
+      else summaryBlock = s;
+      continue;
+    }
+    const chaptersMatch = s.match(CHAPTERS_LINE_REGEX);
+    const chaptersLine = chaptersMatch?.[1]?.trim() ?? "";
+    const isProximate =
+      chaptersLine &&
+      (chaptersLine.includes(currentChapterLabel) ||
+        currentChapterLabel.includes(chaptersLine));
+    if (inRecentThreads && recentCount < 2) {
+      recentBodies.push(s);
+      recentCount++;
+    } else if (isProximate && chaptersLine) {
+      otherWithChapters.push({ body: s });
+    }
+  }
+
+  const recentSet = new Set(recentBodies);
+  const proximateOnly = otherWithChapters.filter(({ body }) => !recentSet.has(body));
+  if (proximateOnly.length === 0) return trimmed;
+  const proximateBlock = proximateOnly.map(({ body }) => body).join("\n\n");
+  const recentBlock = recentBodies.length > 0 ? recentBodies.join("\n\n") : "";
+  return summaryBlock
+    ? recentBlock
+      ? `${summaryBlock}\n\n${recentBlock}\n\n---\n\n## Chapter-proximate entries\n${proximateBlock}`
+      : `${summaryBlock}\n\n---\n\n## Chapter-proximate entries\n${proximateBlock}`
+    : `${trimmed}\n\n---\n\n## Chapter-proximate entries\n${proximateBlock}`;
+}
+
 /** Assemble system blocks and messages for thread-aware Claude request. */
 export function assembleThreadContext(params: ThreadContextParams): AssembledThreadRequest {
   const {
@@ -198,6 +327,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     readerProfile,
     bookMemory,
     attachedHighlights,
+    pendingExcerpt,
     messages,
     userMessage,
   } = params;
@@ -211,21 +341,15 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
   if (readerProfile?.trim()) {
     systemParts.push(`--- READER PROFILE ---\n${readerProfile.trim()}`);
   }
-  // --- READING HISTORY (this book) ---
+  // --- READING HISTORY (this book) --- (Phase 30.1: full; 30.2: chapter-proximate when known)
   if (bookMemory?.trim()) {
-    const trimmed = bookMemory.trim();
-    const wordCount = trimmed.split(/\s+/).length;
-    if (wordCount <= 500) {
-      systemParts.push(`--- READING HISTORY (this book) ---\n${trimmed}`);
-    } else {
-      const entries = trimmed.split("\n## ");
-      const recent = entries.slice(-3);
-      systemParts.push(
-        `--- READING HISTORY (this book) ---\n## ${recent.join("\n## ")}`
-      );
-      systemParts.push(
-        `You have ${Math.max(0, entries.length - 3)} prior journal entries for this book.`
-      );
+    const currentChapterLabel = getCurrentChapterLabel(
+      params.currentCfi,
+      params.sectionSummaries
+    );
+    const historyBlock = buildReadingHistoryBlock(bookMemory.trim(), currentChapterLabel);
+    if (historyBlock) {
+      systemParts.push(`--- READING HISTORY (this book) ---\n${historyBlock}`);
     }
   }
   // --- BOOK OVERVIEW ---
@@ -317,9 +441,28 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     "Do not repeat the same quoted passage elsewhere in plain text. One comment per quote."
   );
 
+  const dedupedHighlights = [...attachedHighlights];
+  if (pendingExcerpt?.text?.trim()) {
+    const excerptText = pendingExcerpt.text.trim();
+    const alreadyIncluded = dedupedHighlights.some(
+      (h) => h.selectedText.trim() === excerptText && (h.cfi ?? "") === (pendingExcerpt.cfi ?? "")
+    );
+    if (!alreadyIncluded) {
+      dedupedHighlights.push({
+        id: "__pending_excerpt__",
+        bookId: params.bookId,
+        cfi: pendingExcerpt.cfi,
+        selectedText: excerptText,
+        color: "yellow",
+        chapterLabel: pendingExcerpt.chapter ?? undefined,
+        createdAt: 0,
+      });
+    }
+  }
+
   const highlightedSections =
-    attachedHighlights.length > 0
-      ? attachedHighlights
+    dedupedHighlights.length > 0
+      ? dedupedHighlights
           .map((h) => `[${h.chapterLabel ?? "Chapter"}] | CFI: ${h.cfi}\n${h.selectedText}`)
           .join("\n\n---\n\n")
       : "(No highlights in this thread)";
@@ -331,10 +474,30 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
   const currentTurn: AssembledThreadRequest["messages"][0] = {
     role: "user" as const,
     content:
-      attachedHighlights.length > 0
+      dedupedHighlights.length > 0
         ? `${highlightedSections}\n\n${userMessage}`
         : userMessage,
   };
+
+  // Phase 30.5: inject memory items as first user block when present (no empty block)
+  const memoryBlock =
+    params.memoryItems && params.memoryItems.length > 0
+      ? params.memoryItems
+          .map(
+            (i) =>
+              `— ${i.content} (${i.type}, seen ${i.observationCount}×${i.anchors?.some((a) => a.bookId) ? ", book" : ""})`
+          )
+          .join("\n")
+      : "";
+  const prefillMessages: AssembledThreadRequest["messages"] =
+    memoryBlock.length > 0
+      ? [
+          {
+            role: "user" as const,
+            content: `[MEMORY CONTEXT]\n${memoryBlock}\n[/MEMORY CONTEXT]`,
+          },
+        ]
+      : [];
 
   const systemBlocks: AssembledThreadRequest["systemBlocks"] = [
     { text: systemParts.join("\n\n"), cacheControl: "ephemeral" },
@@ -348,7 +511,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
 
   return {
     systemBlocks,
-    messages: [...historyMessages, currentTurn],
+    messages: [...prefillMessages, ...historyMessages, currentTurn],
   };
 }
 

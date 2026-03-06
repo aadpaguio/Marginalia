@@ -15,10 +15,11 @@ import {
   handleTouchEnd,
 } from "../utils/iframeEventHandlers";
 import { getReaderStyles, type ReaderTheme } from "../utils/readerStyles";
+import { cfiRangesOverlap } from "../utils/cfi";
 import { useInstantAnnotation } from "../hooks/useInstantAnnotation";
 import Annotator from "./annotator/Annotator";
 import type { CitationPayload, Highlight } from "@/types/book";
-import { ChevronDown, Plus } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import readerChromeStyles from "../ReaderChrome.module.css";
 
 /** Normalize for fuzzy match: smart quotes → straight, collapse whitespace. */
@@ -211,10 +212,13 @@ type Props = {
     fraction: number;
   }) => void;
   onOpenNoteFromHighlight?: (cfi: string) => void;
-  /** Add selection to a thread: pass threadId to add to that thread, or null for new thread. */
+  /** Open notes panel and show add/edit note editor for the highlight at this CFI. */
+  onAddOrEditNoteFromHighlight?: (cfi: string) => void;
+  /** Add selection to a thread: pass threadId to add to that thread, or null for new thread. options.createHighlight: false = attach snippet only, do not create a highlight. */
   onOpenAiPanel?: (
     selection: { cfi: string; selectedText: string; chapterLabel?: string; chapterHref?: string },
-    targetThreadId: string | null
+    targetThreadId: string | null,
+    options?: { createHighlight?: boolean }
   ) => void;
   /** Threads for the current book (for dropdown). */
   threads?: Array<{ id: string; title?: string }>;
@@ -261,6 +265,7 @@ export default function FoliateViewer({
   onRelocate,
   onTocNavigateComplete,
   onOpenNoteFromHighlight,
+  onAddOrEditNoteFromHighlight,
   onOpenAiPanel,
   threads = [],
   onRegisterGetSectionText,
@@ -281,6 +286,9 @@ export default function FoliateViewer({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const hoverPromptRef = useRef<HTMLDivElement | null>(null);
   const selectionToolbarRef = useRef<HTMLDivElement | null>(null);
+  const threadDropdownRef = useRef<HTMLDivElement | null>(null);
+  const suppressNextSelectionRef = useRef(false);
+  const hasFloatingUiRef = useRef(false);
   const doubleClickDisabled = useRef(true);
   const highlightsRef = useRef<Highlight[]>(highlights);
   highlightsRef.current = highlights;
@@ -297,9 +305,18 @@ export default function FoliateViewer({
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [view, setViewState] = useState<FoliateView | null>(null);
+  const [pageDisplay, setPageDisplay] = useState<{
+    pageLabel?: string;
+    pageCurrent?: number;
+    pageTotal?: number;
+  }>({});
   const [pendingSelection, setPendingSelection] = useState<ToolbarSelection | null>(null);
   const [addToThreadDropdownOpen, setAddToThreadDropdownOpen] = useState(false);
   const [hoveredNote, setHoveredNote] = useState<ToolbarSelection | null>(null);
+  useEffect(() => {
+    hasFloatingUiRef.current =
+      pendingSelection != null || hoveredNote != null || addToThreadDropdownOpen;
+  }, [pendingSelection, hoveredNote, addToThreadDropdownOpen]);
   const interactionBlocked = pendingSelection != null;
   const chrome =
     theme === "dark"
@@ -394,8 +411,40 @@ export default function FoliateViewer({
     onTouchEnd,
   } = useTouchEvent(bookKey, viewRef, handleTouchPageFlip);
 
+  const clearAllSelections = useCallback(() => {
+    try {
+      window.getSelection?.()?.removeAllRanges();
+    } catch {
+      // Ignore if browser blocks selection cleanup for this document.
+    }
+    const docs = viewRef.current?.renderer?.getContents?.() ?? [];
+    docs.forEach(({ doc }) => {
+      try {
+        doc.getSelection?.()?.removeAllRanges();
+      } catch {
+        // Ignore section-level selection cleanup failures.
+      }
+    });
+  }, []);
+
+  const dismissSelectionUi = useCallback(
+    (suppressNextSelection: boolean) => {
+      if (suppressNextSelection) {
+        suppressNextSelectionRef.current = true;
+        clearAllSelections();
+      }
+      setAddToThreadDropdownOpen(false);
+      setPendingSelection(null);
+    },
+    [clearAllSelections]
+  );
+
   const handleSelection = useCallback(
     (selection: { selectedText: string; cfi: string; anchorX: number; anchorY: number }) => {
+      if (suppressNextSelectionRef.current) {
+        suppressNextSelectionRef.current = false;
+        return;
+      }
       setPendingSelection(selection);
     },
     []
@@ -413,11 +462,10 @@ export default function FoliateViewer({
   const handleAddToThread = useCallback(
     (targetThreadId: string | null) => {
       if (!selectionPayload || !onOpenAiPanel) return;
-      onOpenAiPanel(selectionPayload, targetThreadId);
-      setAddToThreadDropdownOpen(false);
-      setPendingSelection(null);
+      onOpenAiPanel(selectionPayload, targetThreadId, { createHighlight: false });
+      dismissSelectionUi(false);
     },
-    [onOpenAiPanel, selectionPayload]
+    [dismissSelectionUi, onOpenAiPanel, selectionPayload]
   );
 
   const handleQuickHighlight = useCallback(
@@ -425,23 +473,32 @@ export default function FoliateViewer({
       const selection = pendingSelection;
       const v = viewRef.current;
       if (!selection || !bookId) return;
-      const existing = highlightsRef.current.find((h) => h.cfi === selection.cfi);
+      const existingExact = highlightsRef.current.find((h) => h.cfi === selection.cfi);
 
-      if (existing) {
+      if (existingExact) {
         if (!onUpdateHighlight) return;
         const updated: Highlight = {
-          ...existing,
+          ...existingExact,
           color,
-          chapterLabel: existing.chapterLabel ?? locationRef.current.tocLabel,
-          chapterHref: existing.chapterHref ?? locationRef.current.tocHref,
+          chapterLabel: existingExact.chapterLabel ?? locationRef.current.tocLabel,
+          chapterHref: existingExact.chapterHref ?? locationRef.current.tocHref,
         };
         onUpdateHighlight(updated);
         if (v?.addAnnotation) {
-          await v.addAnnotation({ ...existing, value: existing.cfi }, true);
+          await v.addAnnotation({ ...existingExact, value: existingExact.cfi }, true);
           await v.addAnnotation({ ...updated, value: updated.cfi });
         }
       } else {
-        if (!onAddHighlight) return;
+        if (!onAddHighlight || !onDeleteHighlight) return;
+        const overlapping = highlightsRef.current.filter((h) =>
+          cfiRangesOverlap(h.cfi, selection.cfi)
+        );
+        for (const h of overlapping) {
+          if (v?.addAnnotation) {
+            await v.addAnnotation({ ...h, value: h.cfi }, true);
+          }
+          onDeleteHighlight(h.id);
+        }
         const highlight: Highlight = {
           id: uniqueId(),
           bookId,
@@ -457,9 +514,9 @@ export default function FoliateViewer({
           await v.addAnnotation({ ...highlight, value: highlight.cfi });
         }
       }
-      setPendingSelection(null);
+      dismissSelectionUi(false);
     },
-    [bookId, onAddHighlight, onUpdateHighlight, pendingSelection]
+    [bookId, dismissSelectionUi, onAddHighlight, onUpdateHighlight, onDeleteHighlight, pendingSelection]
   );
 
   const getToolbarPosition = useCallback((selection: ToolbarSelection) => {
@@ -746,6 +803,15 @@ export default function FoliateViewer({
         handleInstantAnnotationPointerCancel();
       });
 
+      // Close selection UI when user clicks inside the book (iframe doesn't bubble to window)
+      const closeSelectionUi = () => {
+        if (!hasFloatingUiRef.current) return;
+        setHoveredNote(null);
+        dismissSelectionUi(true);
+      };
+      doc.addEventListener("pointerdown", closeSelectionUi);
+      doc.addEventListener("mousedown", closeSelectionUi);
+
       const view = viewRef.current;
       // Inject theme into this section's doc so it persists when navigating back
       const styleId = "marginalia-theme";
@@ -803,6 +869,11 @@ export default function FoliateViewer({
       pageCurrent: detail?.location?.current,
       pageTotal: detail?.location?.total,
     };
+    setPageDisplay({
+      pageLabel: detail?.pageItem?.label,
+      pageCurrent: detail?.location?.current,
+      pageTotal: detail?.location?.total,
+    });
     if (cfi) {
       onRelocate?.({
         cfi,
@@ -863,18 +934,24 @@ export default function FoliateViewer({
   }, [hoveredNote, onDeleteHighlight]);
 
   useEffect(() => {
+    if (!pendingSelection && addToThreadDropdownOpen) {
+      setAddToThreadDropdownOpen(false);
+    }
+  }, [pendingSelection, addToThreadDropdownOpen]);
+
+  useEffect(() => {
     if (!hoveredNote && !pendingSelection) return;
-    const onWindowPointerDown = (event: MouseEvent) => {
+    const onWindowPointerDown = (event: PointerEvent) => {
       const target = event.target;
       if (!(target instanceof Node)) return;
       if (hoverPromptRef.current?.contains(target)) return;
       if (selectionToolbarRef.current?.contains(target)) return;
       setHoveredNote(null);
-      setPendingSelection(null);
+      dismissSelectionUi(true);
     };
-    window.addEventListener("mousedown", onWindowPointerDown);
-    return () => window.removeEventListener("mousedown", onWindowPointerDown);
-  }, [hoveredNote, pendingSelection]);
+    window.addEventListener("pointerdown", onWindowPointerDown, true);
+    return () => window.removeEventListener("pointerdown", onWindowPointerDown, true);
+  }, [dismissSelectionUi, hoveredNote, pendingSelection]);
 
   useEffect(() => {
     if (!jumpToCfi) return;
@@ -1079,6 +1156,19 @@ export default function FoliateViewer({
     };
   }, [bookKey, bookDoc]);
 
+  const handleContainerPointerDownCapture = useCallback(
+    (e: React.PointerEvent) => {
+      if (!pendingSelection && !hoveredNote && !addToThreadDropdownOpen) return;
+      const target = e.target;
+      if (!(target instanceof Node)) return;
+      if (selectionToolbarRef.current?.contains(target)) return;
+      if (hoverPromptRef.current?.contains(target)) return;
+      setHoveredNote(null);
+      dismissSelectionUi(true);
+    },
+    [dismissSelectionUi, pendingSelection, hoveredNote, addToThreadDropdownOpen]
+  );
+
   return (
     <div
       ref={containerRef}
@@ -1095,6 +1185,7 @@ export default function FoliateViewer({
         minHeight: "100%",
         overflow: "hidden",
       }}
+      onPointerDownCapture={handleContainerPointerDownCapture}
       onClick={undefined}
       onWheel={
         interactionBlocked
@@ -1124,10 +1215,10 @@ export default function FoliateViewer({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "#faf9f7",
+            background: "var(--surface-page)",
             fontSize: 18,
             fontWeight: 500,
-            color: "#333",
+            color: "var(--ink-primary)",
           }}
         >
           Loading…
@@ -1154,50 +1245,79 @@ export default function FoliateViewer({
         </div>
       )}
       {!loading && !loadError && (
-        <>
+        <div
+          aria-label="Page navigation"
+          style={{
+            position: "absolute",
+            left: "50%",
+            bottom: 10,
+            transform: "translateX(-50%)",
+            zIndex: 12,
+            display: "flex",
+            alignItems: "center",
+            gap: 0,
+            padding: "4px 4px 4px 6px",
+            borderRadius: 999,
+            border: `1px solid ${chrome.navBorder}`,
+            background: chrome.navBg,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+          }}
+        >
           <button
             type="button"
             aria-label="Previous page"
             onClick={() => void goPrev()}
             style={{
-              position: "absolute",
-              left: 12,
-              top: "50%",
-              transform: "translateY(-50%)",
-              zIndex: 12,
-              width: 34,
-              height: 34,
-              borderRadius: "999px",
-              border: `1px solid ${chrome.navBorder}`,
-              background: chrome.navBg,
+              width: 28,
+              height: 28,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "none",
+              borderRadius: 999,
+              background: "transparent",
               color: chrome.controlFg,
               cursor: "pointer",
             }}
           >
-            {"<"}
+            <ChevronLeft size={18} strokeWidth={2.5} />
           </button>
+          <span
+            style={{
+              minWidth: 72,
+              padding: "0 10px",
+              fontSize: 12,
+              fontWeight: 500,
+              color: chrome.controlFg,
+              textAlign: "center",
+            }}
+          >
+            {pageDisplay.pageLabel
+              ? pageDisplay.pageLabel
+              : pageDisplay.pageCurrent != null && pageDisplay.pageTotal != null
+                ? `${pageDisplay.pageCurrent + 1} / ${pageDisplay.pageTotal}`
+                : "—"}
+          </span>
           <button
             type="button"
             aria-label="Next page"
             onClick={() => void goNext()}
             style={{
-              position: "absolute",
-              right: 12,
-              top: "50%",
-              transform: "translateY(-50%)",
-              zIndex: 12,
-              width: 34,
-              height: 34,
-              borderRadius: "999px",
-              border: `1px solid ${chrome.navBorder}`,
-              background: chrome.navBg,
+              width: 28,
+              height: 28,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "none",
+              borderRadius: 999,
+              background: "transparent",
               color: chrome.controlFg,
               cursor: "pointer",
             }}
           >
-            {">"}
+            <ChevronRight size={18} strokeWidth={2.5} />
           </button>
-        </>
+        </div>
       )}
       {hoveredNote && !pendingSelection && (
         <>
@@ -1235,6 +1355,23 @@ export default function FoliateViewer({
             </button>
             {!hoveredNote.isAiNote && (
               <>
+                {onAddOrEditNoteFromHighlight && (
+                  <>
+                    <div className={readerChromeStyles.hoverPromptDivider} aria-hidden />
+                    <button
+                      type="button"
+                      className={readerChromeStyles.hoverPromptButton}
+                      onClick={() => {
+                        onAddOrEditNoteFromHighlight(hoveredNote.cfi);
+                        setHoveredNote(null);
+                      }}
+                    >
+                      {highlightsRef.current.find((h) => h.cfi === hoveredNote.cfi)?.annotation
+                        ? "Edit note"
+                        : "Add note"}
+                    </button>
+                  </>
+                )}
                 <div className={readerChromeStyles.hoverPromptDivider} aria-hidden />
                 <button
                   type="button"
@@ -1253,7 +1390,9 @@ export default function FoliateViewer({
           <button
             type="button"
             aria-label="Dismiss selection actions"
-            onClick={() => setPendingSelection(null)}
+            onClick={() => {
+              dismissSelectionUi(true);
+            }}
             style={{
               position: "absolute",
               inset: 0,
@@ -1276,6 +1415,13 @@ export default function FoliateViewer({
               zIndex: 125,
               width: getToolbarPosition(pendingSelection).width,
             }}
+            onPointerDownCapture={(e) => {
+              if (!addToThreadDropdownOpen) return;
+              const target = e.target;
+              if (!(target instanceof Node)) return;
+              if (threadDropdownRef.current?.contains(target)) return;
+              setAddToThreadDropdownOpen(false);
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             {HIGHLIGHT_SWATCHES.map((swatch) => {
@@ -1291,7 +1437,10 @@ export default function FoliateViewer({
               );
             })}
             <div className={`${readerChromeStyles.toolbarDivider} ${theme === "dark" ? readerChromeStyles.toolbarDividerDark : ""}`} />
-            <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 4 }}>
+            <div
+              ref={threadDropdownRef}
+              style={{ position: "relative", display: "flex", alignItems: "center", gap: 4 }}
+            >
               <button
                 type="button"
                 onClick={() => setAddToThreadDropdownOpen((o) => !o)}

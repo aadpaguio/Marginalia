@@ -58,6 +58,56 @@ describe("Phase 27 — assembleThreadContext (blind model posture)", () => {
     const result = assembleThreadContext(baseParams);
     expect(result.messages[0].content).toBe("What does this mean?");
   });
+
+  it("includes pendingExcerpt in current turn even without attached highlights", () => {
+    const result = assembleThreadContext({
+      ...baseParams,
+      pendingExcerpt: {
+        text: "selected phrase from reader",
+        cfi: "epubcfi(/6/10!/4/2/1:0)",
+        chapter: "Chapter 3",
+      },
+      userMessage: "Can you unpack this?",
+    });
+    const content = result.messages[0].content as string;
+    expect(content).toContain("Chapter 3");
+    expect(content).toContain("epubcfi(/6/10!/4/2/1:0)");
+    expect(content).toContain("selected phrase from reader");
+    expect(content).toContain("Can you unpack this?");
+  });
+
+  it("Phase 30.5: injects memory items as first user message when memoryItems provided", () => {
+    const result = assembleThreadContext({
+      ...baseParams,
+      memoryItems: [
+        {
+          id: "mi-1",
+          content: "You tend to distrust narrators who over-justify.",
+          type: "intellectual",
+          confidence: 0.82,
+          observationCount: 4,
+          source: "compaction",
+          createdAt: 0,
+          lastReinforcedAt: 0,
+          anchors: [],
+        },
+      ],
+    });
+    expect(result.messages.length).toBeGreaterThanOrEqual(2);
+    const first = result.messages[0];
+    expect(first.role).toBe("user");
+    expect(first.content).toContain("[MEMORY CONTEXT]");
+    expect(first.content).toContain("[/MEMORY CONTEXT]");
+    expect(first.content).toContain("You tend to distrust narrators");
+    expect(first.content).toContain("intellectual");
+    expect(first.content).toContain("4×");
+  });
+
+  it("Phase 30.5: no memory block when memoryItems empty or undefined", () => {
+    const result = assembleThreadContext(baseParams);
+    expect(result.messages).toHaveLength(1);
+    expect((result.messages[0].content as string)).not.toContain("[MEMORY CONTEXT]");
+  });
 });
 
 describe("Phase 27 — askClaudeThread agentic loop", () => {
@@ -65,11 +115,11 @@ describe("Phase 27 — askClaudeThread agentic loop", () => {
     vi.mocked(invoke).mockReset();
   });
 
-  it("returns answer immediately when response has no tool_calls", async () => {
+  it("returns answer immediately when response has no toolCalls", async () => {
     vi.mocked(invoke).mockResolvedValue({
       answer: "The passage means X.",
-      tool_calls: [],
-      raw_content: [{ type: "text", text: "The passage means X." }],
+      toolCalls: [],
+      rawContent: [{ type: "text", text: "The passage means X." }],
       model: "claude-haiku-4-5-20251001",
     });
 
@@ -91,19 +141,19 @@ describe("Phase 27 — askClaudeThread agentic loop", () => {
     expect(invoke).toHaveBeenCalledTimes(1);
   });
 
-  it("calls getContextAroundCfi and invokes again when response has get_context tool_call", async () => {
+  it("calls getContextAroundCfi and invokes again when response has get_context toolCall", async () => {
     const getContextAroundCfi = vi.fn().mockReturnValue("some context text");
     vi.mocked(invoke)
       .mockResolvedValueOnce({
         answer: "",
-        tool_calls: [
+        toolCalls: [
           {
             name: "get_context",
             id: "toolu_1",
             input: { cfi: "epubcfi(/6/4!/4/2)", char_radius: 3000 },
           },
         ],
-        raw_content: [
+        rawContent: [
           {
             type: "tool_use",
             id: "toolu_1",
@@ -115,8 +165,8 @@ describe("Phase 27 — askClaudeThread agentic loop", () => {
       })
       .mockResolvedValueOnce({
         answer: "Based on the context, the answer is Y.",
-        tool_calls: [],
-        raw_content: [
+        toolCalls: [],
+        rawContent: [
           { type: "text", text: "Based on the context, the answer is Y." },
         ],
         model: "claude-haiku-4-5-20251001",

@@ -147,6 +147,7 @@ struct DbHighlight {
     chapter_label: Option<String>,
     chapter_href: Option<String>,
     created_at: i64,
+    annotation: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -199,6 +200,60 @@ struct DbThreadMessage {
     excerpt_chapter: Option<String>,
     excerpt_color: Option<String>,
     excerpt_page: Option<String>,
+}
+
+// Phase 30: structured memory items + anchors
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct MemoryItemInput {
+    id: Option<String>,
+    content: String,
+    #[serde(rename = "type")]
+    type_: String,
+    confidence: Option<f64>,
+    observation_count: Option<i64>,
+    source: Option<String>,
+    created_at: Option<i64>,
+    last_reinforced_at: Option<i64>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct MemoryAnchorInput {
+    id: Option<String>,
+    memory_id: Option<String>,
+    book_id: Option<String>,
+    highlight_id: Option<String>,
+    thread_id: Option<String>,
+    cfi: Option<String>,
+    passage_text: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct MemoryAnchorOut {
+    id: String,
+    memory_id: String,
+    book_id: Option<String>,
+    highlight_id: Option<String>,
+    thread_id: Option<String>,
+    cfi: Option<String>,
+    passage_text: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct MemoryItemWithAnchors {
+    id: String,
+    content: String,
+    #[serde(rename = "type")]
+    type_: String,
+    confidence: f64,
+    observation_count: i64,
+    source: String,
+    created_at: i64,
+    last_reinforced_at: i64,
+    anchors: Vec<MemoryAnchorOut>,
 }
 
 fn open_db(state: &DbState) -> Result<Connection, String> {
@@ -300,6 +355,35 @@ fn init_db(db_path: &Path) -> Result<(), String> {
 
         CREATE INDEX IF NOT EXISTS idx_section_summaries_book_id
           ON section_summaries(book_id);
+
+        CREATE TABLE IF NOT EXISTS memory_items (
+          id TEXT PRIMARY KEY,
+          content TEXT NOT NULL,
+          type TEXT NOT NULL,
+          confidence REAL NOT NULL DEFAULT 0.5,
+          observation_count INTEGER NOT NULL DEFAULT 1,
+          source TEXT NOT NULL DEFAULT 'compaction',
+          created_at INTEGER NOT NULL,
+          last_reinforced_at INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS memory_anchors (
+          id TEXT PRIMARY KEY,
+          memory_id TEXT NOT NULL,
+          book_id TEXT,
+          highlight_id TEXT,
+          thread_id TEXT,
+          cfi TEXT,
+          passage_text TEXT,
+          FOREIGN KEY(memory_id) REFERENCES memory_items(id) ON DELETE CASCADE,
+          FOREIGN KEY(book_id) REFERENCES books(id) ON DELETE SET NULL,
+          FOREIGN KEY(highlight_id) REFERENCES highlights(id) ON DELETE SET NULL,
+          FOREIGN KEY(thread_id) REFERENCES threads(id) ON DELETE SET NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_memory_anchors_book ON memory_anchors(book_id);
+        CREATE INDEX IF NOT EXISTS idx_memory_anchors_memory ON memory_anchors(memory_id);
+        CREATE INDEX IF NOT EXISTS idx_memory_items_type ON memory_items(type);
         "#,
     )
     .map_err(|e| e.to_string())?;
@@ -329,6 +413,9 @@ fn init_db(db_path: &Path) -> Result<(), String> {
     let _ = conn.execute("ALTER TABLE section_summaries ADD COLUMN radius_snippet INTEGER NOT NULL DEFAULT 1500", ());
     let _ = conn.execute("ALTER TABLE section_summaries ADD COLUMN radius_section INTEGER NOT NULL DEFAULT 8000", ());
     let _ = conn.execute("ALTER TABLE section_summaries ADD COLUMN radius_full INTEGER NOT NULL DEFAULT 0", ());
+
+    // Migration: add annotation to highlights (Phase 29)
+    let _ = conn.execute("ALTER TABLE highlights ADD COLUMN annotation TEXT", ());
 
     Ok(())
 }
@@ -447,7 +534,7 @@ fn db_get_highlights(state: State<DbState>, book_id: String) -> Result<Vec<DbHig
     let conn = open_db(&state)?;
     let mut stmt = conn
         .prepare(
-            "SELECT id, book_id, cfi, selected_text, color, chapter_label, chapter_href, created_at
+            "SELECT id, book_id, cfi, selected_text, color, chapter_label, chapter_href, created_at, annotation
              FROM highlights WHERE book_id = ?1 ORDER BY created_at ASC",
         )
         .map_err(|e| e.to_string())?;
@@ -462,6 +549,7 @@ fn db_get_highlights(state: State<DbState>, book_id: String) -> Result<Vec<DbHig
                 chapter_label: row.get(5)?,
                 chapter_href: row.get(6)?,
                 created_at: row.get(7)?,
+                annotation: row.get(8)?,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -504,6 +592,21 @@ fn db_delete_highlight(state: State<DbState>, id: String) -> Result<(), String> 
     let conn = open_db(&state)?;
     conn.execute("DELETE FROM highlights WHERE id = ?1", params![id])
         .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn db_update_highlight_annotation(
+    state: State<DbState>,
+    id: String,
+    annotation: Option<String>,
+) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    conn.execute(
+        "UPDATE highlights SET annotation = ?1 WHERE id = ?2",
+        params![annotation, id],
+    )
+    .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -685,7 +788,7 @@ fn db_get_standalone_highlights(
     let conn = open_db(&state)?;
     let mut stmt = conn
         .prepare(
-            "SELECT h.id, h.book_id, h.cfi, h.selected_text, h.color, h.chapter_label, h.chapter_href, h.created_at
+            "SELECT h.id, h.book_id, h.cfi, h.selected_text, h.color, h.chapter_label, h.chapter_href, h.created_at, h.annotation
              FROM highlights h
              LEFT JOIN thread_highlights th ON th.highlight_id = h.id
              WHERE h.book_id = ?1 AND th.thread_id IS NULL
@@ -703,6 +806,7 @@ fn db_get_standalone_highlights(
                 chapter_label: row.get(5)?,
                 chapter_href: row.get(6)?,
                 created_at: row.get(7)?,
+                annotation: row.get(8)?,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -717,7 +821,7 @@ fn db_get_highlights_for_thread(
     let conn = open_db(&state)?;
     let mut stmt = conn
         .prepare(
-            "SELECT h.id, h.book_id, h.cfi, h.selected_text, h.color, h.chapter_label, h.chapter_href, h.created_at
+            "SELECT h.id, h.book_id, h.cfi, h.selected_text, h.color, h.chapter_label, h.chapter_href, h.created_at, h.annotation
              FROM highlights h
              INNER JOIN thread_highlights th ON th.highlight_id = h.id
              WHERE th.thread_id = ?1
@@ -735,6 +839,7 @@ fn db_get_highlights_for_thread(
                 chapter_label: row.get(5)?,
                 chapter_href: row.get(6)?,
                 created_at: row.get(7)?,
+                annotation: row.get(8)?,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -1098,6 +1203,215 @@ fn memory_write_reader(state: State<MemoryState>, content: String) -> Result<(),
     std::fs::create_dir_all(&state.base_path).map_err(|e| e.to_string())?;
     let path = state.base_path.join("reader.md");
     std::fs::write(&path, content).map_err(|e| e.to_string())
+}
+
+// Phase 30: structured memory items
+#[tauri::command]
+fn memory_save_item(
+    state: State<DbState>,
+    item: serde_json::Value,
+    anchors: Vec<serde_json::Value>,
+) -> Result<String, String> {
+    let item: MemoryItemInput = serde_json::from_value(item).map_err(|e| e.to_string())?;
+    let now = chrono_like_now();
+    let id = item
+        .id
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| format!("mi-{}-{:x}", now, (now as u64).wrapping_add(1) % 0x1000000));
+    let source = item.source.unwrap_or_else(|| "compaction".to_string());
+    let confidence = if source == "user_explicit" {
+        0.9
+    } else {
+        item.confidence.unwrap_or(0.5)
+    };
+    let observation_count = item.observation_count.unwrap_or(1);
+    let created_at = item.created_at.unwrap_or(now);
+    let last_reinforced_at = item.last_reinforced_at.unwrap_or(now);
+
+    let conn = open_db(&state)?;
+    conn.execute(
+        "INSERT INTO memory_items (id, content, type, confidence, observation_count, source, created_at, last_reinforced_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+        params![
+            id,
+            item.content,
+            item.type_,
+            confidence,
+            observation_count,
+            source,
+            created_at,
+            last_reinforced_at,
+        ],
+    )
+    .map_err(|e| e.to_string())?;
+
+    for (idx, a) in anchors.iter().enumerate() {
+        let a: MemoryAnchorInput = serde_json::from_value(a.clone()).map_err(|e| e.to_string())?;
+        let anchor_id = a
+            .id
+            .filter(|s| !s.is_empty())
+            .unwrap_or_else(|| format!("ma-{}-{}", id, idx));
+        let memory_id = a.memory_id.as_deref().unwrap_or(&id);
+        conn.execute(
+            "INSERT INTO memory_anchors (id, memory_id, book_id, highlight_id, thread_id, cfi, passage_text)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+            params![
+                anchor_id,
+                memory_id,
+                a.book_id,
+                a.highlight_id,
+                a.thread_id,
+                a.cfi,
+                a.passage_text,
+            ],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    Ok(id)
+}
+
+#[tauri::command]
+fn memory_get_items_for_book(state: State<DbState>, book_id: String) -> Result<Vec<MemoryItemWithAnchors>, String> {
+    let conn = open_db(&state)?;
+    let mut stmt = conn
+        .prepare(
+            "SELECT id FROM memory_items
+             WHERE id IN (SELECT memory_id FROM memory_anchors WHERE book_id = ?1)
+             ORDER BY confidence DESC",
+        )
+        .map_err(|e| e.to_string())?;
+    let item_ids: Vec<String> = stmt
+        .query_map(params![book_id], |row| row.get(0))
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+    drop(stmt);
+
+    let mut out = Vec::with_capacity(item_ids.len());
+    for id in item_ids {
+        if let Some(item) = get_memory_item_with_anchors(&conn, &id)? {
+            out.push(item);
+        }
+    }
+    Ok(out)
+}
+
+#[tauri::command]
+fn memory_get_items_global(state: State<DbState>) -> Result<Vec<MemoryItemWithAnchors>, String> {
+    let conn = open_db(&state)?;
+    let mut stmt = conn
+        .prepare(
+            "SELECT id FROM memory_items
+             WHERE id NOT IN (SELECT memory_id FROM memory_anchors WHERE book_id IS NOT NULL AND book_id != '')
+             ORDER BY confidence DESC, observation_count DESC",
+        )
+        .map_err(|e| e.to_string())?;
+    let item_ids: Vec<String> = stmt
+        .query_map([], |row| row.get(0))
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+    drop(stmt);
+
+    let mut out = Vec::with_capacity(item_ids.len());
+    for id in item_ids {
+        if let Some(item) = get_memory_item_with_anchors(&conn, &id)? {
+            out.push(item);
+        }
+    }
+    Ok(out)
+}
+
+fn get_memory_item_with_anchors(conn: &Connection, id: &str) -> Result<Option<MemoryItemWithAnchors>, String> {
+    let item_row = conn
+        .query_row(
+            "SELECT id, content, type, confidence, observation_count, source, created_at, last_reinforced_at
+             FROM memory_items WHERE id = ?1",
+            params![id],
+            |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, f64>(3)?,
+                    row.get::<_, i64>(4)?,
+                    row.get::<_, String>(5)?,
+                    row.get::<_, i64>(6)?,
+                    row.get::<_, i64>(7)?,
+                ))
+            },
+        )
+        .optional()
+        .map_err(|e| e.to_string())?;
+    let (id_s, content, type_, confidence, observation_count, source, created_at, last_reinforced_at) =
+        match item_row {
+            Some(r) => r,
+            None => return Ok(None),
+        };
+
+    let mut stmt = conn
+        .prepare("SELECT id, memory_id, book_id, highlight_id, thread_id, cfi, passage_text FROM memory_anchors WHERE memory_id = ?1")
+        .map_err(|e| e.to_string())?;
+    let anchors: Vec<MemoryAnchorOut> = stmt
+        .query_map(params![id], |row| {
+            Ok(MemoryAnchorOut {
+                id: row.get(0)?,
+                memory_id: row.get(1)?,
+                book_id: row.get(2)?,
+                highlight_id: row.get(3)?,
+                thread_id: row.get(4)?,
+                cfi: row.get(5)?,
+                passage_text: row.get(6)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+
+    Ok(Some(MemoryItemWithAnchors {
+        id: id_s,
+        content,
+        type_,
+        confidence,
+        observation_count,
+        source,
+        created_at,
+        last_reinforced_at,
+        anchors,
+    }))
+}
+
+#[tauri::command]
+fn memory_reinforce_item(state: State<DbState>, id: String) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    let (current_confidence, observation_count, source): (f64, i64, String) = conn
+        .query_row(
+            "SELECT confidence, observation_count, source FROM memory_items WHERE id = ?1",
+            params![&id],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .map_err(|e| e.to_string())?;
+    let new_count = observation_count + 1;
+    let new_confidence = if source == "user_explicit" {
+        current_confidence
+    } else {
+        1.0 - (1.0 - current_confidence) * 0.6_f64
+    };
+    let now = chrono_like_now();
+    conn.execute(
+        "UPDATE memory_items SET observation_count = ?1, last_reinforced_at = ?2, confidence = ?3 WHERE id = ?4",
+        params![new_count, now, new_confidence, id],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn memory_delete_item(state: State<DbState>, id: String) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    conn.execute("DELETE FROM memory_items WHERE id = ?1", params![id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 const MAX_CONTEXT_CHARS: usize = 4000;
@@ -1568,6 +1882,7 @@ pub fn run() {
             db_get_highlights,
             db_upsert_highlight,
             db_delete_highlight,
+            db_update_highlight_annotation,
             db_get_threads,
             db_create_thread,
             db_update_thread_title,
@@ -1599,6 +1914,11 @@ pub fn run() {
             memory_write_book,
             memory_read_reader,
             memory_write_reader,
+            memory_save_item,
+            memory_get_items_for_book,
+            memory_get_items_global,
+            memory_reinforce_item,
+            memory_delete_item,
         ])
         .setup(|app| {
             cleanup_legacy_progress_file();

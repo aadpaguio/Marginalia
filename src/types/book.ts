@@ -46,6 +46,7 @@ export interface Highlight {
   chapterLabel?: string;
   chapterHref?: string;
   createdAt: number;
+  annotation?: string | null;
 }
 
 export interface Thread {
@@ -82,4 +83,39 @@ export interface CitationPayload {
   anchorBefore?: string;
   anchorAfter?: string;
   spineHint?: string | null;
+}
+
+// Phase 30: structured memory items (camelCase from Rust serde)
+export type MemoryItemType =
+  | "reading_identity"
+  | "intellectual"
+  | "emotional"
+  | "preference"
+  | "book_insight"
+  | "book_question"
+  | "book_reaction"
+  | "cross_book_pattern";
+
+export type MemoryItemSource = "compaction" | "user_explicit" | "extracted";
+
+export interface MemoryAnchor {
+  id: string;
+  memoryId: string;
+  bookId?: string | null;
+  highlightId?: string | null;
+  threadId?: string | null;
+  cfi?: string | null;
+  passageText?: string | null;
+}
+
+export interface MemoryItem {
+  id: string;
+  content: string;
+  type: MemoryItemType;
+  confidence: number;
+  observationCount: number;
+  source: MemoryItemSource;
+  createdAt: number;
+  lastReinforcedAt: number;
+  anchors: MemoryAnchor[];
 }

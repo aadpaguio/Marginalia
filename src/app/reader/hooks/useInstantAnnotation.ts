@@ -144,36 +144,62 @@ export function useInstantAnnotation({
   const handleInstantAnnotationPointerUp = useCallback(
     (doc: Document, index: number, ev: PointerEvent): boolean => {
       const view = viewRef.current;
-      if (!startPointRef.current || !view) {
+
+      // Path 1: we had a drag (pointerdown + move + pointerup) — create range from points
+      if (startPointRef.current && view) {
+        const endPoint: Point = { x: ev.clientX, y: ev.clientY };
+        const startPoint = startPointRef.current;
         startPointRef.current = null;
         startDocRef.current = null;
-        return false;
+
+        const distance = Math.sqrt(
+          Math.pow(endPoint.x - startPoint.x, 2) + Math.pow(endPoint.y - startPoint.y, 2)
+        );
+        if (distance >= MIN_DRAG_DISTANCE) {
+          const newRange = createRangeFromPoints(doc, startPoint, endPoint);
+          if (newRange) {
+            const selectedText = getTextFromRange(newRange).trim();
+            const cfi = view.getCFI?.(index, newRange) ?? "";
+            if (selectedText && cfi) {
+              const rect = newRange.getBoundingClientRect();
+              onSelection({
+                selectedText,
+                cfi,
+                anchorX: rect.left + rect.width / 2,
+                anchorY: rect.top,
+              });
+              return true;
+            }
+          }
+        }
+      } else {
+        startPointRef.current = null;
+        startDocRef.current = null;
       }
 
-      const endPoint: Point = { x: ev.clientX, y: ev.clientY };
-      const startPoint = startPointRef.current;
-
-      startPointRef.current = null;
-      startDocRef.current = null;
-
-      const distance = Math.sqrt(
-        Math.pow(endPoint.x - startPoint.x, 2) + Math.pow(endPoint.y - startPoint.y, 2)
-      );
-      if (distance < MIN_DRAG_DISTANCE) return false;
-
-      const newRange = createRangeFromPoints(doc, startPoint, endPoint);
-      if (!newRange) return false;
-
-      const selectedText = getTextFromRange(newRange).trim();
-      // Call on view so getCFI's this.book is defined (don't detach the method)
-      const cfi = view.getCFI?.(index, newRange) ?? "";
-
-      if (!selectedText || !cfi) return false;
-      const rect = newRange.getBoundingClientRect();
-      const anchorX = rect.left + rect.width / 2;
-      const anchorY = rect.top;
-      onSelection({ selectedText, cfi, anchorX, anchorY });
-      return true;
+      // Path 2: no drag or drag failed — sync from document selection (double-click, shift+click, keyboard)
+      if (!view) return false;
+      const sel = doc.getSelection?.();
+      if (sel && sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        if (!range.collapsed) {
+          const selectedText = getTextFromRange(range).trim();
+          if (selectedText) {
+            const cfi = view.getCFI?.(index, range) ?? "";
+            if (cfi) {
+              const rect = range.getBoundingClientRect();
+              onSelection({
+                selectedText,
+                cfi,
+                anchorX: rect.left + rect.width / 2,
+                anchorY: rect.top,
+              });
+              return true;
+            }
+          }
+        }
+      }
+      return false;
     },
     [viewRef, createRangeFromPoints, onSelection]
   );

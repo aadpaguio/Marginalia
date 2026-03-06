@@ -29,20 +29,26 @@
   to { opacity: 0; transform: translateX(16px); }
 }
 
-/* Paper tab on right edge when Notes Panel is closed — folder/notebook tab */
+/* Paper tab on right edge when Notes Panel is closed — matte, textured tab */
 .notesPanelTab {
   position: absolute;
   top: 48px;
   right: 0;
   width: 28px;
   height: 52px;
-  background: var(--surface-raised);
-  border: 1px solid var(--border-moderate);
+  /* Matte paper: subtle gradient variation, no shiny inset */
+  background: linear-gradient(
+    180deg,
+    #e4ddcf 0%,
+    #e0d8c9 25%,
+    #ded5c5 50%,
+    #e1d9ca 75%,
+    #dfd6c7 100%
+  );
+  border: 1px solid rgba(50, 42, 35, 0.18);
   border-right: none;
   border-radius: var(--radius-sm) 0 0 var(--radius-sm);
-  box-shadow:
-    -2px 0 6px rgba(30, 24, 14, 0.08),
-    inset -1px 0 0 rgba(30, 24, 14, 0.04);
+  box-shadow: -2px 0 8px rgba(40, 35, 28, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -53,10 +59,40 @@
 
 .notesPanelTab:hover {
   width: 32px;
-  background: var(--surface-sunken);
-  box-shadow:
-    -3px 0 10px rgba(30, 24, 14, 0.12),
-    inset -1px 0 0 rgba(30, 24, 14, 0.06);
+  background: linear-gradient(
+    180deg,
+    #e0d8c9 0%,
+    #dcd4c4 25%,
+    #dad2c2 50%,
+    #ddd5c5 75%,
+    #dbd3c3 100%
+  );
+  box-shadow: -2px 0 10px rgba(40, 35, 28, 0.15);
+}
+
+[data-theme="dark"] .notesPanelTab {
+  background: linear-gradient(
+    180deg,
+    #2d2920 0%,
+    #2a261e 25%,
+    #28241c 50%,
+    #2b2720 75%,
+    #29251d 100%
+  );
+  border-color: rgba(240, 232, 220, 0.12);
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"] .notesPanelTab:hover {
+  background: linear-gradient(
+    180deg,
+    #322e26 0%,
+    #2e2a22 25%,
+    #2c2820 50%,
+    #2f2b23 75%,
+    #2d2921 100%
+  );
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.4);
 }
 
 .notesPanelTabIcon {
@@ -222,6 +258,25 @@
 .thread-chat-content {
   background: var(--surface-page);
   color: var(--ink-primary);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-moderate) transparent;
+}
+
+.thread-chat-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.thread-chat-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thread-chat-content::-webkit-scrollbar-thumb {
+  background: var(--border-moderate);
+  border-radius: var(--radius-pill);
+}
+
+.thread-chat-content::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
 }
 
 .thread-chat-empty-hint {
@@ -656,11 +711,13 @@
   margin-top: var(--space-1);
 }
 
-/* Highlights tab — §6.3 highlight row */
+/* Highlights tab — §6.3 highlight row (Paper-aligned: tight unit, dropdown below) */
 .notes-highlight-row {
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: stretch;
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   background: var(--surface-page);
@@ -679,26 +736,64 @@
   width: 3px;
   flex-shrink: 0;
   border-radius: 1px;
-  margin-right: var(--space-3);
+  margin-right: var(--space-2);
+  align-self: stretch;
+  min-height: 2em;
+}
+
+.notes-highlight-row-body {
+  flex: 1;
+  min-width: 0;
+  padding-right: 20px;
 }
 
 .notes-highlight-row-quote {
   font-size: 13px;
   font-style: italic;
+  font-family: var(--font-reading);
   color: var(--ink-secondary);
-  line-height: 1.5;
+  line-height: 1.45;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  flex: 1;
-  min-width: 0;
 }
 
 .notes-highlight-row-meta {
   font-size: 11px;
   color: var(--ink-tertiary);
   margin-top: var(--space-1);
+}
+
+/* Pencil — top-right; click to add/edit annotation; darkened when annotated */
+.notes-highlight-row-pencil {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-3);
+  padding: var(--space-1);
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--ink-tertiary);
+  opacity: 0.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+
+.notes-highlight-row-pencil:hover {
+  opacity: 0.85;
+}
+
+.notes-highlight-row-pencil--annotated {
+  opacity: 1;
+  color: var(--ink-secondary);
+}
+
+.notes-highlight-row-pencil--annotated:hover {
+  color: var(--accent);
 }
 
 .notes-highlights-tab-header {
@@ -729,6 +824,241 @@
 
 .notes-highlights-chapter-label:first-child {
   margin-top: 0;
+}
+
+/* Highlights tab — All / Annotated filter toggles */
+.notes-highlights-tab-header {
+  flex-wrap: wrap;
+}
+
+.notes-highlights-filter-toggles {
+  display: flex;
+  gap: var(--space-1);
+  margin-left: auto;
+}
+
+.notes-filter-toggle {
+  font-size: 12px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-moderate);
+  background: transparent;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+
+.notes-filter-toggle:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.notes-filter-toggle--active {
+  border-color: var(--accent-border);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* Highlight row — content row (quote + meta; pencil in corner) */
+.notes-highlight-row-content {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  min-width: 0;
+  flex: 1;
+}
+
+.notes-highlight-row-meta-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.notes-highlight-row-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.notes-highlight-pencil-btn {
+  opacity: 0.6;
+  padding: var(--space-1);
+  display: inline-flex;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  border-radius: var(--radius-sm);
+  transition: opacity var(--transition-fast);
+}
+
+.notes-highlight-pencil-btn:hover {
+  opacity: 1;
+}
+
+.notes-highlight-add-edit-btn {
+  font-size: 11px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-moderate);
+  background: transparent;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+
+.notes-highlight-add-edit-btn:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.notes-highlight-goto-btn {
+  padding: var(--space-1);
+  opacity: 0.7;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  border-radius: var(--radius-sm);
+  transition: opacity var(--transition-fast);
+}
+
+.notes-highlight-goto-btn:hover {
+  opacity: 1;
+}
+
+/* Annotation dropdown — Inset note: soft rounded box inside the card */
+.notes-highlight-annotation-dropdown {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height var(--transition-spring);
+}
+
+.notes-highlight-annotation-dropdown--open {
+  max-height: 280px;
+}
+
+.notes-highlight-annotation-block {
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: rgba(30, 24, 14, 0.04);
+  border: 1px solid rgba(30, 24, 14, 0.06);
+  font-size: 13px;
+  font-family: var(--font-ui);
+  color: var(--ink-secondary);
+  line-height: 1.5;
+}
+
+[data-theme="dark"] .notes-highlight-annotation-block {
+  background: rgba(240, 232, 220, 0.04);
+  border-color: rgba(240, 232, 220, 0.08);
+}
+
+.notes-highlight-annotation-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.notes-highlight-annotation-edit-btn {
+  margin-top: var(--space-2);
+  font-size: 12px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color var(--transition-fast);
+}
+
+.notes-highlight-annotation-edit-btn:hover {
+  color: var(--accent-light);
+}
+
+/* Inline editor — same inset note style: rounded box inside the card */
+.notes-highlight-editor-block {
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: rgba(30, 24, 14, 0.04);
+  border: 1px solid rgba(30, 24, 14, 0.06);
+}
+
+[data-theme="dark"] .notes-highlight-editor-block {
+  background: rgba(240, 232, 220, 0.04);
+  border-color: rgba(240, 232, 220, 0.08);
+}
+
+.notes-highlight-editor-textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 72px;
+  padding: var(--space-2);
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--surface-page);
+  color: var(--ink-primary);
+  font-family: var(--font-ui);
+  transition: border-color var(--transition-fast);
+}
+
+.notes-highlight-editor-textarea::placeholder {
+  color: var(--ink-tertiary);
+}
+
+.notes-highlight-editor-textarea:focus {
+  outline: none;
+  border-color: var(--accent-border);
+}
+
+.notes-highlight-editor-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.notes-highlight-editor-save {
+  font-size: 12px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--accent);
+  color: var(--ink-inverse);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.notes-highlight-editor-save:hover {
+  background: var(--accent-light);
+}
+
+.notes-highlight-editor-cancel {
+  font-size: 12px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-moderate);
+  background: transparent;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.notes-highlight-editor-cancel:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+/* Highlight row when editing (stack editor below) */
+.notes-highlight-row--editing {
+  flex-direction: column;
+  align-items: stretch;
 }
 
 /* Highlight swatch colors — map to --highlight-* tokens */

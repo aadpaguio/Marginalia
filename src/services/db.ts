@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { Highlight, Thread, ThreadMessage } from "@/types/book";
+import type { Highlight, MemoryItem, Thread, ThreadMessage } from "@/types/book";
 
 export interface StoredBook {
   id: string;
@@ -110,6 +110,13 @@ export async function dbDeleteHighlight(id: string): Promise<void> {
   await invoke("db_delete_highlight", { id });
 }
 
+export async function dbUpdateHighlightAnnotation(
+  id: string,
+  annotation: string | null
+): Promise<void> {
+  await invoke("db_update_highlight_annotation", { id, annotation });
+}
+
 export async function dbGetStandaloneHighlights(bookId: string): Promise<Highlight[]> {
   return invoke<Highlight[]>("db_get_standalone_highlights", { bookId });
 }
@@ -203,6 +210,71 @@ export async function memoryReadReader(): Promise<string | null> {
 
 export async function memoryWriteReader(content: string): Promise<void> {
   await invoke("memory_write_reader", { content });
+}
+
+// Phase 30: structured memory items
+export interface MemoryItemInput {
+  id?: string;
+  content: string;
+  type: MemoryItem["type"];
+  confidence?: number;
+  observationCount?: number;
+  source?: MemoryItem["source"];
+  createdAt?: number;
+  lastReinforcedAt?: number;
+}
+
+export interface MemoryAnchorInput {
+  id?: string;
+  memoryId?: string;
+  bookId?: string | null;
+  highlightId?: string | null;
+  threadId?: string | null;
+  cfi?: string | null;
+  passageText?: string | null;
+}
+
+export async function memorySaveItem(
+  item: MemoryItemInput,
+  anchors: MemoryAnchorInput[]
+): Promise<string> {
+  return invoke<string>("memory_save_item", {
+    item: {
+      id: item.id ?? null,
+      content: item.content,
+      type: item.type,
+      confidence: item.confidence ?? 0.5,
+      observationCount: item.observationCount ?? 1,
+      source: item.source ?? "compaction",
+      createdAt: item.createdAt ?? null,
+      lastReinforcedAt: item.lastReinforcedAt ?? null,
+    },
+    anchors: anchors.map((a) => ({
+      id: a.id ?? null,
+      memoryId: a.memoryId ?? null,
+      bookId: a.bookId ?? null,
+      highlightId: a.highlightId ?? null,
+      threadId: a.threadId ?? null,
+      cfi: a.cfi ?? null,
+      passageText: a.passageText ?? null,
+    })),
+  });
+}
+
+export async function memoryGetItemsForBook(bookId: string): Promise<MemoryItem[]> {
+  return invoke<MemoryItem[]>("memory_get_items_for_book", { bookId });
+}
+
+export async function memoryGetItemsGlobal(): Promise<MemoryItem[]> {
+  return invoke<MemoryItem[]>("memory_get_items_global");
+}
+
+export async function memoryReinforceItem(id: string): Promise<void> {
+  await invoke("memory_reinforce_item", { id });
+}
+
+export async function memoryDeleteItem(id: string): Promise<void> {
+  await invoke("memory_delete_item", { id });
 }
 
 const VALID_STRUCTURE_TYPES: SectionStructureType[] = [

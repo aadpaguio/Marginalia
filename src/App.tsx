@@ -23,6 +23,7 @@ import {
   dbDeleteBook,
   dbDeleteBookmark,
   dbDeleteHighlight,
+  dbUpdateHighlightAnnotation,
   dbGetAllBooks,
   dbGetBook,
   dbGetBookmarks,
@@ -47,12 +48,16 @@ import {
 import { runSmartScan } from "@/services/smartScan";
 import {
   compactThreadToJournal,
+  consolidateBookMemory,
+  extractChapterRange,
+  extractMemoryItems,
   extractReaderProfile,
   formatReaderMd,
   parseReaderMd,
+  persistExtractedMemoryItems,
 } from "@/services/compaction";
-import { askClaudeThread, generateThreadTitle } from "@/services/claude";
-import { ArrowLeft, ArrowRight, ArrowUp, BookMarked, LogOut, MoreVertical, NotepadText, PanelLeft, PanelLeftClose, ScanText, Settings, SlidersHorizontal, Sparkles, X } from "lucide-react";
+import { askClaudeThread, generateThreadTitle, loadRelevantMemoryItems } from "@/services/claude";
+import { ArrowRight, ArrowUp, BookMarked, LogOut, MoreVertical, NotepadText, PanelLeft, PanelLeftClose, Pencil, ScanText, Settings, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "@/components/ThreadsPanel/ThreadsPanel.css";
@@ -271,6 +276,15 @@ function parseCitationSegments(text: string): CitationSegment[] {
 
 type CitationJumpStatus = "idle" | "resolving" | "error";
 
+function citationPreviewText(citation: CitationPayload): string {
+  const primary =
+    citation.quote?.trim() ||
+    citation.anchorBefore?.trim() ||
+    citation.anchorAfter?.trim() ||
+    "(passage)";
+  return primary.length > 120 ? `${primary.slice(0, 120).trim()}…` : primary;
+}
+
 const CitationJumpButton: FC<{
   citation: CitationPayload;
   onResolve: (citation: CitationPayload) => Promise<string | null>;
@@ -297,7 +311,7 @@ const CitationJumpButton: FC<{
       onClick={handleClick}
       disabled={status === "resolving"}
     >
-      <span className="thread-citation-quote">"{(() => { const q = citation.quote ?? "(passage)"; return q.length > 120 ? q.slice(0, 120).trim() + "…" : q; })()}"</span>
+      <span className="thread-citation-quote">"{citationPreviewText(citation)}"</span>
       <span className="thread-citation-jump">
         {status === "resolving" ? (
           <>
@@ -321,7 +335,7 @@ const CitationJumpButton: FC<{
 };
 
 function App() {
-  type PanelTab = "threads" | "highlights" | "annotations";
+  type PanelTab = "threads" | "highlights";
   type NotesFilter = "all" | "highlights" | "ai";
   type HighlightColorFilter = "all" | "yellow" | "blue" | "green" | "pink";
   const HIGHLIGHT_COLOR_HEX: Record<Exclude<HighlightColorFilter, "all">, string> = {
@@ -348,6 +362,12 @@ function App() {
   const [panelTab, setPanelTab] = useState<PanelTab>("threads");
   const [notesFilter, setNotesFilter] = useState<NotesFilter>("all");
   const [highlightColorFilter, setHighlightColorFilter] = useState<HighlightColorFilter>("all");
+  type HighlightAnnotationFilter = "all" | "annotated";
+  const [highlightAnnotationFilter, setHighlightAnnotationFilter] =
+    useState<HighlightAnnotationFilter>("all");
+  const [editingHighlightId, setEditingHighlightId] = useState<string | null>(null);
+  const [editingAnnotationDraft, setEditingAnnotationDraft] = useState("");
+  const [expandedHighlightId, setExpandedHighlightId] = useState<string | null>(null);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [isNotesClosing, setIsNotesClosing] = useState(false);
   const [isTocOpen, setIsTocOpen] = useState(false);
@@ -492,7 +512,7 @@ function App() {
     },
     [bookDoc, getSectionTextByHref, normalizeForQuoteMatch, stripWrappingQuotes]
   );
-  const highlightRefs = useRef<Record<string, HTMLDetailsElement | null>>({});
+  const highlightRefs = useRef<Record<string, HTMLElement | null>>({});
   const progressLastWriteAtRef = useRef(0);
   const progressTimeoutRef = useRef<number | null>(null);
   const pendingProgressRef = useRef<{ bookId: string; cfi: string; fraction: number } | null>(null);
@@ -506,30 +526,30 @@ function App() {
   const chrome = useMemo(() => {
     if (theme === "dark") {
       return {
-        appBg: "#121212",
-        appFg: "#e8e8e8",
-        panelBg: "rgba(22,22,22,0.96)",
-        panelBorder: "rgba(255,255,255,0.16)",
-        cardBg: "#1c1c1c",
-        controlBg: "rgba(255,255,255,0.08)",
-        controlBorder: "rgba(255,255,255,0.2)",
-        controlFg: "#f3f3f3",
-        muted: "#b4b4b4",
-        badgeBg: "rgba(255,255,255,0.14)",
+        appBg: "#1c1914",
+        appFg: "#f0e8dc",
+        panelBg: "#28241c",
+        panelBorder: "rgba(240,232,220,0.12)",
+        cardBg: "#28241c",
+        controlBg: "#342f26",
+        controlBorder: "rgba(240,232,220,0.12)",
+        controlFg: "#f0e8dc",
+        muted: "#7a6e5e",
+        badgeBg: "rgba(188,136,16,0.2)",
       };
     }
     if (theme === "sepia") {
       return {
-        appBg: "#f4ecd8",
-        appFg: "#4a3f2f",
-        panelBg: "rgba(244,236,216,0.96)",
-        panelBorder: "rgba(92,75,55,0.2)",
-        cardBg: "rgba(255,255,255,0.6)",
-        controlBg: "rgba(255,255,255,0.9)",
-        controlBorder: "rgba(92,75,55,0.18)",
-        controlFg: "#4a3f2f",
-        muted: "#776652",
-        badgeBg: "rgba(92,75,55,0.12)",
+        appBg: "#ebe0d4",
+        appFg: "#2a2218",
+        panelBg: "#e2d6c8",
+        panelBorder: "rgba(42,34,24,0.15)",
+        cardBg: "#e2d6c8",
+        controlBg: "#d8cab8",
+        controlBorder: "rgba(42,34,24,0.15)",
+        controlFg: "#2a2218",
+        muted: "#8a7a68",
+        badgeBg: "rgba(184,134,11,0.18)",
       };
     }
     return {
@@ -589,6 +609,8 @@ function App() {
     setError(null);
     setBookDoc(null);
     setHighlights([]);
+    setEditingHighlightId(null);
+    setExpandedHighlightId(null);
     setThreads([]);
     setActiveThreadId(null);
     setActiveThreadMessages([]);
@@ -844,7 +866,9 @@ function App() {
     if (!scrollToNoteCfi || !isNotesOpen) return;
     const node = highlightRefs.current[scrollToNoteCfi];
     if (node) {
-      node.open = true;
+      if ("open" in node && typeof (node as HTMLDetailsElement).open !== "undefined") {
+        (node as HTMLDetailsElement).open = true;
+      }
       node.scrollIntoView({ behavior: "smooth", block: "center" });
       setScrollToNoteCfi(null);
     }
@@ -945,29 +969,15 @@ function App() {
 
   const handleOpenAiPanel = (
     selection: { cfi: string; selectedText: string; chapterLabel?: string; chapterHref?: string },
-    targetThreadId: string | null
+    targetThreadId: string | null,
+    options?: { createHighlight?: boolean }
   ) => {
     if (!currentBookId) return;
-    const highlight: Highlight = {
-      id: `hl-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
-      bookId: currentBookId,
-      cfi: selection.cfi,
-      selectedText: selection.selectedText,
-      color: "yellow",
-      chapterLabel: selection.chapterLabel,
-      chapterHref: selection.chapterHref,
-      createdAt: Date.now(),
-    };
-    setHighlights((prev) => [...prev, highlight]);
-    void dbUpsertHighlight(highlight);
+    const createHighlight = options?.createHighlight !== false;
     const threadId = targetThreadId === null ? createNewThread()?.id : targetThreadId;
     if (!threadId) return;
     setIsNotesOpen(true);
     setActiveThreadId(threadId);
-    void dbAttachHighlightToThread(threadId, highlight.id).then(() => {
-      setStandaloneHighlights((prev) => prev.filter((h) => h.id !== highlight.id));
-      dbGetHighlightsForThread(threadId).then(setActiveThreadHighlights);
-    });
     setPendingMessageExcerpt({
       text: selection.selectedText,
       cfi: selection.cfi,
@@ -976,6 +986,26 @@ function App() {
       page: currentPageLabel ?? null,
     });
     setPanelTab("threads");
+    if (createHighlight) {
+      const highlight: Highlight = {
+        id: `hl-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+        bookId: currentBookId,
+        cfi: selection.cfi,
+        selectedText: selection.selectedText,
+        color: "yellow",
+        chapterLabel: selection.chapterLabel,
+        chapterHref: selection.chapterHref,
+        createdAt: Date.now(),
+      };
+      setHighlights((prev) => [...prev, highlight]);
+      void dbUpsertHighlight(highlight);
+      void dbAttachHighlightToThread(threadId, highlight.id).then(() => {
+        setStandaloneHighlights((prev) => prev.filter((h) => h.id !== highlight.id));
+        dbGetHighlightsForThread(threadId).then(setActiveThreadHighlights);
+      });
+    } else {
+      dbGetHighlightsForThread(threadId).then(setActiveThreadHighlights);
+    }
   };
 
   const handleMessagePair = (
@@ -1049,8 +1079,10 @@ function App() {
     bookId: string;
     bookTitle: string;
     author: string;
+    thread?: Thread;
+    attachedHighlights?: Highlight[];
   }) => {
-    const { threadId, threadTitle, threadMessages, bookId, bookTitle, author } = params;
+    const { threadId, threadTitle, threadMessages, bookId, bookTitle, author, thread, attachedHighlights } = params;
     if (threadMessages.length === 0) return;
     try {
       const currentBook = (await memoryReadBook(bookId)) ?? "";
@@ -1063,8 +1095,33 @@ function App() {
         existingMemory: currentBook || null,
       });
       if (!entry) return;
-      const newSection = `\n\n## ${threadTitle ?? "Discussion"} — ${new Date().toISOString().slice(0, 10)}\n${entry}`;
-      await memoryWriteBook(bookId, currentBook + newSection);
+      const chapterRange = attachedHighlights ? extractChapterRange(attachedHighlights) : "";
+      const chapterTag = chapterRange ? `chapters: ${chapterRange}\n\n` : "";
+      const newSection = `\n\n## ${threadTitle ?? "Discussion"} — ${new Date().toISOString().slice(0, 10)}\n${chapterTag}${entry}`;
+      let newBookContent = currentBook + newSection;
+      await memoryWriteBook(bookId, newBookContent);
+
+      const wordCount = newBookContent.trim().split(/\s+/).filter(Boolean).length;
+      if (wordCount > 600) {
+        const apiKeyForConsolidation = import.meta.env.VITE_ANTHROPIC_API_KEY;
+        if (apiKeyForConsolidation) {
+          try {
+            const consolidated = await consolidateBookMemory({
+              bookId,
+              bookTitle,
+              author,
+              currentMemory: newBookContent,
+              apiKey: apiKeyForConsolidation,
+            });
+            if (consolidated.trim()) {
+              newBookContent = consolidated.trim();
+              await memoryWriteBook(bookId, newBookContent);
+            }
+          } catch (e) {
+            console.warn("[Compaction] consolidateBookMemory:", e);
+          }
+        }
+      }
 
       const readerContent = (await memoryReadReader()) ?? "";
       const { threadsClosed, body } = parseReaderMd(readerContent);
@@ -1086,6 +1143,34 @@ function App() {
       } else {
         await memoryWriteReader(formatReaderMd({ threadsClosed: nextClosed, body }));
       }
+
+      // Phase 30.4: extract memory items fire-and-forget (non-blocking)
+      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+      if (apiKey && thread && attachedHighlights) {
+        void (async () => {
+          try {
+            const items = await extractMemoryItems({
+              thread: { ...thread, id: threadId, bookId, title: threadTitle ?? undefined, createdAt: 0, updatedAt: 0, archived: false },
+              messages: threadMessages,
+              attachedHighlights,
+              bookId,
+              bookTitle,
+              author,
+              apiKey,
+            });
+            if (items.length > 0) {
+              await persistExtractedMemoryItems({
+                items,
+                threadId,
+                bookId,
+                attachedHighlights,
+              });
+            }
+          } catch (e) {
+            console.warn("[Compaction] extractMemoryItems:", e);
+          }
+        })();
+      }
     } catch (e) {
       console.error("[Compaction]", e);
     }
@@ -1100,7 +1185,7 @@ function App() {
     try {
       const thread = threads.find((t) => t.id === threadId);
       if (thread && currentBookId && bookDoc) {
-        const [msgs, _highlights] = await Promise.all([
+        const [msgs, highlights] = await Promise.all([
           dbGetThreadMessages(threadId),
           dbGetHighlightsForThread(threadId),
         ]);
@@ -1111,6 +1196,8 @@ function App() {
           bookId: currentBookId,
           bookTitle: toDisplayString(bookDoc.metadata?.title, "Book"),
           author: metadataAuthor(bookDoc.metadata, "Unknown"),
+          thread,
+          attachedHighlights: highlights,
         });
       }
       await dbArchiveThread(threadId);
@@ -1170,21 +1257,30 @@ function App() {
       revealIntervalRef.current = null;
     }
     try {
-      const [bookMemory, readerProfile] = await Promise.all([
+      const [bookMemory, readerProfile, memoryItems] = await Promise.all([
         memoryReadBook(currentBookId),
         memoryReadReader(),
+        loadRelevantMemoryItems(currentBookId, userMessage),
       ]);
       const result = await askClaudeThread(
         {
           threadId: activeThreadId,
           messages: activeThreadMessages,
           attachedHighlights: activeThreadHighlights.filter((h) => h.bookId === currentBookId),
+          pendingExcerpt: pendingMessageExcerpt
+            ? {
+                text: pendingMessageExcerpt.text,
+                cfi: pendingMessageExcerpt.cfi,
+                chapter: pendingMessageExcerpt.chapter,
+              }
+            : undefined,
           userMessage,
           bookTitle: toDisplayString(bookDoc.metadata?.title, "Book"),
           author: metadataAuthor(bookDoc.metadata, "Unknown"),
           bookId: currentBookId,
           bookMemory: bookMemory ?? undefined,
           readerProfile: readerProfile ?? undefined,
+          memoryItems: memoryItems.length > 0 ? memoryItems : undefined,
           workingContext: workingContextRef.current.join("\n\n---\n\n"),
           bookSummary: bookSummary ?? undefined,
           sectionSummaries: sectionSummaries.length > 0 ? sectionSummaries : undefined,
@@ -1322,6 +1418,7 @@ function App() {
   if (bookDoc) {
     return (
       <div
+        data-theme={theme}
         style={{
           position: "fixed",
           inset: 0,
@@ -1335,17 +1432,16 @@ function App() {
       >
         <div
           style={{
-            display: "flex",
-            flexDirection: "row",
+            position: "relative",
             height: "100%",
             width: "100%",
             overflow: "hidden",
           }}
         >
-          {/* TOC panel — §7: rail + expandable content */}
+          {/* TOC panel — §7: overlay on top of reader, does not push content */}
           <div
             className={`${tocPanelStyles.panel} ${!isTocOpen ? tocPanelStyles.panelCollapsed : ""}`}
-            style={{ height: "100%" }}
+            style={{ position: "absolute", left: 0, top: 0, bottom: 0, zIndex: 20 }}
           >
             <div className={tocPanelStyles.rail}>
               <button
@@ -1422,6 +1518,8 @@ function App() {
                     setBookDoc(null);
                     setCurrentBookId(null);
                     setHighlights([]);
+                    setEditingHighlightId(null);
+                    setExpandedHighlightId(null);
                     setBookmarks([]);
                     setCurrentCfi(null);
                     setBackCfi(null);
@@ -1469,8 +1567,31 @@ function App() {
               )}
             </div>
           </div>
-          {/* Reading area */}
-          <div style={{ flex: 1, minWidth: 0, position: "relative" }}>
+          {/* Reading area — full viewport; panel overlays it */}
+          <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+        {scanStatus !== "in_progress" && (
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              top: "var(--space-3)",
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 10,
+              fontSize: 12,
+              fontFamily: "var(--font-ui)",
+              color: "var(--ink-tertiary)",
+              opacity: 0.85,
+              pointerEvents: "none",
+              maxWidth: "60vw",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {toDisplayString(bookDoc.metadata?.title, "Book")}
+          </div>
+        )}
         <FoliateViewer
           bookKey={epubPath ?? "current"}
           bookDoc={bookDoc}
@@ -1491,6 +1612,17 @@ function App() {
             setIsNotesOpen(true);
             setNotesFilter("all");
             setScrollToNoteCfi(cfi);
+          }}
+          onAddOrEditNoteFromHighlight={(cfi) => {
+            const h = highlights.find((x) => x.cfi === cfi);
+            if (h) {
+              setIsNotesOpen(true);
+              setPanelTab("highlights");
+              setExpandedHighlightId(h.id);
+              setEditingHighlightId(h.id);
+              setEditingAnnotationDraft(h.annotation ?? "");
+              setScrollToNoteCfi(cfi);
+            }
           }}
           onOpenAiPanel={handleOpenAiPanel}
           threads={threads}
@@ -1565,6 +1697,8 @@ function App() {
             setBookDoc(null);
             setCurrentBookId(null);
             setHighlights([]);
+            setEditingHighlightId(null);
+            setExpandedHighlightId(null);
             setBookmarks([]);
             setCurrentCfi(null);
             setBackCfi(null);
@@ -1572,79 +1706,32 @@ function App() {
             void refreshLibrary();
           }}
         />
-        {/* Smart Scan status strip: show in reading area when scanning (optional, or keep in rail) */}
+        {/* Smart Scan progress: faint top-center bar; hover shows fraction */}
         {scanStatus === "in_progress" && (
           <div
-            style={{
-              position: "absolute",
-              top: 88,
-              left: 8,
-              zIndex: 130,
-            }}
+            className={readerChromeStyles.scanTopBar}
+            title={
+              scanRetryInSeconds != null
+                ? scanRetryInSeconds > 0
+                  ? `Rate limited. Retrying in ${scanRetryInSeconds}s…`
+                  : "Retrying…"
+                : scanProgress
+                  ? `${scanProgress.done} / ${scanProgress.total} sections (${scanProgress.total > 0 ? Math.round((100 * scanProgress.done) / scanProgress.total) : 0}%)`
+                  : "Smart Scan in progress…"
+            }
           >
-            <div className={readerChromeStyles.scanStatusStrip}>
-              <span className={readerChromeStyles.scanStatusLabel}>Smart Scan</span>
-              {scanRetryInSeconds !== null ? (
-                <span className={readerChromeStyles.scanRateLimitMessage}>
-                  {scanRetryInSeconds > 0 ? (
-                    <>Rate limited. <strong>Retrying in {scanRetryInSeconds}s…</strong></>
-                  ) : (
-                    <strong>Retrying…</strong>
-                  )}
-                </span>
-              ) : scanProgress ? (
-                <>
-                  <span className={readerChromeStyles.scanProgressText}>
-                    {scanProgress.done} / {scanProgress.total} sections
-                  </span>
-                  <div className={readerChromeStyles.scanProgressTrack}>
-                    <div
-                      className={readerChromeStyles.scanProgressFill}
-                      style={{
-                        width: `${scanProgress.total > 0 ? (100 * scanProgress.done) / scanProgress.total : 0}%`,
-                      }}
-                    />
-                  </div>
-                </>
-              ) : (
-                <span className={readerChromeStyles.scanProgressText}>Scanning…</span>
-              )}
+            <span className={readerChromeStyles.scanTopBarLabel}>Smart Scan in progress</span>
+            <div className={readerChromeStyles.scanTopBarTrack}>
+              <div
+                className={readerChromeStyles.scanTopBarFill}
+                style={{
+                  width:
+                    scanProgress && scanProgress.total > 0
+                      ? `${(100 * scanProgress.done) / scanProgress.total}%`
+                      : "0%",
+                }}
+              />
             </div>
-          </div>
-        )}
-        {backCfi && (
-          <div
-            style={{
-              position: "absolute",
-              top: 8,
-              left: "50%",
-              transform: "translateX(-50%)",
-              zIndex: 130,
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => {
-                setJumpToCfi(backCfi);
-                setBackCfi(null);
-              }}
-              aria-label="Go back to previous page"
-              title="Go back to previous page"
-              style={{
-                width: 34,
-                height: 34,
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                border: "none",
-                borderRadius: 8,
-                background: theme === "dark" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
-                color: chrome.controlFg,
-              }}
-            >
-              <ArrowLeft size={18} />
-            </button>
           </div>
         )}
         {!isNotesOpen && !isNotesClosing && (
@@ -1725,7 +1812,6 @@ function App() {
                   [
                     { key: "threads" as const, label: "Threads" },
                     { key: "highlights" as const, label: `Highlights (${standaloneHighlights.length})` },
-                    { key: "annotations" as const, label: "Annotations" },
                   ] as const
                 ).map((tab) => {
                   const active = panelTab === tab.key;
@@ -1838,11 +1924,7 @@ function App() {
                   flexDirection: "column",
                 }}
               >
-                {panelTab === "annotations" ? (
-                  <p style={{ margin: 0, color: "var(--ink-tertiary)", fontSize: 13, textAlign: "center" }}>
-                    Coming soon
-                  </p>
-                ) : panelTab === "threads" && activeThreadId ? (
+                {panelTab === "threads" && activeThreadId ? (
                   <>
                     <div className="thread-chat-messages-label" style={{ marginBottom: 8, fontWeight: 600, fontSize: 12, color: chrome.muted }}>Messages</div>
                     {(() => {
@@ -2106,54 +2188,163 @@ function App() {
                   </div>
                 ) : panelTab === "highlights" ? (
                   (() => {
+                    const displayedHighlights =
+                      highlightAnnotationFilter === "annotated"
+                        ? standaloneHighlights.filter((h) => h.annotation)
+                        : standaloneHighlights;
                     const highlightsByChapter = (() => {
-                      const map = new Map<string, typeof standaloneHighlights>();
-                      for (const h of standaloneHighlights) {
+                      const map = new Map<string, typeof displayedHighlights>();
+                      for (const h of displayedHighlights) {
                         const ch = h.chapterLabel ?? "Other";
                         if (!map.has(ch)) map.set(ch, []);
                         map.get(ch)!.push(h);
                       }
                       return Array.from(map.entries());
                     })();
-                    return standaloneHighlights.length === 0 ? (
+                    return displayedHighlights.length === 0 ? (
                       <p style={{ margin: 0, color: "var(--ink-tertiary)", fontSize: 13, textAlign: "center" }}>
-                        No highlights yet. Select text to start.
+                        {highlightAnnotationFilter === "annotated"
+                          ? "No annotated highlights."
+                          : "No highlights yet. Select text to start."}
                       </p>
                     ) : (
                       <>
                         <div className="notes-highlights-tab-header">
                           <span className="threads-section-label">Highlights</span>
-                          <span className="notes-highlights-tab-count">{standaloneHighlights.length}</span>
+                          <span className="notes-highlights-tab-count">{displayedHighlights.length}</span>
+                          <div className="notes-highlights-filter-toggles">
+                            <button
+                              type="button"
+                              className={`notes-filter-toggle ${highlightAnnotationFilter === "all" ? "notes-filter-toggle--active" : ""}`}
+                              onClick={() => setHighlightAnnotationFilter("all")}
+                            >
+                              All
+                            </button>
+                            <button
+                              type="button"
+                              className={`notes-filter-toggle ${highlightAnnotationFilter === "annotated" ? "notes-filter-toggle--active" : ""}`}
+                              onClick={() => setHighlightAnnotationFilter("annotated")}
+                            >
+                              Annotated
+                            </button>
+                          </div>
                         </div>
                         {highlightsByChapter.map(([chapterName, chapterHighlights]) => (
                           <div key={chapterName}>
                             <div className="notes-highlights-chapter-label">{chapterName}</div>
                             {chapterHighlights.map((h) => {
                               const swatch = (h.color === "blue" || h.color === "green" || h.color === "pink" ? h.color : "yellow") as "yellow" | "blue" | "green" | "pink";
+                              const isExpanded = expandedHighlightId === h.id;
+                              const isEditing = editingHighlightId === h.id;
                               return (
                                 <div
                                   key={h.id}
-                                  className="notes-highlight-row"
+                                  ref={(el) => {
+                                    if (el) highlightRefs.current[h.cfi] = el;
+                                  }}
+                                  className={`notes-highlight-row ${isEditing ? "notes-highlight-row--editing" : ""} ${isExpanded ? "notes-highlight-row--expanded" : ""}`}
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => {
-                                    if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
-                                    setJumpToCfi(h.cfi);
-                                  }}
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Enter") {
+                                  onClick={(e) => {
+                                    if ((e.target as HTMLElement).closest(".notes-highlight-editor-block")) return;
+                                    if (isEditing) return;
+                                    if (h.annotation) {
+                                      setExpandedHighlightId((prev) => (prev === h.id ? null : h.id));
+                                    } else {
                                       if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
                                       setJumpToCfi(h.cfi);
                                     }
                                   }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" && !isEditing) {
+                                      if (h.annotation) setExpandedHighlightId((prev) => (prev === h.id ? null : h.id));
+                                      else {
+                                        if (currentCfiRef.current) setBackCfi(currentCfiRef.current);
+                                        setJumpToCfi(h.cfi);
+                                      }
+                                    }
+                                  }}
                                 >
-                                  <div className="notes-highlight-row-swatch" data-swatch={swatch} />
-                                  <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div className="notes-highlight-row-quote">"{h.selectedText}"</div>
-                                    <div className="notes-highlight-row-meta">
-                                      {[chapterName, new Date(h.createdAt).toLocaleDateString()].filter(Boolean).join(" · ")}
+                                  <div className="notes-highlight-row-content">
+                                    <div className="notes-highlight-row-swatch" data-swatch={swatch} />
+                                    <div className="notes-highlight-row-body">
+                                      <div className="notes-highlight-row-quote">"{h.selectedText}"</div>
+                                      <div className="notes-highlight-row-meta">
+                                        {[chapterName, new Date(h.createdAt).toLocaleDateString()].filter(Boolean).join(" · ")}
+                                      </div>
                                     </div>
+                                    <button
+                                      type="button"
+                                      className={`notes-highlight-row-pencil ${h.annotation ? "notes-highlight-row-pencil--annotated" : ""}`}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEditingHighlightId(h.id);
+                                        setEditingAnnotationDraft(h.annotation ?? "");
+                                      }}
+                                      aria-label={h.annotation ? "Edit note" : "Add note"}
+                                    >
+                                      <Pencil size={12} />
+                                    </button>
                                   </div>
+                                  {h.annotation != null && h.annotation !== "" && !isEditing && (
+                                    <div className={`notes-highlight-annotation-dropdown ${isExpanded ? "notes-highlight-annotation-dropdown--open" : ""}`}>
+                                      <div className="notes-highlight-annotation-block">
+                                        <div className="notes-highlight-annotation-text">{h.annotation}</div>
+                                        <button
+                                          type="button"
+                                          className="notes-highlight-annotation-edit-btn"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setEditingHighlightId(h.id);
+                                            setEditingAnnotationDraft(h.annotation ?? "");
+                                          }}
+                                        >
+                                          Edit
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {isEditing && (
+                                    <div className="notes-highlight-annotation-block notes-highlight-editor-block">
+                                      <textarea
+                                        className="notes-highlight-editor-textarea"
+                                        value={editingHighlightId === h.id ? editingAnnotationDraft : ""}
+                                        onChange={(e) => setEditingAnnotationDraft(e.target.value)}
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Escape") {
+                                            setEditingHighlightId(null);
+                                          }
+                                        }}
+                                        placeholder="Add a note…"
+                                        rows={3}
+                                        autoFocus
+                                      />
+                                      <div className="notes-highlight-editor-actions">
+                                        <button
+                                          type="button"
+                                          className="notes-highlight-editor-save"
+                                          onClick={() => {
+                                            void dbUpdateHighlightAnnotation(h.id, editingAnnotationDraft.trim() || null).then(() => {
+                                              const next = { ...h, annotation: editingAnnotationDraft.trim() || null };
+                                              setHighlights((prev) => prev.map((x) => (x.id === h.id ? next : x)));
+                                              setStandaloneHighlights((prev) => prev.map((x) => (x.id === h.id ? next : x)));
+                                              setActiveThreadHighlights((prev) => prev.map((x) => (x.id === h.id ? next : x)));
+                                              setEditingHighlightId(null);
+                                            });
+                                          }}
+                                        >
+                                          Save
+                                        </button>
+                                        <button
+                                          type="button"
+                                          className="notes-highlight-editor-cancel"
+                                          onClick={() => setEditingHighlightId(null)}
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })}
@@ -2294,29 +2485,6 @@ function App() {
             {archiveToast}
           </div>
         )}
-        <div
-          aria-live="polite"
-          style={{
-            position: "absolute",
-            left: "50%",
-            bottom: 10,
-            transform: "translateX(-50%)",
-            zIndex: 120,
-            padding: "4px 10px",
-            borderRadius: 999,
-            border: `1px solid ${chrome.controlBorder}`,
-            background: chrome.controlBg,
-            color: chrome.controlFg,
-            fontSize: 12,
-            pointerEvents: "none",
-          }}
-        >
-          {currentPageLabel
-            ? `Page ${currentPageLabel}`
-            : currentPageCurrent != null && currentPageTotal != null
-              ? `Page ${currentPageCurrent + 1}/${currentPageTotal}`
-              : "Page —"}
-        </div>
           </div>
         </div>
       </div>

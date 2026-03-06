@@ -66,6 +66,47 @@
   color: var(--ink-secondary);
 }
 
+/* Faint top-center progress bar for Smart Scan — hover shows fraction */
+.scanTopBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 130;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: var(--space-2);
+  gap: var(--space-1);
+  pointer-events: auto;
+}
+
+.scanTopBarTrack {
+  width: 100%;
+  max-width: 320px;
+  height: 3px;
+  background: var(--border-subtle);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  opacity: 0.9;
+}
+
+.scanTopBarFill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  transition: width 400ms var(--transition-spring);
+  opacity: 0.6;
+}
+
+.scanTopBarLabel {
+  font-size: 10px;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--ink-tertiary);
+}
+
 .scanStatusLabel {
   font-weight: 600;
   letter-spacing: 0.07em;
@@ -288,6 +329,25 @@
   box-shadow: var(--shadow-md);
   padding: var(--space-1);
   z-index: 130;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-moderate) transparent;
+}
+
+.threadMenu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.threadMenu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.threadMenu::-webkit-scrollbar-thumb {
+  background: var(--border-moderate);
+  border-radius: var(--radius-pill);
+}
+
+.threadMenu::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
 }
 
 .threadMenuItem {
