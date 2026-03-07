@@ -7,6 +7,7 @@ out/
 
 # Tauri
 src-tauri/target/
+src-tauri/icons/
 
 # Env
 .env
@@ -26,7 +27,7 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-# PNGs (keep only those in Tauri src)
+# PNGs 
 *.png
 !src-tauri/src/**/*.png
 

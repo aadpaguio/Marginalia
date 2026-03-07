@@ -22,3 +22,27 @@ body {
     transform: rotate(360deg);
   }
 }
+
+.flush-pulse {
+  opacity: 0;
+  animation: pulse-fade 2s ease-in-out forwards;
+}
+
+@keyframes pulse-fade {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  20% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  60% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}

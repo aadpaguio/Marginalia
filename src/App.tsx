@@ -411,6 +411,8 @@ function App() {
   const [archivingThreadId, setArchivingThreadId] = useState<string | null>(null);
   const [archiveToast, setArchiveToast] = useState<string | null>(null);
   const archiveToastTimeoutRef = useRef<number | null>(null);
+  /** Thread ID showing mid-thread flush pulse (cosmetic, time-based; cleared after 2s). */
+  const [flushPulsingThreadId, setFlushPulsingThreadId] = useState<string | null>(null);
   const [threadMenuOpenId, setThreadMenuOpenId] = useState<string | null>(null);
   const threadMenuRef = useRef<HTMLDivElement | null>(null);
   /** Excerpt to attach to the very next user message (set when user clicks "Add to thread"). */
@@ -1105,6 +1107,8 @@ function App() {
           !flushingThreadIdsRef.current.has(threadId);
         if (shouldFlush) {
           flushingThreadIdsRef.current.add(threadId);
+          setFlushPulsingThreadId(threadId);
+          window.setTimeout(() => setFlushPulsingThreadId(null), 2000);
           void (async () => {
             try {
               const items = await extractMemoryItemsPartial({
@@ -1929,6 +1933,19 @@ function App() {
                       >
                         {threads.find((t) => t.id === activeThreadId)?.title ?? "New thread"}
                       </span>
+                      {flushPulsingThreadId === activeThreadId && (
+                        <span
+                          className="flush-pulse"
+                          style={{
+                            width: "var(--space-2)",
+                            height: "var(--space-2)",
+                            borderRadius: "var(--radius-pill)",
+                            background: "var(--accent)",
+                            flexShrink: 0,
+                          }}
+                          aria-hidden
+                        />
+                      )}
                       <div ref={threadMenuRef} style={{ position: "relative" }}>
                         <button
                           type="button"
