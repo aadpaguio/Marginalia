@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import type { BookDoc } from "@/libs/document";
+import type { BookDoc, TOCItem } from "@/libs/document";
 import type { FoliateView } from "@/types/view";
 import { useFoliateEvents } from "../hooks/useFoliateEvents";
 import { useMouseEvent, useTouchEvent } from "../hooks/useIframeEvents";
@@ -19,6 +19,7 @@ import { cfiRangesOverlap } from "../utils/cfi";
 import { useInstantAnnotation } from "../hooks/useInstantAnnotation";
 import Annotator from "./annotator/Annotator";
 import type { CitationPayload, Highlight } from "@/types/book";
+import type { GetContextDirection, GetContextResult } from "@/services/claude";
 import { ChevronDown, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import readerChromeStyles from "../ReaderChrome.module.css";
 
@@ -41,6 +42,45 @@ function stripWrappingQuotes(s: string): string {
   if (t[0] === "\u201c" && t[t.length - 1] === "\u201d") return t.slice(1, -1).trim();
   if (t[0] === "\u2018" && t[t.length - 1] === "\u2019") return t.slice(1, -1).trim();
   return t;
+}
+
+function normalizeHrefForDocMatch(href: string): string {
+  return href.split("#")[0].replace(/^\.\//, "").trim().toLowerCase();
+}
+
+function flattenTocItems(items?: TOCItem[]): TOCItem[] {
+  if (!items?.length) return [];
+  const out: TOCItem[] = [];
+  const visit = (list: TOCItem[]) => {
+    for (const item of list) {
+      out.push(item);
+      if (item.subitems?.length) visit(item.subitems);
+    }
+  };
+  visit(items);
+  return out;
+}
+
+function hrefMatchesDocUri(href: string | null | undefined, uri: string | null | undefined): boolean {
+  const left = normalizeHrefForDocMatch(href ?? "");
+  const right = normalizeHrefForDocMatch(uri ?? "");
+  if (!left || !right) return false;
+  if (left === right) return true;
+  const leftBase = left.split("/").pop() ?? left;
+  const rightBase = right.split("/").pop() ?? right;
+  return (
+    right.endsWith("/" + left) ||
+    left.endsWith("/" + right) ||
+    leftBase === rightBase ||
+    right.endsWith("/" + leftBase) ||
+    left.endsWith("/" + rightBase)
+  );
+}
+
+function getTocLabelForDocument(bookDoc: BookDoc, documentUri: string | null | undefined): string | null {
+  const tocItems = flattenTocItems(bookDoc.toc);
+  const match = tocItems.find((item) => hrefMatchesDocUri(item.href, documentUri));
+  return match?.label?.trim() || null;
 }
 
 /**
@@ -225,7 +265,7 @@ type Props = {
   /** Called when view is ready so parent can get current chapter text (pass tocHref to get that chapter only). */
   onRegisterGetSectionText?: (fn: ((tocHref?: string) => string) | null) => void;
   /** Called when view is ready so parent can get text around a CFI (for get_context tool). */
-  onRegisterGetContextAroundCfi?: (fn: ((cfi: string, charRadius: number) => string) | null) => void;
+  onRegisterGetContextAroundCfi?: (fn: ((cfi: string, direction: GetContextDirection, maxChars: number, anchorText?: string) => GetContextResult) | null) => void;
   /** Called when view is ready so parent can resolve citation (quote) to CFI and jump + temporary highlight. */
   onRegisterResolveCitation?: (
     fn: ((citation: CitationPayload) => Promise<string | null>) | null
@@ -608,33 +648,146 @@ export default function FoliateViewer({
     return firstDoc?.doc?.body?.innerText?.trim() ?? "";
   }, []);
 
-  /** Get text around a CFI for the get_context tool. Uses highlight's selectedText to find anchor. */
-  const getContextAroundCfi = useCallback((cfi: string, charRadius: number): string => {
-    const v = viewRef.current;
-    const contents = v?.renderer?.getContents?.() ?? [];
-    if (contents.length === 0) return "";
+  /** Get context around a CFI for the get_context tool. Resolves anchor via anchorText (no stored highlights). */
+  const getContextAroundCfi = useCallback(
+    (
+      cfi: string,
+      direction: GetContextDirection,
+      maxChars: number,
+      anchorText?: string
+    ): GetContextResult => {
+      const empty = (): GetContextResult => ({
+        sectionLabel: locationRef.current.tocLabel ?? null,
+        charsBefore: 0,
+        charsAfter: 0,
+        atSectionStart: false,
+        atSectionEnd: false,
+        text: "",
+        anchorUnresolved: true,
+      });
 
-    // CFI format: epubcfi(/6/4[spine-id]!/...) — spine-id bracket is optional
-    const spineId = cfi.match(/\[([^\]]+)\]/)?.[1] ?? "";
-    const doc = spineId
-      ? (contents.find((entry) => {
-          const uri = (entry.doc as Document & { documentURI?: string })?.documentURI ?? "";
-          return uri.includes(spineId);
-        }) ?? contents[0])
-      : contents[0];
+      const v = viewRef.current;
+      const contents = v?.renderer?.getContents?.() ?? [];
+      if (contents.length === 0) return empty();
 
-    const fullText = doc?.doc?.body?.innerText?.trim() ?? "";
-    if (!fullText) return "";
+      const normalizedAnchorText = anchorText?.trim() || "";
+      const getDocumentUri = (entry: { doc?: Document } | undefined): string => {
+        return (entry?.doc as Document & { documentURI?: string })?.documentURI ?? "";
+      };
 
-    const anchorHighlight = (highlightsRef.current ?? []).find((h) => h.cfi === cfi);
-    const anchor = anchorHighlight?.selectedText ?? "";
-    const idx = anchor ? fullText.indexOf(anchor) : -1;
-    const center = idx !== -1 ? idx : Math.floor(fullText.length / 2);
+      // Resolve section: prefer CFI spine-id when available; otherwise use anchorText to pick the
+      // right loaded doc, then fall back to the current TOC href before using the first loaded doc.
+      const spineId = cfi.match(/\[([^\]]+)\]/)?.[1] ?? "";
+      let entry =
+        (spineId
+          ? contents.find((e) => {
+              const uri = getDocumentUri(e);
+              return uri.includes(spineId);
+            })
+          : undefined) ?? undefined;
 
-    const start = Math.max(0, center - charRadius);
-    const end = Math.min(fullText.length, center + charRadius);
-    return fullText.slice(start, end);
-  }, []);
+      if (!entry && normalizedAnchorText) {
+        entry = contents.find((candidate) => {
+          const doc = candidate.doc;
+          return !!doc?.body && !!findQuoteRangeInDocument(doc, normalizedAnchorText);
+        });
+      }
+
+      if (!entry && locationRef.current.tocHref) {
+        entry = contents.find((candidate) =>
+          hrefMatchesDocUri(locationRef.current.tocHref, getDocumentUri(candidate))
+        );
+      }
+
+      entry ??= contents[0];
+      const doc = entry?.doc;
+      if (!doc?.body) return empty();
+
+      const documentUri = getDocumentUri(entry);
+      const sectionLabel =
+        getTocLabelForDocument(bookDoc, documentUri) ??
+        (hrefMatchesDocUri(locationRef.current.tocHref, documentUri)
+          ? locationRef.current.tocLabel ?? null
+          : null);
+
+      // Build section text from text-node walk so offsets match (innerText can differ from DOM order).
+      const textNodes: { node: Text; start: number }[] = [];
+      let total = 0;
+      function walk(n: Node) {
+        if (n.nodeType === Node.TEXT_NODE) {
+          const len = (n as Text).length;
+          if (len > 0) {
+            textNodes.push({ node: n as Text, start: total });
+            total += len;
+          }
+        } else {
+          for (let i = 0; i < n.childNodes.length; i++) walk(n.childNodes[i]);
+        }
+      }
+      walk(doc.body);
+      const fullText = textNodes.map((t) => t.node.textContent ?? "").join("");
+      if (!fullText) return empty();
+
+      // Resolve anchor offset: use anchorText (from thread excerpt) to find position. Do not use stored highlights.
+      let anchorStart = -1;
+      let anchorEnd = -1;
+      if (normalizedAnchorText) {
+        const range = findQuoteRangeInDocument(doc, normalizedAnchorText);
+        if (range) {
+          const startContainer = range.startContainer;
+          const endContainer = range.endContainer;
+          for (const { node, start } of textNodes) {
+            const len = node.length;
+            if (node === startContainer) anchorStart = start + range.startOffset;
+            if (node === endContainer) anchorEnd = start + range.endOffset;
+          }
+        }
+      }
+      if (anchorStart < 0 || anchorEnd < 0) return empty();
+
+      const len = fullText.length;
+      const charsBefore = anchorStart;
+      const charsAfter = len - anchorEnd;
+      const atSectionStart = charsBefore < 200;
+      const atSectionEnd = charsAfter < 200;
+
+      let text = "";
+      const cap = Math.min(maxChars, 40000);
+
+      switch (direction) {
+        case "before":
+          text = fullText.slice(Math.max(0, anchorStart - cap), anchorStart);
+          break;
+        case "after":
+          text = fullText.slice(anchorEnd, Math.min(len, anchorEnd + cap));
+          break;
+        case "around": {
+          const half = Math.floor(cap / 2);
+          text = fullText.slice(
+            Math.max(0, anchorStart - half),
+            Math.min(len, anchorEnd + half)
+          );
+          break;
+        }
+        case "from_section_start":
+          text = fullText.slice(0, anchorStart);
+          if (text.length > cap) text = text.slice(-cap);
+          break;
+        default:
+          text = "";
+      }
+
+      return {
+        sectionLabel,
+        charsBefore,
+        charsAfter,
+        atSectionStart,
+        atSectionEnd,
+        text,
+      };
+    },
+    []
+  );
 
   useEffect(() => {
     if (view && onRegisterGetSectionText) {

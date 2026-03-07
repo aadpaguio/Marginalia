@@ -203,6 +203,44 @@ struct DbThreadMessage {
     excerpt_page: Option<String>,
 }
 
+// Phase 33: context manifest (one per completed thread turn)
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ContextManifestToolCallRow {
+    tool: String,
+    round: i64,
+    input_summary: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ContextManifest {
+    id: String,
+    thread_id: String,
+    book_id: String,
+    created_at: i64,
+    turn_mode: String,
+    active_anchor_present: bool,
+    active_anchor_source: Option<String>,
+    active_anchor_cfi: Option<String>,
+    active_anchor_chapter: Option<String>,
+    system_prompt_chars: i64,
+    reader_profile_included: bool,
+    reader_profile_chars: Option<i64>,
+    book_memory_included: bool,
+    book_memory_chars: Option<i64>,
+    book_overview_included: bool,
+    highlights_count: i64,
+    highlights_cfis: Vec<String>,
+    history_message_count: i64,
+    memory_items_count: i64,
+    estimated_input_tokens: Option<i64>,
+    tools_available: Vec<String>,
+    smart_scan_status: Option<String>,
+    tool_calls_made: Option<Vec<ContextManifestToolCallRow>>,
+    final_answer_chars: Option<i64>,
+}
+
 // Phase 30: structured memory items + anchors
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -385,6 +423,37 @@ fn init_db(db_path: &Path) -> Result<(), String> {
         CREATE INDEX IF NOT EXISTS idx_memory_anchors_book ON memory_anchors(book_id);
         CREATE INDEX IF NOT EXISTS idx_memory_anchors_memory ON memory_anchors(memory_id);
         CREATE INDEX IF NOT EXISTS idx_memory_items_type ON memory_items(type);
+
+        CREATE TABLE IF NOT EXISTS context_manifests (
+          id TEXT PRIMARY KEY,
+          thread_id TEXT NOT NULL,
+          book_id TEXT NOT NULL,
+          created_at INTEGER NOT NULL,
+          turn_mode TEXT NOT NULL,
+          active_anchor_present INTEGER NOT NULL CHECK(active_anchor_present IN (0,1)),
+          active_anchor_source TEXT,
+          active_anchor_cfi TEXT,
+          active_anchor_chapter TEXT,
+          system_prompt_chars INTEGER NOT NULL,
+          reader_profile_included INTEGER NOT NULL CHECK(reader_profile_included IN (0,1)),
+          reader_profile_chars INTEGER,
+          book_memory_included INTEGER NOT NULL CHECK(book_memory_included IN (0,1)),
+          book_memory_chars INTEGER,
+          book_overview_included INTEGER NOT NULL CHECK(book_overview_included IN (0,1)),
+          highlights_count INTEGER NOT NULL,
+          highlights_cfis TEXT,
+          history_message_count INTEGER NOT NULL,
+          memory_items_count INTEGER NOT NULL DEFAULT 0,
+          estimated_input_tokens INTEGER,
+          tools_available TEXT NOT NULL,
+          smart_scan_status TEXT,
+          tool_calls_made TEXT,
+          final_answer_chars INTEGER,
+          FOREIGN KEY (thread_id) REFERENCES threads(id) ON DELETE CASCADE,
+          FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
+        );
+        CREATE INDEX IF NOT EXISTS idx_context_manifests_thread_created
+          ON context_manifests(thread_id, created_at DESC);
         "#,
     )
     .map_err(|e| e.to_string())?;
@@ -759,6 +828,183 @@ fn db_save_thread_message(
     )
     .map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[tauri::command]
+fn db_save_manifest(state: State<DbState>, manifest: ContextManifest) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    let tools_available_json =
+        serde_json::to_string(&manifest.tools_available).map_err(|e| e.to_string())?;
+    let highlights_cfis_json =
+        serde_json::to_string(&manifest.highlights_cfis).map_err(|e| e.to_string())?;
+    let tool_calls_made_json = manifest
+        .tool_calls_made
+        .as_ref()
+        .map(|v| serde_json::to_string(v).map_err(|e| e.to_string()))
+        .transpose()?;
+    conn.execute(
+        r#"
+        INSERT INTO context_manifests (
+          id, thread_id, book_id, created_at,
+          turn_mode, active_anchor_present, active_anchor_source, active_anchor_cfi, active_anchor_chapter,
+          system_prompt_chars, reader_profile_included, reader_profile_chars,
+          book_memory_included, book_memory_chars, book_overview_included,
+          highlights_count, highlights_cfis, history_message_count, memory_items_count, estimated_input_tokens,
+          tools_available, smart_scan_status, tool_calls_made, final_answer_chars
+        ) VALUES (
+          ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24
+        )
+        "#,
+        params![
+            manifest.id,
+            manifest.thread_id,
+            manifest.book_id,
+            manifest.created_at,
+            manifest.turn_mode,
+            if manifest.active_anchor_present { 1i64 } else { 0i64 },
+            manifest.active_anchor_source,
+            manifest.active_anchor_cfi,
+            manifest.active_anchor_chapter,
+            manifest.system_prompt_chars,
+            if manifest.reader_profile_included { 1i64 } else { 0i64 },
+            manifest.reader_profile_chars,
+            if manifest.book_memory_included { 1i64 } else { 0i64 },
+            manifest.book_memory_chars,
+            if manifest.book_overview_included { 1i64 } else { 0i64 },
+            manifest.highlights_count,
+            highlights_cfis_json,
+            manifest.history_message_count,
+            manifest.memory_items_count,
+            manifest.estimated_input_tokens,
+            tools_available_json,
+            manifest.smart_scan_status,
+            tool_calls_made_json,
+            manifest.final_answer_chars,
+        ],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn db_get_manifests_for_thread(
+    state: State<DbState>,
+    thread_id: String,
+) -> Result<Vec<ContextManifest>, String> {
+    let conn = open_db(&state)?;
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, thread_id, book_id, created_at, turn_mode, active_anchor_present,
+             active_anchor_source, active_anchor_cfi, active_anchor_chapter,
+             system_prompt_chars, reader_profile_included, reader_profile_chars,
+             book_memory_included, book_memory_chars, book_overview_included,
+             highlights_count, highlights_cfis, history_message_count, memory_items_count, estimated_input_tokens,
+             tools_available, smart_scan_status, tool_calls_made, final_answer_chars
+             FROM context_manifests WHERE thread_id = ?1 ORDER BY created_at DESC",
+        )
+        .map_err(|e| e.to_string())?;
+    let rows = stmt
+        .query_map(params![thread_id], |row| {
+            let tools_available: String = row.get(20)?;
+            let highlights_cfis: String = row.get(16)?;
+            let tool_calls_made: Option<String> = row.get(22)?;
+            let tools_available: Vec<String> =
+                serde_json::from_str(&tools_available).unwrap_or_default();
+            let highlights_cfis: Vec<String> =
+                serde_json::from_str(&highlights_cfis).unwrap_or_default();
+            let tool_calls_made: Option<Vec<ContextManifestToolCallRow>> = tool_calls_made
+                .as_ref()
+                .and_then(|s| serde_json::from_str(s).ok());
+            Ok(ContextManifest {
+                id: row.get(0)?,
+                thread_id: row.get(1)?,
+                book_id: row.get(2)?,
+                created_at: row.get(3)?,
+                turn_mode: row.get(4)?,
+                active_anchor_present: row.get::<_, i64>(5)? != 0,
+                active_anchor_source: row.get(6)?,
+                active_anchor_cfi: row.get(7)?,
+                active_anchor_chapter: row.get(8)?,
+                system_prompt_chars: row.get(9)?,
+                reader_profile_included: row.get::<_, i64>(10)? != 0,
+                reader_profile_chars: row.get(11)?,
+                book_memory_included: row.get::<_, i64>(12)? != 0,
+                book_memory_chars: row.get(13)?,
+                book_overview_included: row.get::<_, i64>(14)? != 0,
+                highlights_count: row.get(15)?,
+                highlights_cfis,
+                history_message_count: row.get(17)?,
+                memory_items_count: row.get(18)?,
+                estimated_input_tokens: row.get(19)?,
+                tools_available,
+                smart_scan_status: row.get(21)?,
+                tool_calls_made,
+                final_answer_chars: row.get(23)?,
+            })
+        })
+        .map_err(|e| e.to_string())?;
+    rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn db_get_latest_manifest_for_thread(
+    state: State<DbState>,
+    thread_id: String,
+) -> Result<Option<ContextManifest>, String> {
+    let conn = open_db(&state)?;
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, thread_id, book_id, created_at, turn_mode, active_anchor_present,
+             active_anchor_source, active_anchor_cfi, active_anchor_chapter,
+             system_prompt_chars, reader_profile_included, reader_profile_chars,
+             book_memory_included, book_memory_chars, book_overview_included,
+             highlights_count, highlights_cfis, history_message_count, memory_items_count, estimated_input_tokens,
+             tools_available, smart_scan_status, tool_calls_made, final_answer_chars
+             FROM context_manifests WHERE thread_id = ?1 ORDER BY created_at DESC LIMIT 1",
+        )
+        .map_err(|e| e.to_string())?;
+    let opt = stmt
+        .query_row(params![thread_id], |row| {
+            let tools_available: String = row.get(20)?;
+            let highlights_cfis: String = row.get(16)?;
+            let tool_calls_made: Option<String> = row.get(22)?;
+            let tools_available: Vec<String> =
+                serde_json::from_str(&tools_available).unwrap_or_default();
+            let highlights_cfis: Vec<String> =
+                serde_json::from_str(&highlights_cfis).unwrap_or_default();
+            let tool_calls_made: Option<Vec<ContextManifestToolCallRow>> = tool_calls_made
+                .as_ref()
+                .and_then(|s| serde_json::from_str(s).ok());
+            Ok(ContextManifest {
+                id: row.get(0)?,
+                thread_id: row.get(1)?,
+                book_id: row.get(2)?,
+                created_at: row.get(3)?,
+                turn_mode: row.get(4)?,
+                active_anchor_present: row.get::<_, i64>(5)? != 0,
+                active_anchor_source: row.get(6)?,
+                active_anchor_cfi: row.get(7)?,
+                active_anchor_chapter: row.get(8)?,
+                system_prompt_chars: row.get(9)?,
+                reader_profile_included: row.get::<_, i64>(10)? != 0,
+                reader_profile_chars: row.get(11)?,
+                book_memory_included: row.get::<_, i64>(12)? != 0,
+                book_memory_chars: row.get(13)?,
+                book_overview_included: row.get::<_, i64>(14)? != 0,
+                highlights_count: row.get(15)?,
+                highlights_cfis,
+                history_message_count: row.get(17)?,
+                memory_items_count: row.get(18)?,
+                estimated_input_tokens: row.get(19)?,
+                tools_available,
+                smart_scan_status: row.get(21)?,
+                tool_calls_made,
+                final_answer_chars: row.get(23)?,
+            })
+        })
+        .optional()
+        .map_err(|e| e.to_string())?;
+    Ok(opt)
 }
 
 #[tauri::command]
@@ -1905,6 +2151,9 @@ pub fn run() {
             db_clear_all_threads,
             db_get_thread_messages,
             db_save_thread_message,
+            db_save_manifest,
+            db_get_manifests_for_thread,
+            db_get_latest_manifest_for_thread,
             db_attach_highlight_to_thread,
             db_get_highlights_for_thread,
             db_get_standalone_highlights,

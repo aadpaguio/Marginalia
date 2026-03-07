@@ -1,5 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { Highlight, MemoryItem, ThreadMessage } from "@/types/book";
+import type {
+  ContextManifest,
+  ContextAnchorSource,
+  ContextTurnMode,
+} from "@/types/contextManifest";
 import type { SectionSummary } from "@/services/db";
 import { memoryGetItemsForBook, memoryGetItemsGlobal } from "@/services/db";
 
@@ -21,6 +26,8 @@ export interface ClaudeResponse {
     inputTokens?: number;
     outputTokens?: number;
   };
+  /** Phase 33: context manifest for the completed turn (set when persist is triggered). */
+  completedManifest?: ContextManifest;
 }
 
 export interface ThreadContextParams {
@@ -59,6 +66,7 @@ export type ThreadMessageContent = string | unknown[];
 export interface AssembledThreadRequest {
   systemBlocks: Array<{ text: string; cacheControl?: "ephemeral" }>;
   messages: Array<{ role: "user" | "assistant"; content: ThreadMessageContent }>;
+  manifestDraft: Omit<ContextManifest, "toolCallsMade" | "finalAnswerChars">;
 }
 
 const DEFAULT_MODEL = "claude-haiku-4-5-20251001";
@@ -319,6 +327,28 @@ function buildReadingHistoryBlock(
     : `${trimmed}\n\n---\n\n## Chapter-proximate entries\n${proximateBlock}`;
 }
 
+const MAX_INHERITED_EXCERPT_CHARS = 600;
+
+/** Most recent user message in the thread that has excerpt metadata; used for passage continuity when current turn has no attached passage. */
+function getInheritedThreadPassage(
+  messages: ThreadMessage[]
+): { excerptText: string; excerptCfi: string; excerptChapter?: string | null } | null {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i];
+    if (m.role !== "user") continue;
+    const text = m.excerptText?.trim();
+    const cfi = m.excerptCfi?.trim();
+    if (text && cfi) {
+      return {
+        excerptText: text,
+        excerptCfi: cfi,
+        excerptChapter: m.excerptChapter ?? undefined,
+      };
+    }
+  }
+  return null;
+}
+
 /** Assemble system blocks and messages for thread-aware Claude request. */
 export function assembleThreadContext(params: ThreadContextParams): AssembledThreadRequest {
   const {
@@ -342,6 +372,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     `--- READER PROFILE ---\n${readerProfile?.trim() || "(No reader profile yet.)"}`
   );
   // --- READING HISTORY (this book) --- (Phase 30.1: full; 30.2: chapter-proximate when known)
+  let injectedBookMemoryChars = 0;
   if (bookMemory?.trim()) {
     const currentChapterLabel = getCurrentChapterLabel(
       params.currentCfi,
@@ -349,6 +380,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     );
     const historyBlock = buildReadingHistoryBlock(bookMemory.trim(), currentChapterLabel);
     if (historyBlock) {
+      injectedBookMemoryChars = historyBlock.length;
       systemParts.push(`--- READING HISTORY (this book) ---\n${historyBlock}`);
     }
   }
@@ -390,16 +422,16 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
         `Use spine_href (first column) with get_section_summary or get_section_text. Summaries are not inlined; call the tool when needed.\n` +
         `Reader's current position maps to spine index ${currentSpineIndex}; sections with [ahead] are past the reader.\n\n` +
         sectionIndexLines.join("\n") +
-        `\n\nFor get_context: use radii above as char_radius (snippet / section / full). Only use [ahead] sections if the reader asks about content ahead; flag spoilers.`
+        `\n\nFor get_context: use direction (before / after / around / from_section_start) and max_chars (snippet ~2000, section ~8000, full ~20000). Only use [ahead] sections if the reader asks about content ahead; flag spoilers.`
     );
   }
   // --- TOOLS & CONTEXT ---
   systemParts.push(
     "--- TOOLS & CONTEXT ---\n" +
     "The reader only ever sees your final message. They do not see tool calls, tool output, or any text you fetched. So: never imply they can see it. Do not say 'as you can see from the context', 'what I retrieved shows', 'the passage I pulled', 'in the text I fetched', or similar. Answer as if the relevant content were already in front of you — quote or paraphrase it in your reply; that is the only way the reader gets the information.\n" +
-    "Two normal turn types: (1) When a passage is attached to the message, you have that passage and the reader's question — use it as your default evidence base. (2) When no passage is attached, this is a freeform thread question: you have only the reader's question; answer from that and appropriate non-spoilery book context, and do not assume a specific excerpt. Do not assume the reader has read beyond what is in front of them.\n" +
+    "Two normal turn types: (1) When a passage is attached to the message, you have that passage and the reader's question — use it as your default evidence base. (2) When no passage is attached but an ACTIVE THREAD PASSAGE (inherited) block is present below, this turn inherits the most recent thread passage — use it as the default anchor and its CFI for get_context when needed. (3) When no passage is attached and there is no active thread passage, this is a freeform thread question: you have only the reader's question. Only ask the user to point to the text again when there is no active anchor (no passage on this message and no ACTIVE THREAD PASSAGE block). Do not assume the reader has read beyond what is in front of them.\n" +
     "When to use tools:\n" +
-    "- get_context (CFI + char_radius): Use when the question needs text around the reader's current passage — e.g. 'the previous section', 'earlier in the chapter', 'what came before', or how the passage relates to nearby text. Pass the EPUB CFI from the user's message and a char_radius (see section index for snippet/section/full). Use it in this turn if you need it; no need to ask first. For most questions the passage alone is enough.\n" +
+    "- get_context (CFI + direction + max_chars): Use when the question needs text around the reader's current passage. Pass the EPUB CFI and direction: use 'from_section_start' when you need what led up to the anchor from the start of the chapter/section; 'before' for immediate lead-up; 'after' for what follows; 'around' for local context. Use max_chars (snippet ~2000, section ~8000, full ~20000). The tool returns atSectionStart, atSectionEnd, charsBefore, charsAfter so you can reason about position (e.g. 'there may not be much prior context yet'). Use it in this turn if you need it; no need to ask first. For most questions the passage alone is enough.\n" +
     "- get_section_summary (spine_href): Use to get the summary of a section by its spine_href (from the section index). Helps with thematic questions or deciding if you need that section's full text.\n" +
     "- get_section_text (spine_href): Use when the reader wants exact quotes or specific lines from a section they have not reached. Pass the spine_href from the section index.\n" +
     "Spoilers: Do not assume the reader has read past the excerpt. If the answer would spoil later content and they did not ask for it, hint instead (e.g. 'this becomes clearer as you read further').\n" +
@@ -473,12 +505,29 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     role: m.role,
     content: m.content,
   }));
-  const hasPassage = dedupedHighlights.length > 0;
+  // Per-turn: "passage attached to this message" = user attached for this send (pendingExcerpt), not all thread highlights
+  const hasPassage = !!(pendingExcerpt?.text?.trim());
+  const inherited =
+    !hasPassage && messages.length > 0 ? getInheritedThreadPassage(messages) : null;
+  if (inherited) {
+    const excerptPreview =
+      inherited.excerptText.length > MAX_INHERITED_EXCERPT_CHARS
+        ? inherited.excerptText.slice(0, MAX_INHERITED_EXCERPT_CHARS - 1) + "…"
+        : inherited.excerptText;
+    systemParts.push(
+      "--- ACTIVE THREAD PASSAGE (inherited) ---\n" +
+        "This turn has no new passage attached; the passage below is the most recent from the thread. Use it as the default referent for follow-up questions (e.g. \"why does the narrator mention it?\") and use its CFI for get_context when you need nearby text.\n\n" +
+        (inherited.excerptChapter ? `[${inherited.excerptChapter}]\n` : "") +
+        `CFI: ${inherited.excerptCfi}\n\n${excerptPreview}`
+    );
+  }
   const currentTurn: AssembledThreadRequest["messages"][0] = {
     role: "user" as const,
     content: hasPassage
       ? `${highlightedSections}\n\n${userMessage}`
-      : `(No passage is attached to this message.)\n\n${userMessage}`,
+      : inherited
+        ? `(No new passage attached; using most recent thread passage as anchor.)\n\n${userMessage}`
+        : `(No passage is attached to this message.)\n\n${userMessage}`,
   };
 
   // Phase 30.5: inject memory items as first user block when present (no empty block)
@@ -511,31 +560,99 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     });
   }
 
+  const systemPromptChars = systemBlocks.reduce((s, b) => s + b.text.length, 0);
+  // Reader profile block is always injected (real or placeholder); record actual assembled text length
+  const readerProfileText = readerProfile?.trim() || "(No reader profile yet.)";
+  const turnMode: ContextTurnMode = hasPassage
+    ? "passage_attached"
+    : inherited
+      ? "inherited_anchor"
+      : "freeform";
+  const activeAnchorSource: ContextAnchorSource = hasPassage
+    ? "current"
+    : inherited
+      ? "inherited"
+      : "none";
+  const activeAnchorCfi = hasPassage
+    ? (pendingExcerpt?.cfi ?? dedupedHighlights[0]?.cfi) ?? null
+    : inherited?.excerptCfi ?? null;
+  const activeAnchorChapter = hasPassage
+    ? (pendingExcerpt?.chapter ?? dedupedHighlights[0]?.chapterLabel) ?? null
+    : inherited?.excerptChapter ?? null;
+
+  function messageContentChars(content: ThreadMessageContent): number {
+    if (typeof content === "string") return content.length;
+    if (!Array.isArray(content)) return 0;
+    return (content as Array<{ text?: string }>).reduce(
+      (s, b) => s + (typeof b?.text === "string" ? b.text.length : 0),
+      0
+    );
+  }
+  const allMessages = [...prefillMessages, ...historyMessages, currentTurn];
+  const messagesChars = allMessages.reduce(
+    (s, m) => s + messageContentChars(m.content),
+    0
+  );
+  const totalChars = systemPromptChars + messagesChars;
+  const estimatedInputTokens = Math.ceil(totalChars / 4);
+
+  const manifestDraft: Omit<ContextManifest, "toolCallsMade" | "finalAnswerChars"> = {
+    id: crypto.randomUUID(),
+    threadId: params.threadId,
+    bookId: params.bookId,
+    createdAt: Date.now(),
+    turnMode,
+    activeAnchorPresent: hasPassage || !!inherited,
+    activeAnchorSource,
+    activeAnchorCfi: activeAnchorCfi ?? undefined,
+    activeAnchorChapter: activeAnchorChapter ?? undefined,
+    systemPromptChars,
+    readerProfileIncluded: true,
+    readerProfileChars: readerProfileText.length,
+    bookMemoryIncluded: injectedBookMemoryChars > 0,
+    bookMemoryChars: injectedBookMemoryChars > 0 ? injectedBookMemoryChars : undefined,
+    bookOverviewIncluded: !!(params.bookSummary?.trim()),
+    highlightsCount: dedupedHighlights.length,
+    highlightsCfis: dedupedHighlights.map((h) => h.cfi ?? ""),
+    historyMessageCount: messages.length,
+    memoryItemsCount: params.memoryItems?.length ?? 0,
+    estimatedInputTokens,
+    toolsAvailable: [], // filled in askClaudeThread
+    smartScanStatus: params.scanStatus ?? undefined,
+  };
+
   return {
     systemBlocks,
-    messages: [...prefillMessages, ...historyMessages, currentTurn],
+    messages: allMessages,
+    manifestDraft,
   };
 }
 
 const GET_CONTEXT_TOOL = {
   name: "get_context",
   description:
-    "Retrieve text from the book around a specific position. Only use this to expand around the reader's current passage: pass the EPUB CFI that appears in the user's message (the highlight), and char_radius. Use when the reader asks about 'the previous section', 'earlier in the chapter', or how the passage relates to surrounding text — use a larger char_radius to include prior content. Do NOT pass a spine href or path (e.g. OEBPS/chapter08.html): get_context only accepts an EPUB CFI and cannot fetch by section. For another section's content use get_section_summary (you get the summary only; there is no tool to fetch full text of a different section).",
+    "Retrieve text from the book around the reader's passage anchor. Pass the EPUB CFI from the user's message or ACTIVE THREAD PASSAGE (inherited), plus direction and max_chars. Use 'from_section_start' when you need what led up to the anchor from the start of the chapter/section; 'before' for immediate lead-up; 'after' for what follows; 'around' for local context on both sides. The tool returns sectionLabel, charsBefore, charsAfter, atSectionStart, atSectionEnd, and text — use these to reason about position (e.g. 'this is early in the chapter'). Do NOT pass a spine href: for another section use get_section_summary or get_section_text.",
   input_schema: {
     type: "object",
     properties: {
       cfi: {
         type: "string",
         description:
-          "An EPUB CFI string (e.g. epubcfi(/6/4!/4/2/1:0)) — must be exactly the CFI from the user's message (the highlighted passage). Do not pass a spine href or file path.",
+          "An EPUB CFI string (e.g. epubcfi(/6/4!/4/2/1:0)) — from the user's message (the highlighted passage) or from the ACTIVE THREAD PASSAGE (inherited) block when present. Do not pass a spine href or file path.",
       },
-      char_radius: {
+      direction: {
+        type: "string",
+        enum: ["before", "after", "around", "from_section_start"],
+        description:
+          "Where to fetch text relative to the anchor: 'from_section_start' = from start of section up to anchor (capped by max_chars); 'before' = immediate text before anchor; 'after' = text after anchor; 'around' = both sides.",
+      },
+      max_chars: {
         type: "number",
         description:
-          "Characters to include before and after the anchor. 2000 for local context, 8000 for a section, 20000 for a long chapter. Max 40000.",
+          "Maximum characters to return. Snippet ~2000, section ~8000, full chapter ~20000. Max 40000.",
       },
     },
-    required: ["cfi", "char_radius"],
+    required: ["cfi", "direction", "max_chars"],
   },
 } as const;
 
@@ -573,6 +690,21 @@ const GET_SECTION_TEXT_TOOL = {
   },
 } as const;
 
+/** Direction for get_context: where to fetch text relative to the anchor. */
+export type GetContextDirection = "before" | "after" | "around" | "from_section_start";
+
+/** Structured result from get_context so the model knows anchor position and retrieval bounds. */
+export interface GetContextResult {
+  sectionLabel?: string | null;
+  charsBefore: number;
+  charsAfter: number;
+  atSectionStart: boolean;
+  atSectionEnd: boolean;
+  text: string;
+  /** True when the anchor could not be resolved (e.g. section not loaded or no anchor text for fallback). */
+  anchorUnresolved?: boolean;
+}
+
 const SUGGEST_SMART_SCAN_TOOL = {
   name: "suggest_smart_scan",
   description:
@@ -581,7 +713,12 @@ const SUGGEST_SMART_SCAN_TOOL = {
 } as const;
 
 export type AskClaudeThreadParams = ThreadContextParams & {
-  getContextAroundCfi: (cfi: string, charRadius: number) => string;
+  getContextAroundCfi: (
+    cfi: string,
+    direction: GetContextDirection,
+    maxChars: number,
+    anchorText?: string
+  ) => GetContextResult;
   /** When provided, enables get_section_text so the model can fetch full text of a section by spine_href and quote lines. */
   getSectionTextByHref?: (spineHref: string) => Promise<string>;
   /** Called when the model invokes a tool (e.g. get_context) so the UI can show a fetch indicator. */
@@ -661,6 +798,8 @@ export async function askClaudeThread(
   const assembled = assembleThreadContext(params);
   const model = chooseModelAndMaxTokens(params.userMessage).model;
   let messages: AssembledThreadRequest["messages"] = assembled.messages;
+  const toolCallLog: Array<{ tool: string; round: number; inputSummary: string }> = [];
+
   /**
    * Force tool use on round 0 only when the user's message explicitly asks for
    * surrounding/relational context (e.g. "how does this relate to the rest of the essay").
@@ -669,6 +808,17 @@ export async function askClaudeThread(
    */
   const forceToolChoice = isContextSeekingQuery(params.userMessage);
   let suggestSmartScanUsed = false;
+
+  // Round-0 tool list for manifest (what options the model had when it started)
+  const round0Tools: unknown[] = [GET_CONTEXT_TOOL];
+  if (params.scanStatus === "done" && (params.sectionSummaries?.length ?? 0) > 0) {
+    round0Tools.push(GET_SECTION_SUMMARY_TOOL);
+    if (params.getSectionTextByHref) round0Tools.push(GET_SECTION_TEXT_TOOL);
+  }
+  if (params.scanStatus === "none") {
+    round0Tools.push(SUGGEST_SMART_SCAN_TOOL);
+  }
+  const toolsAvailable = round0Tools.map((t) => (t as { name: string }).name);
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     // Build dynamic tools for this round
@@ -720,10 +870,19 @@ export async function askClaudeThread(
     }
 
     if (!hasToolCalls) {
+      const answer = data.answer ?? "";
+      const completedManifest: ContextManifest = {
+        ...assembled.manifestDraft,
+        toolsAvailable,
+        toolCallsMade: [...toolCallLog],
+        finalAnswerChars: answer.length,
+      };
+      invoke("db_save_manifest", { manifest: completedManifest }).catch(console.error);
       return {
-        answer: data.answer ?? "",
+        answer,
         model: data.model ?? model,
         usage: data.usage,
+        completedManifest,
       };
     }
 
@@ -731,12 +890,25 @@ export async function askClaudeThread(
       if (call.name !== "suggest_smart_scan") {
         params.onToolCall?.(call.name);
       }
+      const summary =
+        call.name === "get_context"
+          ? `cfi=${(String((call.input as { cfi?: string }).cfi ?? "")).slice(0, 40)}… dir=${(call.input as { direction?: string }).direction ?? "?"} max=${(call.input as { max_chars?: number }).max_chars ?? "?"}`
+          : call.name === "get_section_summary" || call.name === "get_section_text"
+            ? `spine_href=${String((call.input as { spine_href?: string }).spine_href ?? "")}`
+            : call.name === "suggest_smart_scan"
+              ? "(no input)"
+              : "(unknown)";
+      toolCallLog.push({ tool: call.name, round, inputSummary: summary });
     }
 
     const toolResults = await Promise.all(
       data.toolCalls!.map(async (call) => {
         if (call.name === "get_context") {
-          const { cfi, char_radius } = call.input as { cfi: string; char_radius?: number };
+          const { cfi, direction, max_chars } = call.input as {
+            cfi: string;
+            direction?: string;
+            max_chars?: number;
+          };
           const isEpubCfi =
             typeof cfi === "string" && cfi.trim().toLowerCase().startsWith("epubcfi(");
           if (!isEpubCfi) {
@@ -744,12 +916,21 @@ export async function askClaudeThread(
               "(get_context requires an EPUB CFI from the user's passage, e.g. epubcfi(/6/4!/4/2/1:0). You passed a spine href or path — get_context cannot fetch by section. For another section use get_section_summary or get_section_text.)";
             return { tool_use_id: call.id, content };
           }
-          const result = params.getContextAroundCfi(
-            cfi,
-            Math.min(char_radius ?? 4000, 40000)
-          );
-          const content = result || "(No text found at this position)";
-          if (result?.trim()) params.onContextFetched?.(result);
+          const dir =
+            direction === "before" ||
+            direction === "after" ||
+            direction === "around" ||
+            direction === "from_section_start"
+              ? direction
+              : "around";
+          const maxChars = Math.min(Math.max(0, max_chars ?? 4000), 40000);
+          const anchorText =
+            params.pendingExcerpt?.text?.trim() ||
+            getInheritedThreadPassage(params.messages)?.excerptText?.trim() ||
+            undefined;
+          const result = params.getContextAroundCfi(cfi, dir, maxChars, anchorText);
+          const content = JSON.stringify(result);
+          if (result.text?.trim()) params.onContextFetched?.(result.text);
           return { tool_use_id: call.id, content };
         }
         if (call.name === "get_section_summary") {
@@ -821,9 +1002,18 @@ export async function askClaudeThread(
   }>("ask_claude_thread_proxy", {
     request: finalRequest,
   });
+  const answer = finalData.answer ?? "";
+  const completedManifest: ContextManifest = {
+    ...assembled.manifestDraft,
+    toolsAvailable,
+    toolCallsMade: [...toolCallLog],
+    finalAnswerChars: answer.length,
+  };
+  invoke("db_save_manifest", { manifest: completedManifest }).catch(console.error);
   return {
-    answer: finalData.answer ?? "",
+    answer,
     model: finalData.model ?? model,
     usage: finalData.usage,
+    completedManifest,
   };
 }

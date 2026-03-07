@@ -6,6 +6,7 @@ import { exists } from "@tauri-apps/plugin-fs";
 import { DocumentLoader } from "@/libs/document";
 import type { BookDoc, TOCItem } from "@/libs/document";
 import type { CitationPayload, Highlight, MemoryItem, Thread, ThreadMessage } from "@/types/book";
+import type { ContextManifest } from "@/types/contextManifest";
 import type { ReaderTheme } from "@/app/reader/utils/readerStyles";
 import FoliateViewer from "@/app/reader/components/FoliateViewer";
 import Library from "@/components/Library";
@@ -58,11 +59,12 @@ import {
   parseReaderMd,
   persistExtractedMemoryItems,
 } from "@/services/compaction";
-import { askClaudeThread, generateThreadTitle, loadRelevantMemoryItems } from "@/services/claude";
+import { askClaudeThread, generateThreadTitle, loadRelevantMemoryItems, type GetContextResult } from "@/services/claude";
 import { ArrowRight, ArrowUp, BookMarked, LogOut, MoreVertical, NotepadText, PanelLeft, PanelLeftClose, Pencil, ScanText, Settings, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "@/components/ThreadsPanel/ThreadsPanel.css";
+import { ContextManifestDebug } from "@/components/ThreadsPanel/ContextManifestDebug";
 import readerChromeStyles from "@/app/reader/ReaderChrome.module.css";
 import tocPanelStyles from "@/app/reader/TocPanel.module.css";
 import appStyles from "@/App.module.css";
@@ -425,6 +427,9 @@ function App() {
   } | null>(null);
   /** Message IDs whose excerpt card is expanded (click toggles). */
   const [excerptExpandedIds, setExcerptExpandedIds] = useState<Set<string>>(new Set());
+  /** Phase 33: latest context manifest for the active thread (optimistic from completed turn). */
+  const [latestCompletedManifest, setLatestCompletedManifest] = useState<ContextManifest | null>(null);
+  const [manifestRefreshTrigger, setManifestRefreshTrigger] = useState(0);
   const [scanStatus, setScanStatus] = useState<"none" | "in_progress" | "done">("none");
   const [sectionSummaries, setSectionSummaries] = useState<SectionSummary[]>([]);
   const [bookSummary, setBookSummary] = useState<string | null>(null);
@@ -437,7 +442,7 @@ function App() {
   const pendingScanAfterOpenRef = useRef(false);
   const getSectionTextRef = useRef<((tocHref?: string) => string) | null>(null);
   const getContextAroundCfiRef = useRef<
-    ((cfi: string, charRadius: number) => string) | null
+    ((cfi: string, direction: import("@/services/claude").GetContextDirection, maxChars: number, anchorText?: string) => GetContextResult
   >(null);
   const resolveCitationRef = useRef<
     ((citation: CitationPayload) => Promise<string | null>) | null
@@ -1359,7 +1364,17 @@ function App() {
           bookStructureType: bookStructureType ?? undefined,
           currentCfi: currentTocHref ?? currentCfi ?? undefined,
           onSuggestSmartScan: () => setShowSmartScanBanner(true),
-          getContextAroundCfi: getContextAroundCfiRef.current ?? (() => ""),
+          getContextAroundCfi:
+            getContextAroundCfiRef.current ??
+            (() => ({
+              sectionLabel: null,
+              charsBefore: 0,
+              charsAfter: 0,
+              atSectionStart: false,
+              atSectionEnd: false,
+              text: "",
+              anchorUnresolved: true,
+            })),
           getSectionTextByHref,
           onToolCall: (toolName) =>
             setPendingToolMessage(TOOL_CHAT_LABELS[toolName] ?? "Working…"),
@@ -1372,6 +1387,10 @@ function App() {
         apiKey
       );
       const fullAnswer = result.answer ?? "";
+      if (result.completedManifest) {
+        setLatestCompletedManifest(result.completedManifest);
+        setManifestRefreshTrigger((t) => t + 1);
+      }
       const excerpt = pendingMessageExcerpt
         ? {
             text: pendingMessageExcerpt.text,
@@ -2500,6 +2519,13 @@ function App() {
                     <div className="thread-chat-error">{threadChatError}</div>
                   )}
                 </div>
+              )}
+              {panelTab === "threads" && activeThreadId && (
+                <ContextManifestDebug
+                  threadId={activeThreadId}
+                  refreshTrigger={manifestRefreshTrigger}
+                  latestCompletedManifest={latestCompletedManifest}
+                />
               )}
             </aside>
           </>
