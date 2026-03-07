@@ -26,6 +26,35 @@ describe("Phase 27 — assembleThreadContext (blind model posture)", () => {
     expect(result.systemBlocks[0].text).not.toContain("Here's the chapter's text");
   });
 
+  it("always includes READER PROFILE block (placeholder when empty)", () => {
+    const result = assembleThreadContext(baseParams);
+    expect(result.systemBlocks[0].text).toContain("--- READER PROFILE ---");
+    expect(result.systemBlocks[0].text).toContain("(No reader profile yet.)");
+  });
+
+  it("includes actual reader profile when provided", () => {
+    const result = assembleThreadContext({
+      ...baseParams,
+      readerProfile: "You enjoy close reading and thematic analysis.",
+    });
+    expect(result.systemBlocks[0].text).toContain("--- READER PROFILE ---");
+    expect(result.systemBlocks[0].text).toContain("You enjoy close reading and thematic analysis.");
+    expect(result.systemBlocks[0].text).not.toContain("(No reader profile yet.)");
+  });
+
+  it("TOOLS & CONTEXT: two normal turn types and get_context automatic for local", () => {
+    const result = assembleThreadContext(baseParams);
+    const text = result.systemBlocks[0].text;
+    expect(text).toContain("Two normal turn types");
+    expect(text).toContain("When a passage is attached to the message");
+    expect(text).toContain("freeform thread question");
+    expect(text).toContain("no passage is attached");
+    expect(text).toContain("do not assume a specific excerpt");
+    expect(text).toContain("no need to ask first");
+    expect(text).toContain("Broader scope:");
+    expect(text).toContain("ask before fetching or summarising");
+  });
+
   it("includes highlights and user message in the user turn when highlights exist", () => {
     const params: ThreadContextParams = {
       ...baseParams,
@@ -54,9 +83,11 @@ describe("Phase 27 — assembleThreadContext (blind model posture)", () => {
     expect(content).toContain("Explain this.");
   });
 
-  it("user turn is only the message when there are no highlights", () => {
+  it("user turn includes freeform-thread marker and message when no passage attached", () => {
     const result = assembleThreadContext(baseParams);
-    expect(result.messages[0].content).toBe("What does this mean?");
+    const content = result.messages[0].content as string;
+    expect(content).toContain("(No passage is attached to this message.)");
+    expect(content).toContain("What does this mean?");
   });
 
   it("includes pendingExcerpt in current turn even without attached highlights", () => {

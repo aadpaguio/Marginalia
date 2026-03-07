@@ -289,6 +289,7 @@ export default function FoliateViewer({
   const threadDropdownRef = useRef<HTMLDivElement | null>(null);
   const suppressNextSelectionRef = useRef(false);
   const hasFloatingUiRef = useRef(false);
+  const interactionBlockedRef = useRef(false);
   const doubleClickDisabled = useRef(true);
   const highlightsRef = useRef<Highlight[]>(highlights);
   highlightsRef.current = highlights;
@@ -318,6 +319,9 @@ export default function FoliateViewer({
       pendingSelection != null || hoveredNote != null || addToThreadDropdownOpen;
   }, [pendingSelection, hoveredNote, addToThreadDropdownOpen]);
   const interactionBlocked = pendingSelection != null;
+  useEffect(() => {
+    interactionBlockedRef.current = interactionBlocked;
+  }, [interactionBlocked]);
   const chrome =
     theme === "dark"
       ? {
@@ -431,8 +435,8 @@ export default function FoliateViewer({
     (suppressNextSelection: boolean) => {
       if (suppressNextSelection) {
         suppressNextSelectionRef.current = true;
-        clearAllSelections();
       }
+      clearAllSelections();
       setAddToThreadDropdownOpen(false);
       setPendingSelection(null);
     },
@@ -757,6 +761,7 @@ export default function FoliateViewer({
     handleInstantAnnotationPointerMove,
     handleInstantAnnotationPointerCancel,
     handleInstantAnnotationPointerUp,
+    selectionGestureStartedRef,
   } = useInstantAnnotation({ bookKey, viewRef, onSelection: handleSelection });
 
   const docLoadHandler = useCallback(
@@ -788,26 +793,28 @@ export default function FoliateViewer({
 
       const index = (detail as { index?: number }).index ?? 0;
       doc.addEventListener("pointerdown", (e) => {
-        if (interactionBlocked) return;
+        if (interactionBlockedRef.current) return;
         handleInstantAnnotationPointerDown(doc, index, e as PointerEvent);
       });
       doc.addEventListener("pointermove", (e) => {
-        if (interactionBlocked) return;
+        if (interactionBlockedRef.current) return;
         handleInstantAnnotationPointerMove(doc, index, e as PointerEvent);
       });
       doc.addEventListener("pointerup", (e) => {
-        if (interactionBlocked) return;
+        if (interactionBlockedRef.current) return;
         handleInstantAnnotationPointerUp(doc, index, e as PointerEvent);
       });
       doc.addEventListener("pointercancel", () => {
         handleInstantAnnotationPointerCancel();
       });
 
-      // Close selection UI when user clicks inside the book (iframe doesn't bubble to window)
+      // Close selection UI when user clicks inside the book (iframe doesn't bubble to window).
+      // Skip when this pointerdown started a selection gesture so the new selection can show the toolbar.
       const closeSelectionUi = () => {
+        if (selectionGestureStartedRef.current) return;
         if (!hasFloatingUiRef.current) return;
         setHoveredNote(null);
-        dismissSelectionUi(true);
+        dismissSelectionUi(false);
       };
       doc.addEventListener("pointerdown", closeSelectionUi);
       doc.addEventListener("mousedown", closeSelectionUi);
@@ -837,11 +844,11 @@ export default function FoliateViewer({
     },
     [
       bookKey,
-      interactionBlocked,
       handleInstantAnnotationPointerDown,
       handleInstantAnnotationPointerMove,
       handleInstantAnnotationPointerCancel,
       handleInstantAnnotationPointerUp,
+      selectionGestureStartedRef,
     ]
   );
 
@@ -947,7 +954,8 @@ export default function FoliateViewer({
       if (hoverPromptRef.current?.contains(target)) return;
       if (selectionToolbarRef.current?.contains(target)) return;
       setHoveredNote(null);
-      dismissSelectionUi(true);
+      // Don't suppress next selection: user clicked outside, next gesture may be selecting in the book.
+      dismissSelectionUi(false);
     };
     window.addEventListener("pointerdown", onWindowPointerDown, true);
     return () => window.removeEventListener("pointerdown", onWindowPointerDown, true);
@@ -1164,7 +1172,8 @@ export default function FoliateViewer({
       if (selectionToolbarRef.current?.contains(target)) return;
       if (hoverPromptRef.current?.contains(target)) return;
       setHoveredNote(null);
-      dismissSelectionUi(true);
+      // Don't suppress next selection: user clicked outside toolbar, next gesture may be selecting in the book.
+      dismissSelectionUi(false);
     },
     [dismissSelectionUi, pendingSelection, hoveredNote, addToThreadDropdownOpen]
   );
@@ -1184,6 +1193,9 @@ export default function FoliateViewer({
         minWidth: "100%",
         minHeight: "100%",
         overflow: "hidden",
+        // After dismissing the selection overlay, the browser may not refresh cursor from iframe until a click.
+        // Set text cursor when not blocked so the book area shows I-beam without an extra click.
+        cursor: interactionBlocked ? "default" : "text",
       }}
       onPointerDownCapture={handleContainerPointerDownCapture}
       onClick={undefined}
@@ -1391,7 +1403,7 @@ export default function FoliateViewer({
             type="button"
             aria-label="Dismiss selection actions"
             onClick={() => {
-              dismissSelectionUi(true);
+              dismissSelectionUi(false);
             }}
             style={{
               position: "absolute",

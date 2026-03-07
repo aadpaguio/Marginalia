@@ -29,6 +29,8 @@ export function useInstantAnnotation({
   const startPointRef = useRef<Point | null>(null);
   const startDocRef = useRef<Document | null>(null);
   const startIndexRef = useRef<number>(0);
+  /** True when the current pointerdown started a selection gesture (selectable content). Cleared on pointerup/pointercancel so closeSelectionUi can skip dismissing. */
+  const selectionGestureStartedRef = useRef(false);
 
   const findPositionAtPoint = useCallback((doc: Document, x: number, y: number) => {
     if (doc.caretPositionFromPoint) {
@@ -116,9 +118,11 @@ export function useInstantAnnotation({
 
   const handleInstantAnnotationPointerDown = useCallback(
     (doc: Document, index: number, ev: PointerEvent): boolean => {
+      selectionGestureStartedRef.current = false;
       if (ev.button !== 0) return false;
       if (!isSelectableContent(doc, ev.clientX, ev.clientY)) return false;
 
+      selectionGestureStartedRef.current = true;
       startPointRef.current = { x: ev.clientX, y: ev.clientY };
       startDocRef.current = doc;
       startIndexRef.current = index;
@@ -136,6 +140,7 @@ export function useInstantAnnotation({
   );
 
   const handleInstantAnnotationPointerCancel = useCallback((): boolean => {
+    selectionGestureStartedRef.current = false;
     startPointRef.current = null;
     startDocRef.current = null;
     return true;
@@ -143,6 +148,7 @@ export function useInstantAnnotation({
 
   const handleInstantAnnotationPointerUp = useCallback(
     (doc: Document, index: number, ev: PointerEvent): boolean => {
+      selectionGestureStartedRef.current = false;
       const view = viewRef.current;
 
       // Path 1: we had a drag (pointerdown + move + pointerup) — create range from points
@@ -215,5 +221,6 @@ export function useInstantAnnotation({
     handleInstantAnnotationPointerCancel,
     handleInstantAnnotationPointerUp,
     cancelInstantAnnotation,
+    selectionGestureStartedRef,
   };
 }

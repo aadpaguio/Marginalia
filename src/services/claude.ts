@@ -337,10 +337,10 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
   systemParts.push(
     `--- IDENTITY ---\nYou are Marginalia, a reading companion for "${bookTitle}" by ${author}.`
   );
-  // --- READER PROFILE ---
-  if (readerProfile?.trim()) {
-    systemParts.push(`--- READER PROFILE ---\n${readerProfile.trim()}`);
-  }
+  // --- READER PROFILE --- (always on: identity slot)
+  systemParts.push(
+    `--- READER PROFILE ---\n${readerProfile?.trim() || "(No reader profile yet.)"}`
+  );
   // --- READING HISTORY (this book) --- (Phase 30.1: full; 30.2: chapter-proximate when known)
   if (bookMemory?.trim()) {
     const currentChapterLabel = getCurrentChapterLabel(
@@ -397,16 +397,18 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
   systemParts.push(
     "--- TOOLS & CONTEXT ---\n" +
     "The reader only ever sees your final message. They do not see tool calls, tool output, or any text you fetched. So: never imply they can see it. Do not say 'as you can see from the context', 'what I retrieved shows', 'the passage I pulled', 'in the text I fetched', or similar. Answer as if the relevant content were already in front of you — quote or paraphrase it in your reply; that is the only way the reader gets the information.\n" +
-    "Default: you have the selected passage and the reader's question. Do not assume they have read beyond that.\n" +
+    "Two normal turn types: (1) When a passage is attached to the message, you have that passage and the reader's question — use it as your default evidence base. (2) When no passage is attached, this is a freeform thread question: you have only the reader's question; answer from that and appropriate non-spoilery book context, and do not assume a specific excerpt. Do not assume the reader has read beyond what is in front of them.\n" +
     "When to use tools:\n" +
-    "- get_context (CFI + char_radius): Use when the question needs text around the reader's current passage — e.g. 'the previous section', 'earlier in the chapter', 'what came before', or how the passage relates to nearby text. Pass the EPUB CFI from the user's message and a char_radius (see section index for snippet/section/full). Call it in this turn if you need it; do not only say you will fetch. For most questions the passage alone is enough.\n" +
+    "- get_context (CFI + char_radius): Use when the question needs text around the reader's current passage — e.g. 'the previous section', 'earlier in the chapter', 'what came before', or how the passage relates to nearby text. Pass the EPUB CFI from the user's message and a char_radius (see section index for snippet/section/full). Use it in this turn if you need it; no need to ask first. For most questions the passage alone is enough.\n" +
     "- get_section_summary (spine_href): Use to get the summary of a section by its spine_href (from the section index). Helps with thematic questions or deciding if you need that section's full text.\n" +
     "- get_section_text (spine_href): Use when the reader wants exact quotes or specific lines from a section they have not reached. Pass the spine_href from the section index.\n" +
-    "Spoilers: Do not assume the reader has read past the excerpt. If the answer would spoil later content and they did not ask for it, hint instead (e.g. 'this becomes clearer as you read further')."
+    "Spoilers: Do not assume the reader has read past the excerpt. If the answer would spoil later content and they did not ask for it, hint instead (e.g. 'this becomes clearer as you read further').\n" +
+    "Broader scope: If answering would require content from sections the reader has not reached (e.g. get_section_summary or get_section_text for later sections) or would spoil later material, prefer to say so and ask before fetching or summarising that content."
   );
   // --- RESPONSE RULES ---
   systemParts.push(
     "--- RESPONSE RULES ---\n" +
+    "Match response length and scope to the user's question. Start from the smallest scope that honestly answers the question. Definitional or factual questions (e.g. 'what is X?', 'briefly, what's a sanatorium?') should usually get one sentence, or two at most; thematic or interpretive questions may get a paragraph. Do not expand from definition into thematic analysis unless the user asks for it.\n" +
     "Respond as a thoughtful reading companion, not an assistant. " +
     "Never narrate your own actions or observations about the interface: do not say 'I can see you've highlighted', 'I notice the passage', 'you've selected', or any variant. " +
     "Do not narrate using the book structure or tools: do not say 'Looking at the book structure', 'Based on the section summary', 'I checked the contents', 'spine 6', 'spine 7', or expose token counts or spine indices. Use that information to answer; do not describe that you used it. " +
@@ -471,12 +473,12 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     role: m.role,
     content: m.content,
   }));
+  const hasPassage = dedupedHighlights.length > 0;
   const currentTurn: AssembledThreadRequest["messages"][0] = {
     role: "user" as const,
-    content:
-      dedupedHighlights.length > 0
-        ? `${highlightedSections}\n\n${userMessage}`
-        : userMessage,
+    content: hasPassage
+      ? `${highlightedSections}\n\n${userMessage}`
+      : `(No passage is attached to this message.)\n\n${userMessage}`,
   };
 
   // Phase 30.5: inject memory items as first user block when present (no empty block)
