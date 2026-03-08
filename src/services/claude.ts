@@ -48,6 +48,8 @@ export interface ThreadContextParams {
   readerProfile?: string | null;
   /** Session-only working context: last 1–2 get_context results, injected as a second system block for follow-up continuity. */
   workingContext?: string;
+  /** Turn-scoped auto-prefetched lead-up text (before first API call). Not sent through onContextFetched; not part of workingContext. */
+  prefetchedLeadUpContext?: string;
   bookSummary?: string | null;
   sectionSummaries?: SectionSummary[];
   scanStatus?: "none" | "in_progress" | "done";
@@ -431,7 +433,8 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     "The reader only ever sees your final message. They do not see tool calls, tool output, or any text you fetched. So: never imply they can see it. Do not say 'as you can see from the context', 'what I retrieved shows', 'the passage I pulled', 'in the text I fetched', or similar. Answer as if the relevant content were already in front of you — quote or paraphrase it in your reply; that is the only way the reader gets the information.\n" +
     "Two normal turn types: (1) When a passage is attached to the message, you have that passage and the reader's question — use it as your default evidence base. (2) When no passage is attached but an ACTIVE THREAD PASSAGE (inherited) block is present below, this turn inherits the most recent thread passage — use it as the default anchor and its CFI for get_context when needed. (3) When no passage is attached and there is no active thread passage, this is a freeform thread question: you have only the reader's question. Only ask the user to point to the text again when there is no active anchor (no passage on this message and no ACTIVE THREAD PASSAGE block). Do not assume the reader has read beyond what is in front of them.\n" +
     "When to use tools:\n" +
-    "- get_context (CFI + direction + max_chars): Use when the question needs text around the reader's current passage. Pass the EPUB CFI and direction: use 'from_section_start' when you need what led up to the anchor from the start of the chapter/section; 'before' for immediate lead-up; 'after' for what follows; 'around' for local context. Use max_chars (snippet ~2000, section ~8000, full ~20000). The tool returns atSectionStart, atSectionEnd, charsBefore, charsAfter so you can reason about position (e.g. 'there may not be much prior context yet'). Use it in this turn if you need it; no need to ask first. For most questions the passage alone is enough.\n" +
+    "- get_context (CFI + direction + max_chars): Use when the question needs text around the reader's current passage. Pass the EPUB CFI and direction: use 'from_section_start' when you need what led up to the anchor from the start of the chapter/section; 'before' for immediate lead-up; 'after' for what follows; 'around' for local context. Use max_chars (snippet ~2000, section ~8000, full ~20000). The tool returns atSectionStart, atSectionEnd, charsBefore, charsAfter so you can reason about position (e.g. 'there may not be much prior context yet'). Use it in this turn if you need it; no need to ask first.\n" +
+    "Attribution and source-identification: Do not answer attribution questions (e.g. 'what essay is this from?', 'who is speaking?', 'which chapter/section?') by inference or prior knowledge. You may only state a source, speaker, or title if it is explicitly stated in the attached passage or in the CURRENT TURN LEAD-UP CONTEXT block. If the attached passage and CURRENT TURN LEAD-UP CONTEXT together do not explicitly name the source, speaker, or essay, you must call get_context before answering — do not guess. For source-attribution in quoted or critical prose, when the lead-up (before) context does not resolve the attribution, call get_context with direction 'around' or 'after' to look for the title or speaker; then answer only from what the fetched text explicitly states.\n" +
     "- get_section_summary (spine_href): Use to get the summary of a section by its spine_href (from the section index). Helps with thematic questions or deciding if you need that section's full text.\n" +
     "- get_section_text (spine_href): Use when the reader wants exact quotes or specific lines from a section they have not reached. Pass the spine_href from the section index.\n" +
     "Spoilers: Do not assume the reader has read past the excerpt. If the answer would spoil later content and they did not ask for it, hint instead (e.g. 'this becomes clearer as you read further').\n" +
@@ -553,6 +556,12 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
   const systemBlocks: AssembledThreadRequest["systemBlocks"] = [
     { text: systemParts.join("\n\n"), cacheControl: "ephemeral" },
   ];
+  if (params.prefetchedLeadUpContext?.trim()) {
+    systemBlocks.push({
+      text: `--- CURRENT TURN LEAD-UP CONTEXT ---\nText immediately before the reader's attached passage (this turn only). Use it to ground attribution or identification answers; it is not carried to later turns.\n\n${params.prefetchedLeadUpContext.trim()}`,
+      cacheControl: "ephemeral",
+    });
+  }
   if (params.workingContext?.trim()) {
     systemBlocks.push({
       text: `Current working context (fetched this session):\n\n${params.workingContext.trim()}`,
@@ -729,6 +738,9 @@ export type AskClaudeThreadParams = ThreadContextParams & {
 
 const MAX_TOOL_ROUNDS = 3;
 
+/** Characters to fetch before the anchor when auto-prefetching lead-up for passage-attached turns. */
+const PREFETCH_LEAD_UP_CHARS = 2000;
+
 /** Format system blocks + messages as a single string for debugging (full prompt sent to Claude). */
 function formatThreadPromptForLog(
   systemBlocks: Array<{ text: string; cacheControl?: string }>,
@@ -795,7 +807,28 @@ export async function askClaudeThread(
   params: AskClaudeThreadParams,
   apiKey: string
 ): Promise<ClaudeResponse> {
-  const assembled = assembleThreadContext(params);
+  // One-time auto-prefetch for current-turn attached passage only (before first API call). Not sent through onContextFetched.
+  // Best-effort: if prefetch throws (e.g. resolver edge case), continue without a lead-up block so the turn still reaches the model.
+  let prefetchedLeadUpContext: string | undefined;
+  if (params.pendingExcerpt?.text?.trim() && params.pendingExcerpt?.cfi?.trim()) {
+    try {
+      const result = params.getContextAroundCfi(
+        params.pendingExcerpt.cfi.trim(),
+        "before",
+        PREFETCH_LEAD_UP_CHARS,
+        params.pendingExcerpt.text.trim()
+      );
+      if (result.text?.trim()) {
+        prefetchedLeadUpContext = result.text.trim();
+      }
+    } catch {
+      // Degrade to no lead-up block; turn proceeds normally.
+    }
+  }
+  const assembled = assembleThreadContext({
+    ...params,
+    prefetchedLeadUpContext,
+  });
   const model = chooseModelAndMaxTokens(params.userMessage).model;
   let messages: AssembledThreadRequest["messages"] = assembled.messages;
   const toolCallLog: Array<{ tool: string; round: number; inputSummary: string }> = [];

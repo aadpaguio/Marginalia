@@ -57,6 +57,61 @@ describe("Phase 27 — assembleThreadContext (blind model posture)", () => {
     expect(text).toContain("ask before fetching or summarising");
   });
 
+  it("TOOLS & CONTEXT: attribution must not be answered by inference or guess; must fetch if not explicit", () => {
+    const result = assembleThreadContext(baseParams);
+    const text = result.systemBlocks[0].text;
+    expect(text).toContain("Attribution and source-identification:");
+    expect(text).toContain("Do not answer attribution questions");
+    expect(text).toContain("by inference or prior knowledge");
+    expect(text).toContain("do not guess");
+    expect(text).toContain("you must call get_context before answering");
+    expect(text).toContain("CURRENT TURN LEAD-UP CONTEXT");
+    expect(text).toContain("explicitly name the source");
+    expect(text).not.toContain("For most questions the passage alone is enough");
+  });
+
+  it("TOOLS & CONTEXT: when before does not resolve attribution, prefer around or after", () => {
+    const result = assembleThreadContext(baseParams);
+    const text = result.systemBlocks[0].text;
+    expect(text).toContain("when the lead-up (before) context does not resolve the attribution");
+    expect(text).toContain("direction 'around' or 'after'");
+    expect(text).toContain("answer only from what the fetched text explicitly states");
+  });
+
+  it("includes turn-scoped prefetched lead-up block when prefetchedLeadUpContext provided", () => {
+    const result = assembleThreadContext({
+      ...baseParams,
+      pendingExcerpt: {
+        text: "selected phrase",
+        cfi: "epubcfi(/6/4!/4/2/1:0)",
+        chapter: "Chapter 1",
+      },
+      prefetchedLeadUpContext: "Earlier in the chapter the narrator described the sanatorium.",
+    });
+    expect(result.systemBlocks.length).toBeGreaterThanOrEqual(2);
+    const leadUpBlock = result.systemBlocks.find((b) =>
+      b.text.includes("--- CURRENT TURN LEAD-UP CONTEXT ---")
+    );
+    expect(leadUpBlock).toBeDefined();
+    expect(leadUpBlock!.text).toContain("Earlier in the chapter the narrator described the sanatorium.");
+    expect(leadUpBlock!.text).toContain("this turn only");
+  });
+
+  it("no prefetched lead-up block when prefetchedLeadUpContext absent", () => {
+    const result = assembleThreadContext({
+      ...baseParams,
+      pendingExcerpt: {
+        text: "selected",
+        cfi: "epubcfi(/6/4!/4/2/1:0)",
+        chapter: "Ch 1",
+      },
+    });
+    const hasLeadUp = result.systemBlocks.some((b) =>
+      b.text.includes("--- CURRENT TURN LEAD-UP CONTEXT ---")
+    );
+    expect(hasLeadUp).toBe(false);
+  });
+
   it("includes highlights and user message in the user turn when passage attached this turn (pendingExcerpt)", () => {
     const params: ThreadContextParams = {
       ...baseParams,
@@ -791,5 +846,356 @@ describe("Phase 27 — askClaudeThread agentic loop", () => {
     expect(parsed.charsBefore).toBe(100);
     expect(parsed.charsAfter).toBe(2000);
     expect(parsed.text).toBe("Very start of chapter…");
+  });
+
+  describe("Passage context prefetch", () => {
+    it("auto-prefetches on pendingExcerpt turn before round 0 with before and 2000 chars", async () => {
+      const leadUp = "Earlier the narrator had mentioned the sanatorium.";
+      const getContextAroundCfi = vi.fn().mockReturnValue({
+        sectionLabel: "Chapter 3",
+        charsBefore: 500,
+        charsAfter: 0,
+        atSectionStart: false,
+        atSectionEnd: false,
+        text: leadUp,
+      } satisfies GetContextResult);
+      vi.mocked(invoke)
+        .mockResolvedValueOnce({
+          answer: "A sanatorium is…",
+          toolCalls: [],
+          rawContent: [{ type: "text", text: "A sanatorium is…" }],
+          model: "claude-haiku-4-5-20251001",
+        })
+        .mockResolvedValueOnce(undefined);
+
+      await askClaudeThread(
+        {
+          threadId: "t1",
+          messages: [],
+          attachedHighlights: [],
+          pendingExcerpt: {
+            text: "Sanatorium",
+            cfi: "epubcfi(/6/4!/4/2/1:0)",
+            chapter: "Chapter 3",
+          },
+          userMessage: "What is a sanatorium?",
+          bookTitle: "Book",
+          author: "Author",
+          bookId: "b1",
+          getContextAroundCfi,
+        },
+        "test-api-key"
+      );
+
+      expect(getContextAroundCfi).toHaveBeenCalledWith(
+        "epubcfi(/6/4!/4/2/1:0)",
+        "before",
+        2000,
+        "Sanatorium"
+      );
+      const proxyCall = vi.mocked(invoke).mock.calls.find((c) => c[0] === "ask_claude_thread_proxy");
+      expect(proxyCall).toBeDefined();
+      const systemBlocks = (proxyCall![1] as { request: { systemBlocks: Array<{ text: string }> } })
+        .request.systemBlocks;
+      const leadUpBlock = systemBlocks.find((b) =>
+        b.text.includes("--- CURRENT TURN LEAD-UP CONTEXT ---")
+      );
+      expect(leadUpBlock).toBeDefined();
+      expect(leadUpBlock!.text).toContain(leadUp);
+    });
+
+    it("auto-prefetch does not call onContextFetched", async () => {
+      const onContextFetched = vi.fn();
+      const getContextAroundCfi = vi.fn().mockReturnValue({
+        sectionLabel: "Ch 1",
+        charsBefore: 100,
+        charsAfter: 0,
+        atSectionStart: false,
+        atSectionEnd: false,
+        text: "Lead-up text.",
+      } satisfies GetContextResult);
+      vi.mocked(invoke)
+        .mockResolvedValueOnce({
+          answer: "Answer.",
+          toolCalls: [],
+          rawContent: [{ type: "text", text: "Answer." }],
+          model: "claude-haiku-4-5-20251001",
+        })
+        .mockResolvedValueOnce(undefined);
+
+      await askClaudeThread(
+        {
+          threadId: "t1",
+          messages: [],
+          attachedHighlights: [],
+          pendingExcerpt: { text: "excerpt", cfi: "epubcfi(/6/4!/4/2)", chapter: "Ch 1" },
+          userMessage: "Explain.",
+          bookTitle: "Book",
+          author: "Author",
+          bookId: "b1",
+          getContextAroundCfi,
+          onContextFetched,
+        },
+        "test-api-key"
+      );
+
+      expect(getContextAroundCfi).toHaveBeenCalled();
+      expect(onContextFetched).not.toHaveBeenCalled();
+    });
+
+    it("explicit get_context tool call does call onContextFetched", async () => {
+      const onContextFetched = vi.fn();
+      const getContextAroundCfi = vi.fn().mockReturnValue({
+        sectionLabel: "Ch 1",
+        charsBefore: 50,
+        charsAfter: 100,
+        atSectionStart: false,
+        atSectionEnd: false,
+        text: "Fetched context from tool.",
+      } satisfies GetContextResult);
+      vi.mocked(invoke)
+        .mockResolvedValueOnce({
+          answer: "",
+          toolCalls: [
+            {
+              name: "get_context",
+              id: "toolu_1",
+              input: {
+                cfi: "epubcfi(/6/4!/4/2)",
+                direction: "before",
+                max_chars: 2000,
+              },
+            },
+          ],
+          rawContent: [
+            {
+              type: "tool_use",
+              id: "toolu_1",
+              name: "get_context",
+              input: {
+                cfi: "epubcfi(/6/4!/4/2)",
+                direction: "before",
+                max_chars: 2000,
+              },
+            },
+          ],
+          model: "claude-haiku-4-5-20251001",
+        })
+        .mockResolvedValueOnce({
+          answer: "Done.",
+          toolCalls: [],
+          rawContent: [{ type: "text", text: "Done." }],
+          model: "claude-haiku-4-5-20251001",
+        })
+        .mockResolvedValueOnce(undefined);
+
+      await askClaudeThread(
+        {
+          threadId: "t1",
+          messages: [],
+          attachedHighlights: [],
+          pendingExcerpt: { text: "excerpt", cfi: "epubcfi(/6/4!/4/2)", chapter: "Ch 1" },
+          userMessage: "What came before?",
+          bookTitle: "Book",
+          author: "Author",
+          bookId: "b1",
+          getContextAroundCfi,
+          onContextFetched,
+        },
+        "test-api-key"
+      );
+
+      expect(onContextFetched).toHaveBeenCalledTimes(1);
+      expect(onContextFetched).toHaveBeenCalledWith("Fetched context from tool.");
+    });
+
+    it("source-identification: fetch-then-answer flow yields correct source when lead-up does not name it", async () => {
+      // Regression: "what essay is this from?" must not be answered from excerpt/lead-up alone.
+      // Auto-prefetch returns lead-up that does not name the essay (Woolf case). Model calls get_context (after);
+      // we return text that names "Thunder at Wembley"; model answers from that. Proves the desired path works.
+      const getContextAroundCfi = vi.fn().mockImplementation((_cfi, direction) => ({
+        sectionLabel: "Essays",
+        charsBefore: 500,
+        charsAfter: 800,
+        atSectionStart: false,
+        atSectionEnd: false,
+        text:
+          direction === "before"
+            ? "The crowd had gathered. She reflected on the noise and the lights."
+            : direction === "after"
+              ? "This passage is from \"Thunder at Wembley\", first published in 1924."
+              : "",
+      } satisfies GetContextResult));
+      vi.mocked(invoke)
+        .mockResolvedValueOnce({
+          answer: "",
+          toolCalls: [
+            {
+              name: "get_context",
+              id: "toolu_1",
+              input: {
+                cfi: "epubcfi(/6/4!/4/2/1:0)",
+                direction: "after",
+                max_chars: 2000,
+              },
+            },
+          ],
+          rawContent: [
+            {
+              type: "tool_use",
+              id: "toolu_1",
+              name: "get_context",
+              input: {
+                cfi: "epubcfi(/6/4!/4/2/1:0)",
+                direction: "after",
+                max_chars: 2000,
+              },
+            },
+          ],
+          model: "claude-haiku-4-5-20251001",
+        })
+        .mockResolvedValueOnce({
+          answer: "This is from the essay Thunder at Wembley.",
+          toolCalls: [],
+          rawContent: [{ type: "text", text: "This is from the essay Thunder at Wembley." }],
+          model: "claude-haiku-4-5-20251001",
+        })
+        .mockResolvedValueOnce(undefined);
+
+      const result = await askClaudeThread(
+        {
+          threadId: "t1",
+          messages: [],
+          attachedHighlights: [],
+          pendingExcerpt: {
+            text: "a fragment of quoted prose",
+            cfi: "epubcfi(/6/4!/4/2/1:0)",
+            chapter: "Essays",
+          },
+          userMessage: "What essay is this from?",
+          bookTitle: "The Essays",
+          author: "Virginia Woolf",
+          bookId: "b1",
+          getContextAroundCfi,
+        },
+        "test-api-key"
+      );
+
+      expect(result.answer).toContain("Thunder at Wembley");
+      const afterOrAroundCalls = getContextAroundCfi.mock.calls.filter(
+        (c) => c[1] === "after" || c[1] === "around"
+      );
+      expect(afterOrAroundCalls.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("no auto-prefetch when pendingExcerpt absent", async () => {
+      const getContextAroundCfi = vi.fn();
+      vi.mocked(invoke)
+        .mockResolvedValueOnce({
+          answer: "Reply.",
+          toolCalls: [],
+          rawContent: [{ type: "text", text: "Reply." }],
+          model: "claude-haiku-4-5-20251001",
+        })
+        .mockResolvedValueOnce(undefined);
+
+      await askClaudeThread(
+        {
+          threadId: "t1",
+          messages: [],
+          attachedHighlights: [],
+          userMessage: "What does this mean?",
+          bookTitle: "Book",
+          author: "Author",
+          bookId: "b1",
+          getContextAroundCfi,
+        },
+        "test-api-key"
+      );
+
+      expect(getContextAroundCfi).not.toHaveBeenCalled();
+    });
+
+    it("no lead-up block when prefetch returns empty text", async () => {
+      const getContextAroundCfi = vi.fn().mockReturnValue({
+        sectionLabel: null,
+        charsBefore: 0,
+        charsAfter: 0,
+        atSectionStart: false,
+        atSectionEnd: false,
+        text: "",
+      } satisfies GetContextResult);
+      vi.mocked(invoke)
+        .mockResolvedValueOnce({
+          answer: "Answer.",
+          toolCalls: [],
+          rawContent: [{ type: "text", text: "Answer." }],
+          model: "claude-haiku-4-5-20251001",
+        })
+        .mockResolvedValueOnce(undefined);
+
+      await askClaudeThread(
+        {
+          threadId: "t1",
+          messages: [],
+          attachedHighlights: [],
+          pendingExcerpt: { text: "excerpt", cfi: "epubcfi(/6/4!/4/2)", chapter: "Ch 1" },
+          userMessage: "Explain.",
+          bookTitle: "Book",
+          author: "Author",
+          bookId: "b1",
+          getContextAroundCfi,
+        },
+        "test-api-key"
+      );
+
+      const proxyCall = vi.mocked(invoke).mock.calls.find((c) => c[0] === "ask_claude_thread_proxy");
+      const systemBlocks = (proxyCall![1] as { request: { systemBlocks: Array<{ text: string }> } })
+        .request.systemBlocks;
+      const hasLeadUp = systemBlocks.some((b) =>
+        b.text.includes("--- CURRENT TURN LEAD-UP CONTEXT ---")
+      );
+      expect(hasLeadUp).toBe(false);
+    });
+
+    it("prefetch failure is swallowed: turn still reaches model without lead-up block", async () => {
+      const getContextAroundCfi = vi.fn().mockImplementation(() => {
+        throw new Error("Resolver edge case / section not loaded");
+      });
+      vi.mocked(invoke)
+        .mockResolvedValueOnce({
+          answer: "Answered from the excerpt alone.",
+          toolCalls: [],
+          rawContent: [{ type: "text", text: "Answered from the excerpt alone." }],
+          model: "claude-haiku-4-5-20251001",
+        })
+        .mockResolvedValueOnce(undefined);
+
+      const result = await askClaudeThread(
+        {
+          threadId: "t1",
+          messages: [],
+          attachedHighlights: [],
+          pendingExcerpt: { text: "excerpt", cfi: "epubcfi(/6/4!/4/2)", chapter: "Ch 1" },
+          userMessage: "What does this mean?",
+          bookTitle: "Book",
+          author: "Author",
+          bookId: "b1",
+          getContextAroundCfi,
+        },
+        "test-api-key"
+      );
+
+      expect(result.answer).toBe("Answered from the excerpt alone.");
+      expect(getContextAroundCfi).toHaveBeenCalled();
+      const proxyCall = vi.mocked(invoke).mock.calls.find((c) => c[0] === "ask_claude_thread_proxy");
+      expect(proxyCall).toBeDefined();
+      const systemBlocks = (proxyCall![1] as { request: { systemBlocks: Array<{ text: string }> } })
+        .request.systemBlocks;
+      const hasLeadUp = systemBlocks.some((b) =>
+        b.text.includes("--- CURRENT TURN LEAD-UP CONTEXT ---")
+      );
+      expect(hasLeadUp).toBe(false);
+    });
   });
 });

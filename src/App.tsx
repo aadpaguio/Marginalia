@@ -442,12 +442,12 @@ function App() {
   const pendingScanAfterOpenRef = useRef(false);
   const getSectionTextRef = useRef<((tocHref?: string) => string) | null>(null);
   const getContextAroundCfiRef = useRef<
-    ((cfi: string, direction: import("@/services/claude").GetContextDirection, maxChars: number, anchorText?: string) => GetContextResult
+    ((cfi: string, direction: import("@/services/claude").GetContextDirection, maxChars: number, anchorText?: string) => GetContextResult) | null
   >(null);
   const resolveCitationRef = useRef<
     ((citation: CitationPayload) => Promise<string | null>) | null
   >(null);
-  /** Session-only working context: last 1–2 get_context results for follow-up continuity. Evicted on new fetch; not persisted. */
+  /** Session-only working context: last 1–2 explicit get_context tool results (model-initiated). Populated only by onContextFetched; auto-prefetched lead-up is never pushed here. Evicted on new fetch; not persisted. */
   const workingContextRef = useRef<string[]>([]);
   /** Tracks which thread we're loading memory for; used to avoid applying stale memory when user switches thread before load completes. */
   const activeThreadIdRef = useRef<string | null>(null);
