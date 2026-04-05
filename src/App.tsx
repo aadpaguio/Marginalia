@@ -338,32 +338,65 @@ const CitationJumpButton: FC<{
   );
 };
 
-const WebCitationList: FC<{ citations: WebCitation[] }> = ({ citations }) => (
-  <div className="web-citations" style={{ marginTop: 8, fontSize: "0.82em", opacity: 0.85 }}>
-    <div style={{ fontWeight: 600, marginBottom: 4, color: "var(--text-secondary)" }}>Sources</div>
-    <ul style={{ margin: 0, paddingLeft: 16, listStyle: "none" }}>
-      {citations.map((c, i) => (
-        <li key={i} style={{ marginBottom: 4, display: "flex", alignItems: "flex-start", gap: 4 }}>
-          <Globe size={12} style={{ marginTop: 3, flexShrink: 0, color: "var(--text-secondary)" }} />
-          <span>
-            <a
-              href={c.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: "var(--accent)", textDecoration: "none" }}
-              title={c.url}
-            >
-              {c.title}
-            </a>
-            {c.citedText && (
-              <span style={{ color: "var(--text-secondary)", fontStyle: "italic" }}>
-                {" — "}{c.citedText.length > 120 ? c.citedText.slice(0, 120) + "…" : c.citedText}
-              </span>
-            )}
-          </span>
-        </li>
-      ))}
-    </ul>
+function webCitationDisplayDomain(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./i, "");
+  } catch {
+    return url.length > 48 ? `${url.slice(0, 45)}…` : url;
+  }
+}
+
+function webCitationFaviconSrc(url: string): string {
+  try {
+    const host = new URL(url).hostname;
+    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=16`;
+  } catch {
+    return "";
+  }
+}
+
+const WebSourceChipIcon: FC<{ url: string }> = ({ url }) => {
+  const [failed, setFailed] = useState(false);
+  const src = webCitationFaviconSrc(url);
+  if (failed || !src) {
+    return <Globe size={14} className="web-source-chip__icon-fallback" aria-hidden />;
+  }
+  return (
+    <img
+      className="web-source-chip__icon"
+      src={src}
+      alt=""
+      width={16}
+      height={16}
+      loading="lazy"
+      decoding="async"
+      onError={() => setFailed(true)}
+    />
+  );
+};
+
+/** Compact favicon + domain chips (Claude-style), full title/snippet on hover. */
+const WebSourceChips: FC<{ citations: WebCitation[] }> = ({ citations }) => (
+  <div className="web-source-chips" role="list" aria-label="Web sources">
+    {citations.map((c, i) => {
+      const domain = webCitationDisplayDomain(c.url);
+      const tooltipParts = [c.title, c.citedText].filter((p): p is string => Boolean(p?.trim()));
+      const titleAttr = tooltipParts.length > 0 ? tooltipParts.join("\n\n") : c.url;
+      return (
+        <a
+          key={`${c.url}-${i}`}
+          className="web-source-chip"
+          href={c.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={titleAttr}
+          role="listitem"
+        >
+          <WebSourceChipIcon url={c.url} />
+          <span className="web-source-chip__domain">{domain}</span>
+        </a>
+      );
+    })}
   </div>
 );
 
@@ -434,7 +467,6 @@ function App() {
   };
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   /** Shown under the streaming assistant bubble; state (not ref) so React re-renders when citations arrive. */
-  const [pendingWebCitations, setPendingWebCitations] = useState<WebCitation[] | null>(null);
   const threadChatInputRef = useRef<HTMLInputElement | null>(null);
   const threadChatMessagesScrollRef = useRef<HTMLDivElement | null>(null);
   /** User message shown immediately on send; cleared when reply is persisted. */
@@ -1360,7 +1392,6 @@ function App() {
     setPendingUserMessage(userMessage);
     setPendingAssistantContent("");
     setPendingToolMessage(null);
-    setPendingWebCitations(null);
     if (revealIntervalRef.current != null) {
       window.clearInterval(revealIntervalRef.current);
       revealIntervalRef.current = null;
@@ -1425,7 +1456,7 @@ function App() {
       );
       const fullAnswer = result.answer ?? "";
       const webCitationsForTurn = result.webCitations?.length ? result.webCitations : undefined;
-      setPendingWebCitations(webCitationsForTurn ?? null);
+      /* Sources render on the persisted message only — not during character reveal (avoids flashing below partial text). */
       if (result.completedManifest) {
         setLatestCompletedManifest(result.completedManifest);
         setManifestRefreshTrigger((t) => t + 1);
@@ -1455,7 +1486,6 @@ function App() {
             revealIntervalRef.current = null;
           }
           handleMessagePair(userMessage, fullAnswer, excerpt, webCitationsForTurn);
-          setPendingWebCitations(null);
           setPendingUserMessage(null);
           setPendingAssistantContent("");
           setPendingToolMessage(null);
@@ -1468,7 +1498,6 @@ function App() {
       setPendingUserMessage(null);
       setPendingAssistantContent("");
       setPendingToolMessage(null);
-      setPendingWebCitations(null);
       setThreadChatAsking(false);
       threadChatInputRef.current?.focus();
     }
@@ -2220,9 +2249,6 @@ function App() {
                                         )}
                                       </div>
                                     ))}
-                                    {pendingWebCitations && pendingWebCitations.length > 0 && (
-                                      <WebCitationList citations={pendingWebCitations} />
-                                    )}
                                   </div>
                                 ) : (
                                   <div className="thread-msg-content">
@@ -2247,7 +2273,7 @@ function App() {
                                       </div>
                                     ))}
                                     {m.webCitations && m.webCitations.length > 0 && (
-                                      <WebCitationList citations={m.webCitations} />
+                                      <WebSourceChips citations={m.webCitations} />
                                     )}
                                   </div>
                                 )}
