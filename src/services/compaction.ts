@@ -51,7 +51,7 @@ export function extractChapterRange(highlights: { chapterLabel?: string | null }
   return `${withNum[0].label}–${withNum[withNum.length - 1].label}`;
 }
 
-/** Returns the new journal entry (150–250 words) to append. */
+/** Returns the new journal entry (~50–100 words) to append. */
 export async function compactThreadToJournal(params: {
   bookTitle: string;
   author: string;
@@ -78,22 +78,30 @@ Book: ${bookTitle} by ${author}
 Thread title: ${threadTitle}
 Thread date: ${threadDate}
 
+The thread uses [user] for the human reader and [assistant] for Marginalia (the app's reading assistant). Treat them as two speakers.
+
 --- THREAD ---
 ${threadBlock}
 --- END THREAD ---
 
-${existingBlock ? `${existingBlock}\n\nIntegrate this thread's insights into the existing journal. Do not repeat what's already there. Extend it.` : ""}
+${existingBlock ? `${existingBlock}\n\nIntegrate this thread into the existing journal. Do not repeat what's already there. Extend it while preserving attribution (see below).` : ""}
 
-Write a reading journal entry. Refer to yourself as I and the user as "you". 50-100 words. Include:
-- Specific chapter/section/page number if known (e.g. 'Chapter 3, page 10').
-- The central question or passage that sparked the thread
-- Key insight or connection that emerged
+Write one reading journal entry, 50-100 words, factual and specific. Voice and pronouns:
+- "you" / "your": only for what the human said, asked, or clearly reacted to in [user] turns.
+- "I" / "my": only for what Marginalia said or proposed in [assistant] turns.
+- "we" / "our": optional when both sides genuinely contributed to a line of thought; never credit the reader with assistant-only analysis.
+- If only Marginalia raised an idea, attribute it to Marginalia or to "I" — not to "you".
+
+Include where possible:
+- Specific chapter/section/page if known (e.g. 'Chapter 3, page 10').
+- What sparked the thread (especially from the reader's side when relevant)
+- Distinct reader vs Marginalia contributions when both matter
 - Any unresolved question worth returning to
 - A theme or motif that appeared
 
 Do not include: small talk, meta-commentary about the AI, verbatim quotes longer than one sentence.
 
-Emphasis on Brevity.
+Emphasis on brevity.
 
 Output only the journal content. No headers, no preamble.`;
   const userPrompt = "Generate the journal entry.";
@@ -121,7 +129,9 @@ export async function extractReaderProfile(params: {
   const existingBlock = existingProfile?.trim()
     ? `--- EXISTING PROFILE ---\n${existingProfile.trim()}\n--- END PROFILE ---`
     : "";
-  const systemPrompt = `You are building a reader profile from a person's reading journal entries across multiple books.
+  const systemPrompt = `You are building a reader profile from reading journal entries across multiple books.
+
+The journals should use "you" for the human reader and "I" for Marginalia, but older text may blur speakers. When synthesizing, be strict: only attribute a habit, opinion, or question to "you" if the journal evidence supports it as the reader's side — not Marginalia's analysis reframed as the reader's.
 
 --- JOURNALS ---
 ${journalsBlock}
@@ -129,11 +139,13 @@ ${journalsBlock}
 
 ${existingBlock ? `${existingBlock}\n\n` : ""}
 
-Write a concise reader profile (100-150 words) in second person. Capture:
-- Recurring intellectual interests and themes across books
-- How this reader engages with texts (close reading? thematic? philosophical?)
-- Preferred depth and style of explanation
-- Any notable patterns in what they highlight or question
+Write a concise reader profile (100-150 words), addressed in second person ("you") to the reader. Describe only patterns grounded in reader-attributable material (questions they asked, positions they took, reactions they showed). You may briefly note "we" or collaborative dynamics when journals show both speakers, without ascribing Marginalia's ideas to the reader.
+
+Capture:
+- Recurring intellectual interests and themes the reader actually engages with
+- How they approach texts (when evidenced)
+- Preferred depth or style when the reader signaled it
+- Patterns in what they highlight or question
 
 Rewrite the profile entirely — don't append. This is a living document, not a log.
 Output only the profile. No headers.`;
@@ -229,16 +241,19 @@ export async function extractMemoryItems(params: {
 Book: ${bookTitle} by ${author}
 Thread: ${thread.title ?? "Discussion"}
 
+The transcript uses [user] for the human reader and [assistant] for Marginalia (the app's reading assistant). Treat them as two speakers; do not merge their contributions.
+
 ${threadBlock}
 
-Extract 2–5 discrete memory items worth remembering about this reader.
-Focus on: what they found surprising, opinions they formed, questions that excited them, intellectual patterns, emotional reactions to the text.
+Extract 2–5 discrete memory items worth keeping for future reading chats.
+Prioritize what the human actually contributed: questions they asked, opinions they stated, reactions they expressed, preferences they gave.
+You may also record a joint thread fact using "we" when both sides genuinely participated, but never credit the user with ideas that appear only in [assistant].
 
 Return ONLY a JSON array. No preamble, no markdown fences.
 
 [
   {
-    "content": "single insight in second person, one sentence",
+    "content": "one factual sentence: correct attribution (see rules below)",
     "type": "reading_identity|intellectual|emotional|preference|book_insight|book_question|book_reaction",
     "confidence": 0.5,
     "scope": "global|book|passage",
@@ -246,12 +261,18 @@ Return ONLY a JSON array. No preamble, no markdown fences.
   }
 ]
 
-Rules:
-- content must be second person ("You tend to...", "You were struck by...")
-- Only extract what is clearly evidenced in the thread — no inference beyond what's said
+Attribution in "content" (be strict — this is the main quality bar):
+- "you" / "your": ONLY for what the human said or clearly committed to in [user] turns. Paraphrase tightly; a short quoted phrase from the user is good when it grounds the item.
+- "I" / "my": ONLY for what Marginalia said in [assistant] turns (the assistant in the transcript). Do not invent Marginalia lines.
+- "we" / "our": optional for the shared arc when both speakers contributed; still never attribute an assistant-only point to "you".
+- If something matters but only Marginalia said it, write it as Marginalia's side (e.g. "Marginalia suggested …" or "I noted …") — not as something "you" said.
+- Do not use "you" for summaries of the assistant's reasoning, hypotheses, or literary analysis unless the user echoed or adopted them in [user].
+
+Other rules:
+- Only extract what is clearly evidenced — no inference beyond the transcript.
 - book_insight / book_question / book_reaction are always scope: book or passage
 - reading_identity / intellectual / preference / emotional can be scope: global
-- confidence: 0.5 for a single observation, 0.7 if strongly stated, 0.9 only for explicit user statements`;
+- confidence: 0.5 for a single observation, 0.7 if strongly stated, 0.9 only for explicit [user] statements`;
 
   const userPrompt = "Output only the JSON array of memory items.";
   try {
@@ -306,19 +327,20 @@ export async function extractMemoryItemsPartial(params: {
 Book: ${bookTitle} by ${author}
 Thread: ${thread.title ?? "Discussion"}
 
+The transcript uses [user] for the human reader and [assistant] for Marginalia. Treat them as two speakers.
+
 ${threadBlock}
 
 Only extract items with confidence >= 0.7.
-This is a partial read — be conservative.
-Prefer explicit reader statements over inferences.
+This is a partial read — be conservative. Prefer verbatim or near-verbatim [user] contributions.
 
-Extract 1–3 discrete memory items worth remembering. Focus on: explicit opinions, clear questions, stated preferences.
+Extract 1–3 discrete memory items. Focus on explicit [user] opinions, questions, and preferences.
 
 Return ONLY a JSON array. No preamble, no markdown fences.
 
 [
   {
-    "content": "single insight in second person, one sentence",
+    "content": "one factual sentence with correct attribution (same rules as full extraction)",
     "type": "reading_identity|intellectual|emotional|preference|book_insight|book_question|book_reaction",
     "confidence": 0.7,
     "scope": "global|book|passage",
@@ -326,10 +348,14 @@ Return ONLY a JSON array. No preamble, no markdown fences.
   }
 ]
 
-Rules:
-- content must be second person ("You tend to...", "You said...")
+Attribution in "content":
+- "you" / "your": ONLY for [user] turns. Short user quotes welcome.
+- "I" / "my": ONLY for [assistant] (Marginalia) turns.
+- "we" optional when both sides contributed; never assign assistant-only ideas to "you".
+
+Other rules:
 - Only include what is clearly evidenced — no inference beyond what's said
-- confidence: 0.7 minimum; 0.9 only for explicit user statements`;
+- confidence: 0.7 minimum; 0.9 only for explicit [user] statements`;
 
   const userPrompt = "Output only the JSON array of memory items.";
   try {
@@ -384,8 +410,14 @@ Below is the accumulated journal for: ${bookTitle} by ${author}
 
 ${currentMemory}
 
+Entries should distinguish the human reader ("you") from Marginalia ("I" / Marginalia). When summarizing, preserve that split: do not collapse Marginalia's contributions into the reader's.
+
 Rewrite this into two sections:
-1. "## Reading Summary" — a ~150 word synthesis in second person ("You have been exploring...") covering the main themes, questions, insights, and unresolved threads across all reading sessions. This is the durable record.
+1. "## Reading Summary" — about 150 words. Durable synthesis of the reading arc using factual attribution:
+   - "you" / "your" only for themes, questions, and reactions that belong to the reader in the source material.
+   - "I" / "my" or "Marginalia" for insights or framings that came from the assistant side in the source.
+   - "we" / "our" when the journal shows genuine back-and-forth; never assign assistant-only points to "you".
+   If speaker attribution in an older fragment is ambiguous, prefer conservative wording or "the discussion touched on..." rather than guessing.
 2. "## Recent Threads" — copy the two most recent ## sections verbatim, unchanged.
 
 Output only the two sections. No preamble.`;
