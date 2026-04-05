@@ -5,7 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { exists } from "@tauri-apps/plugin-fs";
 import { DocumentLoader } from "@/libs/document";
 import type { BookDoc, TOCItem } from "@/libs/document";
-import type { CitationPayload, Highlight, MemoryItem, Thread, ThreadMessage } from "@/types/book";
+import type { CitationPayload, Highlight, MemoryItem, Thread, ThreadMessage, WebCitation } from "@/types/book";
 import type { ContextManifest } from "@/types/contextManifest";
 import type { ReaderTheme } from "@/app/reader/utils/readerStyles";
 import FoliateViewer from "@/app/reader/components/FoliateViewer";
@@ -60,7 +60,7 @@ import {
   persistExtractedMemoryItems,
 } from "@/services/compaction";
 import { askClaudeThread, generateThreadTitle, loadRelevantMemoryItems, type GetContextResult } from "@/services/claude";
-import { ArrowRight, ArrowUp, BookMarked, LogOut, MoreVertical, NotepadText, PanelLeft, PanelLeftClose, Pencil, ScanText, Settings, SlidersHorizontal, Sparkles, X } from "lucide-react";
+import { ArrowRight, ArrowUp, BookMarked, Globe, LogOut, MoreVertical, NotepadText, PanelLeft, PanelLeftClose, Pencil, ScanText, Settings, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "@/components/ThreadsPanel/ThreadsPanel.css";
@@ -338,6 +338,35 @@ const CitationJumpButton: FC<{
   );
 };
 
+const WebCitationList: FC<{ citations: WebCitation[] }> = ({ citations }) => (
+  <div className="web-citations" style={{ marginTop: 8, fontSize: "0.82em", opacity: 0.85 }}>
+    <div style={{ fontWeight: 600, marginBottom: 4, color: "var(--text-secondary)" }}>Sources</div>
+    <ul style={{ margin: 0, paddingLeft: 16, listStyle: "none" }}>
+      {citations.map((c, i) => (
+        <li key={i} style={{ marginBottom: 4, display: "flex", alignItems: "flex-start", gap: 4 }}>
+          <Globe size={12} style={{ marginTop: 3, flexShrink: 0, color: "var(--text-secondary)" }} />
+          <span>
+            <a
+              href={c.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "var(--accent)", textDecoration: "none" }}
+              title={c.url}
+            >
+              {c.title}
+            </a>
+            {c.citedText && (
+              <span style={{ color: "var(--text-secondary)", fontStyle: "italic" }}>
+                {" — "}{c.citedText.length > 120 ? c.citedText.slice(0, 120) + "…" : c.citedText}
+              </span>
+            )}
+          </span>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
 function App() {
   type PanelTab = "threads" | "highlights";
   type NotesFilter = "all" | "highlights" | "ai";
@@ -403,6 +432,9 @@ function App() {
     get_section_text: "Loading section text…",
     suggest_smart_scan: "Suggesting Smart Scan…",
   };
+  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  /** Shown under the streaming assistant bubble; state (not ref) so React re-renders when citations arrive. */
+  const [pendingWebCitations, setPendingWebCitations] = useState<WebCitation[] | null>(null);
   const threadChatInputRef = useRef<HTMLInputElement | null>(null);
   const threadChatMessagesScrollRef = useRef<HTMLDivElement | null>(null);
   /** User message shown immediately on send; cleared when reply is persisted. */
@@ -1041,7 +1073,8 @@ function App() {
   const handleMessagePair = (
     userContent: string,
     assistantContent: string,
-    excerpt?: { text: string; cfi: string | null; chapter: string | null; color: string; page: string | null }
+    excerpt?: { text: string; cfi: string | null; chapter: string | null; color: string; page: string | null },
+    webCitations?: WebCitation[]
   ) => {
     const threadId = activeThreadId;
     if (!threadId) return;
@@ -1068,6 +1101,7 @@ function App() {
       role: "assistant",
       content: assistantContent,
       createdAt: now,
+      webCitations: webCitations?.length ? webCitations : null,
     };
     void dbSaveThreadMessage(userMsg).then(() =>
       dbSaveThreadMessage(assistantMsg).then(async () => {
@@ -1326,6 +1360,7 @@ function App() {
     setPendingUserMessage(userMessage);
     setPendingAssistantContent("");
     setPendingToolMessage(null);
+    setPendingWebCitations(null);
     if (revealIntervalRef.current != null) {
       window.clearInterval(revealIntervalRef.current);
       revealIntervalRef.current = null;
@@ -1383,10 +1418,14 @@ function App() {
             arr.push(text);
             if (arr.length > 2) arr.shift();
           },
+          webSearchEnabled,
+          onWebSearch: () => setPendingToolMessage("Searching the web…"),
         },
         apiKey
       );
       const fullAnswer = result.answer ?? "";
+      const webCitationsForTurn = result.webCitations?.length ? result.webCitations : undefined;
+      setPendingWebCitations(webCitationsForTurn ?? null);
       if (result.completedManifest) {
         setLatestCompletedManifest(result.completedManifest);
         setManifestRefreshTrigger((t) => t + 1);
@@ -1415,7 +1454,8 @@ function App() {
             window.clearInterval(revealIntervalRef.current);
             revealIntervalRef.current = null;
           }
-          handleMessagePair(userMessage, fullAnswer, excerpt);
+          handleMessagePair(userMessage, fullAnswer, excerpt, webCitationsForTurn);
+          setPendingWebCitations(null);
           setPendingUserMessage(null);
           setPendingAssistantContent("");
           setPendingToolMessage(null);
@@ -1428,6 +1468,7 @@ function App() {
       setPendingUserMessage(null);
       setPendingAssistantContent("");
       setPendingToolMessage(null);
+      setPendingWebCitations(null);
       setThreadChatAsking(false);
       threadChatInputRef.current?.focus();
     }
@@ -2179,6 +2220,9 @@ function App() {
                                         )}
                                       </div>
                                     ))}
+                                    {pendingWebCitations && pendingWebCitations.length > 0 && (
+                                      <WebCitationList citations={pendingWebCitations} />
+                                    )}
                                   </div>
                                 ) : (
                                   <div className="thread-msg-content">
@@ -2202,6 +2246,9 @@ function App() {
                                         )}
                                       </div>
                                     ))}
+                                    {m.webCitations && m.webCitations.length > 0 && (
+                                      <WebCitationList citations={m.webCitations} />
+                                    )}
                                   </div>
                                 )}
                               </div>
@@ -2489,6 +2536,27 @@ function App() {
                     </div>
                   )}
                   <div className="thread-chat-input-row">
+                    <button
+                      type="button"
+                      className="thread-web-search-toggle"
+                      onClick={() => setWebSearchEnabled((v) => !v)}
+                      aria-label={webSearchEnabled ? "Disable web search" : "Enable web search"}
+                      title={webSearchEnabled ? "Web search enabled" : "Enable web search"}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: "4px",
+                        borderRadius: "var(--radius-1)",
+                        display: "flex",
+                        alignItems: "center",
+                        opacity: webSearchEnabled ? 1 : 0.4,
+                        color: webSearchEnabled ? "var(--accent)" : "var(--text-secondary)",
+                        transition: "opacity 0.15s, color 0.15s",
+                      }}
+                    >
+                      <Globe size={16} />
+                    </button>
                     <input
                       ref={threadChatInputRef}
                       type="text"

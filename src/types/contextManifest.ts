@@ -39,4 +39,5 @@ export interface ContextManifest {
 
   toolCallsMade?: ContextManifestToolCall[];
   finalAnswerChars?: number;
+  webSearchesUsed?: number;
 }
