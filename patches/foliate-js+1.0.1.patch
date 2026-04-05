@@ -1,0 +1,12 @@
+diff --git a/node_modules/foliate-js/paginator.js b/node_modules/foliate-js/paginator.js
+index 95c4d0d..a60fdd0 100644
+--- a/node_modules/foliate-js/paginator.js
++++ b/node_modules/foliate-js/paginator.js
+@@ -774,6 +774,7 @@ export class Paginator extends HTMLElement {
+         this.#view.render(this.#beforeRender({
+             vertical: this.#vertical,
+             rtl: this.#rtl,
++            background: this.#view.docBackground,
+         }))
+         this.#scrollToAnchor(this.#anchor)
+     }

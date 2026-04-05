@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "print-prompt": "vitest run scripts/print-system-prompt.test.ts"
+    "print-prompt": "vitest run scripts/print-system-prompt.test.ts",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
@@ -29,9 +30,10 @@
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.2.0",
+    "better-sqlite3": "^11.6.0",
+    "patch-package": "^8.0.1",
     "typescript": "^5.2.0",
     "vite": "^5.0.0",
-    "vitest": "^2.0.0",
-    "better-sqlite3": "^11.6.0"
+    "vitest": "^2.0.0"
   }
 }
