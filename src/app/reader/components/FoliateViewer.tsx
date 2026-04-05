@@ -295,12 +295,14 @@ function computeDictionaryLayout(
 ): WiktionaryLayout {
   const margin = 12;
   const topSafe = 62;
-  const maxWidth = Math.min(480, containerRect.width - 2 * margin);
+  /** TOC rail overlays reader at left (44px); keep popup clear of it. */
+  const leftSafe = 52;
+  const maxWidth = Math.min(480, containerRect.width - leftSafe - margin);
   const maxHeight = Math.min(320, containerRect.height - topSafe - 2 * margin);
   const width = Math.max(240, maxWidth);
   const ax = selection.anchorX - containerRect.left;
   const ay = selection.anchorY - containerRect.top;
-  const left = Math.max(margin, Math.min(containerRect.width - width - margin, ax - width / 2));
+  const left = Math.max(leftSafe, Math.min(containerRect.width - width - margin, ax - width / 2));
   const gap = 10;
   const belowAnchor = 48;
   const preferBelowTop = ay + belowAnchor;
