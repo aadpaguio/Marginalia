@@ -179,6 +179,15 @@ export default function WiktionaryPopup({ word, lang, layout, isDark, onDismiss 
       main.innerHTML = "";
       footer.dataset["state"] = "loading";
 
+      const loader = document.createElement("div");
+      loader.className = styles.loadingWrap;
+      loader.innerHTML = `
+  <div class="${styles.loadingDot}"></div>
+  <div class="${styles.loadingDot}"></div>
+  <div class="${styles.loadingDot}"></div>
+`;
+      main.appendChild(loader);
+
       try {
         const encoded = encodeURIComponent(w);
         const response = await fetch(
@@ -196,6 +205,8 @@ export default function WiktionaryPopup({ word, lang, layout, isDark, onDismiss 
         if (!results || results.length === 0) {
           throw new Error("No results found");
         }
+
+        main.innerHTML = "";
 
         const hgroup = document.createElement("hgroup");
         const h1 = document.createElement("h1");
@@ -247,6 +258,8 @@ export default function WiktionaryPopup({ word, lang, layout, isDark, onDismiss 
       } catch (error) {
         console.error(error);
         footer.dataset["state"] = "error";
+
+        main.innerHTML = "";
 
         const div = document.createElement("div");
         div.className = styles.errorWrap;
