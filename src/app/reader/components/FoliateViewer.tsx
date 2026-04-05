@@ -20,7 +20,7 @@ import { useInstantAnnotation } from "../hooks/useInstantAnnotation";
 import Annotator from "./annotator/Annotator";
 import type { CitationPayload, Highlight } from "@/types/book";
 import type { GetContextDirection, GetContextResult } from "@/services/claude";
-import { ChevronDown, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { BookOpen, ChevronDown, ChevronLeft, ChevronRight, Plus, Redo2, Undo2 } from "lucide-react";
 import readerChromeStyles from "../ReaderChrome.module.css";
 
 /** Normalize for fuzzy match: smart quotes → straight, collapse whitespace. */
@@ -32,7 +32,6 @@ function normalizeForMatch(s: string): string {
     .trim();
 }
 
-/**
 /** Strip one layer of surrounding quote characters so "passage" matches passage in the book. */
 function stripWrappingQuotes(s: string): string {
   const t = s.trim();
@@ -351,6 +350,11 @@ export default function FoliateViewer({
     pageCurrent?: number;
     pageTotal?: number;
   }>({});
+  /** Foliate `view.history` stack (TOC / link jumps); synced via `index-change`. */
+  const [readingNavHistory, setReadingNavHistory] = useState({
+    canGoBack: false,
+    canGoForward: false,
+  });
   const [pendingSelection, setPendingSelection] = useState<ToolbarSelection | null>(null);
   const [addToThreadDropdownOpen, setAddToThreadDropdownOpen] = useState(false);
   const [hoveredNote, setHoveredNote] = useState<ToolbarSelection | null>(null);
@@ -1049,6 +1053,17 @@ export default function FoliateViewer({
 
   useFoliateEvents(view, { onRelocate: handleRelocate });
 
+  useEffect(() => {
+    if (!view?.history) return;
+    const h = view.history;
+    const sync = () => {
+      setReadingNavHistory({ canGoBack: h.canGoBack, canGoForward: h.canGoForward });
+    };
+    sync();
+    h.addEventListener("index-change", sync);
+    return () => h.removeEventListener("index-change", sync);
+  }, [view]);
+
   const handleShowAnnotation = useCallback((event: Event) => {
     const detail = (event as CustomEvent).detail as { value?: string; range?: Range };
     const cfi = detail?.value;
@@ -1200,6 +1215,21 @@ export default function FoliateViewer({
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      if (e.shiftKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+        if (interactionBlocked) return;
+        const v = viewRef.current;
+        if (!v?.history) return;
+        if (e.key === "ArrowLeft") {
+          if (!v.history.canGoBack) return;
+          e.preventDefault();
+          v.history.back();
+        } else {
+          if (!v.history.canGoForward) return;
+          e.preventDefault();
+          v.history.forward();
+        }
+        return;
+      }
       if (e.key === "ArrowLeft") {
         if (interactionBlocked) return;
         e.preventDefault();
@@ -1313,6 +1343,7 @@ export default function FoliateViewer({
       }
       viewRef.current = null;
       setViewState(null);
+      setReadingNavHistory({ canGoBack: false, canGoForward: false });
       setLoadError(null);
     };
   }, [bookKey, bookDoc]);
