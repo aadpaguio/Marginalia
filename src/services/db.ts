@@ -174,10 +174,17 @@ export async function dbGetThreadMessages(threadId: string): Promise<ThreadMessa
     "db_get_thread_messages",
     { threadId }
   );
-  return raw.map((m) => ({
-    ...m,
-    webCitations: typeof m.webCitations === "string" ? JSON.parse(m.webCitations) : m.webCitations ?? null,
-  }));
+  return raw.map((m) => {
+    let webCitations: ThreadMessage["webCitations"] = m.webCitations ?? null;
+    if (typeof m.webCitations === "string") {
+      try {
+        webCitations = JSON.parse(m.webCitations) as ThreadMessage["webCitations"];
+      } catch {
+        webCitations = null;
+      }
+    }
+    return { ...m, webCitations };
+  });
 }
 
 export async function dbSaveThreadMessage(message: ThreadMessage): Promise<void> {

@@ -433,7 +433,8 @@ function App() {
     suggest_smart_scan: "Suggesting Smart Scan…",
   };
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
-  const pendingWebCitationsRef = useRef<WebCitation[] | null>(null);
+  /** Shown under the streaming assistant bubble; state (not ref) so React re-renders when citations arrive. */
+  const [pendingWebCitations, setPendingWebCitations] = useState<WebCitation[] | null>(null);
   const threadChatInputRef = useRef<HTMLInputElement | null>(null);
   const threadChatMessagesScrollRef = useRef<HTMLDivElement | null>(null);
   /** User message shown immediately on send; cleared when reply is persisted. */
@@ -1359,6 +1360,7 @@ function App() {
     setPendingUserMessage(userMessage);
     setPendingAssistantContent("");
     setPendingToolMessage(null);
+    setPendingWebCitations(null);
     if (revealIntervalRef.current != null) {
       window.clearInterval(revealIntervalRef.current);
       revealIntervalRef.current = null;
@@ -1422,7 +1424,8 @@ function App() {
         apiKey
       );
       const fullAnswer = result.answer ?? "";
-      pendingWebCitationsRef.current = result.webCitations ?? null;
+      const webCitationsForTurn = result.webCitations?.length ? result.webCitations : undefined;
+      setPendingWebCitations(webCitationsForTurn ?? null);
       if (result.completedManifest) {
         setLatestCompletedManifest(result.completedManifest);
         setManifestRefreshTrigger((t) => t + 1);
@@ -1451,8 +1454,8 @@ function App() {
             window.clearInterval(revealIntervalRef.current);
             revealIntervalRef.current = null;
           }
-          handleMessagePair(userMessage, fullAnswer, excerpt, pendingWebCitationsRef.current ?? undefined);
-          pendingWebCitationsRef.current = null;
+          handleMessagePair(userMessage, fullAnswer, excerpt, webCitationsForTurn);
+          setPendingWebCitations(null);
           setPendingUserMessage(null);
           setPendingAssistantContent("");
           setPendingToolMessage(null);
@@ -1465,6 +1468,7 @@ function App() {
       setPendingUserMessage(null);
       setPendingAssistantContent("");
       setPendingToolMessage(null);
+      setPendingWebCitations(null);
       setThreadChatAsking(false);
       threadChatInputRef.current?.focus();
     }
@@ -2216,8 +2220,8 @@ function App() {
                                         )}
                                       </div>
                                     ))}
-                                    {pendingWebCitationsRef.current && pendingWebCitationsRef.current.length > 0 && (
-                                      <WebCitationList citations={pendingWebCitationsRef.current} />
+                                    {pendingWebCitations && pendingWebCitations.length > 0 && (
+                                      <WebCitationList citations={pendingWebCitations} />
                                     )}
                                   </div>
                                 ) : (

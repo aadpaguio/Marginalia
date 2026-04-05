@@ -446,7 +446,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
   // --- RESPONSE RULES ---
   systemParts.push(
     "--- RESPONSE RULES ---\n" +
-    "Don't overexplain unless asked further by the user." +
+    "Don't overexplain unless asked further by the user.\n" +
     "Match response length and scope to the user's question. Start from the smallest scope that honestly answers the question. Definitional or factual questions (e.g. 'what is X?', 'briefly, what's a sanatorium?') should usually get one sentence, or two at most; thematic or interpretive questions may get a paragraph. Do not expand from definition into thematic analysis unless the user asks for it.\n" +
     "Respond as a thoughtful reading companion, not an assistant. " +
     "Never narrate your own actions or observations about the interface: do not say 'I can see you've highlighted', 'I notice the passage', 'you've selected', or any variant. " +
@@ -751,6 +751,18 @@ export type AskClaudeThreadParams = ThreadContextParams & {
 };
 
 const MAX_TOOL_ROUNDS = 3;
+/** Server-side web search can yield multiple `pause_turn` responses; do not consume client tool rounds. */
+const MAX_PAUSE_TURN_CONTINUES = 10;
+
+type ClaudeThreadProxyRoundData = {
+  answer: string;
+  toolCalls?: Array<{ name: string; id: string; input: Record<string, unknown> }>;
+  rawContent: unknown[];
+  model: string;
+  usage?: ClaudeResponse["usage"];
+  stopReason?: string;
+  webSearchRequests?: number;
+};
 
 /** Characters to fetch before the anchor when auto-prefetching lead-up for passage-attached turns. */
 const PREFETCH_LEAD_UP_CHARS = 2000;
@@ -908,68 +920,100 @@ export async function askClaudeThread(
       tools.push(WEB_SEARCH_TOOL);
     }
 
-    const roundRequest = {
-      apiKey,
-      model,
-      systemBlocks: assembled.systemBlocks.map((b) => ({
-        text: b.text,
-        cacheControl: b.cacheControl ?? undefined,
-      })),
-      messages,
-      tools,
-      toolChoice: forceToolChoice && round === 0 ? "any" : "auto",
-    };
-    const fullPromptRound = formatThreadPromptForLog(roundRequest.systemBlocks, messages);
-    console.log("[Claude thread] full prompt (round %d):\n%s", round, fullPromptRound);
-
-    const data = await invoke<{
-      answer: string;
-      toolCalls?: Array<{ name: string; id: string; input: Record<string, unknown> }>;
-      rawContent: unknown[];
-      model: string;
-      usage?: ClaudeResponse["usage"];
-      stopReason?: string;
-      webSearchRequests?: number;
-    }>("ask_claude_thread_proxy", {
-      request: roundRequest,
-    });
-
-    if (data.webSearchRequests) {
-      totalWebSearchRequests += data.webSearchRequests;
-    }
-
-    const hasWebSearchActivity = (data.rawContent ?? []).some(
-      (b: unknown) => {
-        const block = b as { type?: string; name?: string };
-        return block.type === "server_tool_use" && block.name === "web_search";
+    let pauseTurnSteps = 0;
+    let data: ClaudeThreadProxyRoundData;
+    // Inner loop: `pause_turn` is for server-side web search; must not consume `MAX_TOOL_ROUNDS`.
+    while (true) {
+      const roundRequest = {
+        apiKey,
+        model,
+        systemBlocks: assembled.systemBlocks.map((b) => ({
+          text: b.text,
+          cacheControl: b.cacheControl ?? undefined,
+        })),
+        messages,
+        tools,
+        toolChoice: forceToolChoice && round === 0 && pauseTurnSteps === 0 ? "any" : "auto",
+      };
+      if (pauseTurnSteps === 0) {
+        const fullPromptRound = formatThreadPromptForLog(roundRequest.systemBlocks, messages);
+        console.log("[Claude thread] full prompt (round %d):\n%s", round, fullPromptRound);
       }
-    );
-    if (hasWebSearchActivity) {
-      params.onWebSearch?.();
-    }
 
-    const hasToolCalls = (data.toolCalls?.length ?? 0) > 0;
-    const isPauseTurn = data.stopReason === "pause_turn";
-    console.log("[Claude thread] round=%d toolChoice=%s stopReason=%s tools=%o", round, forceToolChoice && round === 0 ? "any" : "auto", data.stopReason, tools.map((t: unknown) => (t as { name: string }).name));
-    console.log("[Claude thread] answer=%o toolCalls=%o webSearchRequests=%o", data.answer, data.toolCalls, data.webSearchRequests);
-    if (data.toolCalls?.length) {
-      for (const call of data.toolCalls) {
-        console.log("[Claude thread] tool_call name=%s input=%o", call.name, call.input);
+      data = await invoke<ClaudeThreadProxyRoundData>("ask_claude_thread_proxy", {
+        request: roundRequest,
+      });
+
+      if (data.webSearchRequests) {
+        totalWebSearchRequests += data.webSearchRequests;
       }
-    }
-    if (data.usage) {
-      console.log("[Claude thread usage]", data.usage);
-    }
 
-    // Server-side tool (web search) still running — continue the conversation
-    if (!hasToolCalls && isPauseTurn) {
-      console.log("[Claude thread] pause_turn detected, continuing server-side tool loop");
+      const hasWebSearchActivity = (data.rawContent ?? []).some(
+        (b: unknown) => {
+          const block = b as { type?: string; name?: string };
+          return block.type === "server_tool_use" && block.name === "web_search";
+        }
+      );
+      if (hasWebSearchActivity) {
+        params.onWebSearch?.();
+      }
+
+      const hasToolCallsHere = (data.toolCalls?.length ?? 0) > 0;
+      const isPauseTurn = data.stopReason === "pause_turn";
+      console.log(
+        "[Claude thread] round=%d pauseStep=%d toolChoice=%s stopReason=%s tools=%o",
+        round,
+        pauseTurnSteps,
+        forceToolChoice && round === 0 && pauseTurnSteps === 0 ? "any" : "auto",
+        data.stopReason,
+        tools.map((t: unknown) => (t as { name: string }).name)
+      );
+      console.log("[Claude thread] answer=%o toolCalls=%o webSearchRequests=%o", data.answer, data.toolCalls, data.webSearchRequests);
+      if (data.toolCalls?.length) {
+        for (const call of data.toolCalls) {
+          console.log("[Claude thread] tool_call name=%s input=%o", call.name, call.input);
+        }
+      }
+      if (data.usage) {
+        console.log("[Claude thread usage]", data.usage);
+      }
+
+      if (hasToolCallsHere || !isPauseTurn) break;
+
+      if (pauseTurnSteps >= MAX_PAUSE_TURN_CONTINUES) {
+        console.warn("[Claude thread] pause_turn exceeded max continues (%d)", MAX_PAUSE_TURN_CONTINUES);
+        break;
+      }
+      pauseTurnSteps++;
+      console.log("[Claude thread] pause_turn detected, continuing server-side tool loop (step %d)", pauseTurnSteps);
       messages = [
         ...messages,
         { role: "assistant" as const, content: data.rawContent },
         { role: "user" as const, content: "Continue." },
       ];
-      continue;
+    }
+
+    const hasToolCalls = (data.toolCalls?.length ?? 0) > 0;
+    const stuckPauseTurn = !hasToolCalls && data.stopReason === "pause_turn";
+    if (stuckPauseTurn) {
+      console.warn("[Claude thread] ending with stop_reason pause_turn (partial response)");
+      const answer = data.answer ?? "";
+      const webCitations = extractWebCitations(data.rawContent ?? []);
+      const completedManifest: ContextManifest = {
+        ...assembled.manifestDraft,
+        toolsAvailable,
+        toolCallsMade: [...toolCallLog],
+        finalAnswerChars: answer.length,
+        webSearchesUsed: totalWebSearchRequests || undefined,
+      };
+      invoke("db_save_manifest", { manifest: completedManifest }).catch(console.error);
+      return {
+        answer,
+        model: data.model ?? model,
+        usage: data.usage,
+        completedManifest,
+        webCitations: webCitations.length > 0 ? webCitations : undefined,
+      };
     }
 
     if (!hasToolCalls) {

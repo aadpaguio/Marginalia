@@ -2040,6 +2040,7 @@ async fn ask_claude_thread_proxy(
         .header("content-type", "application/json")
         .header("x-api-key", request.api_key)
         .header("anthropic-version", "2023-06-01")
+        // Prompt caching beta. `web_search_20250305` is documented as GA (no extra beta header).
         .header("anthropic-beta", "prompt-caching-2024-07-31")
         .json(&body)
         .send()
