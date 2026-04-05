@@ -1297,6 +1297,27 @@ export default function FoliateViewer({
     }
   }, [view, theme]);
 
+  // Re-apply theme styles after window resize so the paginator background
+  // stays correct even if foliate-js re-renders the layout grid.
+  useEffect(() => {
+    if (!view?.renderer) return;
+    let rafId: number;
+    const onResize = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        const css = getReaderStyles(themeRef.current);
+        if (view.renderer.setStyles) {
+          view.renderer.setStyles(css);
+        }
+      });
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      cancelAnimationFrame(rafId);
+    };
+  }, [view]);
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.shiftKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
