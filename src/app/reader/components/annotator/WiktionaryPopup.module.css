@@ -35,6 +35,48 @@
   color: rgba(243, 243, 243, 0.92);
 }
 
+.innerDark .loadingDot {
+  background: rgba(243, 243, 243, 0.5);
+}
+
+.loadingWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 120px;
+}
+
+.loadingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-tertiary, #8a8070);
+  animation: dictBounce 1.2s ease-in-out infinite;
+}
+
+.loadingDot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.loadingDot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes dictBounce {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .backButton {
   position: absolute;
   left: 8px;
