@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import type { BookDoc, TOCItem } from "@/libs/document";
 import type { FoliateView } from "@/types/view";
 import { useFoliateEvents } from "../hooks/useFoliateEvents";
@@ -20,8 +20,10 @@ import { useInstantAnnotation } from "../hooks/useInstantAnnotation";
 import Annotator from "./annotator/Annotator";
 import type { CitationPayload, Highlight } from "@/types/book";
 import type { GetContextDirection, GetContextResult } from "@/services/claude";
-import { ChevronDown, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { BookOpen, ChevronDown, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import readerChromeStyles from "../ReaderChrome.module.css";
+import WiktionaryPopup from "./annotator/WiktionaryPopup";
+import type { WiktionaryLayout } from "./annotator/WiktionaryPopup";
 
 /** Normalize for fuzzy match: smart quotes → straight, collapse whitespace. */
 function normalizeForMatch(s: string): string {
@@ -288,6 +290,38 @@ type ToolbarSelection = {
   isAiNote?: boolean;
 };
 
+function computeDictionaryLayout(
+  selection: ToolbarSelection,
+  containerRect: DOMRectReadOnly
+): WiktionaryLayout {
+  const margin = 12;
+  const topSafe = 62;
+  const maxWidth = Math.min(480, containerRect.width - 2 * margin);
+  const maxHeight = Math.min(320, containerRect.height - topSafe - 2 * margin);
+  const width = Math.max(240, maxWidth);
+  const ax = selection.anchorX - containerRect.left;
+  const ay = selection.anchorY - containerRect.top;
+  const left = Math.max(margin, Math.min(containerRect.width - width - margin, ax - width / 2));
+  const gap = 10;
+  const belowAnchor = 48;
+  const preferBelowTop = ay + belowAnchor;
+  const belowFits = preferBelowTop + maxHeight <= containerRect.height - margin;
+  const aboveTop = ay - gap - maxHeight;
+  const aboveFits = aboveTop >= topSafe + margin;
+  let top: number;
+  let trianglePoints: "up" | "down";
+  if (belowFits || !aboveFits) {
+    trianglePoints = "up";
+    top = preferBelowTop;
+    top = Math.min(top, containerRect.height - margin - maxHeight);
+    top = Math.max(topSafe + margin, top);
+  } else {
+    trianglePoints = "down";
+    top = Math.max(topSafe + margin, aboveTop);
+  }
+  return { left, top, width, maxHeight, anchorX: ax, trianglePoints };
+}
+
 export default function FoliateViewer({
   bookKey,
   bookDoc,
@@ -326,6 +360,7 @@ export default function FoliateViewer({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const hoverPromptRef = useRef<HTMLDivElement | null>(null);
   const selectionToolbarRef = useRef<HTMLDivElement | null>(null);
+  const dictPopupRef = useRef<HTMLDivElement | null>(null);
   const threadDropdownRef = useRef<HTMLDivElement | null>(null);
   const suppressNextSelectionRef = useRef(false);
   const hasFloatingUiRef = useRef(false);
@@ -354,11 +389,16 @@ export default function FoliateViewer({
   const [pendingSelection, setPendingSelection] = useState<ToolbarSelection | null>(null);
   const [addToThreadDropdownOpen, setAddToThreadDropdownOpen] = useState(false);
   const [hoveredNote, setHoveredNote] = useState<ToolbarSelection | null>(null);
+  const [dictionaryOpen, setDictionaryOpen] = useState(false);
+  const [dictLayoutVersion, setDictLayoutVersion] = useState(0);
   useEffect(() => {
     hasFloatingUiRef.current =
-      pendingSelection != null || hoveredNote != null || addToThreadDropdownOpen;
-  }, [pendingSelection, hoveredNote, addToThreadDropdownOpen]);
-  const interactionBlocked = pendingSelection != null;
+      pendingSelection != null ||
+      hoveredNote != null ||
+      addToThreadDropdownOpen ||
+      dictionaryOpen;
+  }, [pendingSelection, hoveredNote, addToThreadDropdownOpen, dictionaryOpen]);
+  const interactionBlocked = pendingSelection != null || dictionaryOpen;
   useEffect(() => {
     interactionBlockedRef.current = interactionBlocked;
   }, [interactionBlocked]);
@@ -476,12 +516,51 @@ export default function FoliateViewer({
       if (suppressNextSelection) {
         suppressNextSelectionRef.current = true;
       }
+      setDictionaryOpen(false);
       clearAllSelections();
       setAddToThreadDropdownOpen(false);
       setPendingSelection(null);
     },
     [clearAllSelections]
   );
+
+  const dictionaryLayout = useMemo((): WiktionaryLayout | null => {
+    if (!dictionaryOpen || !pendingSelection || !containerRef.current) return null;
+    void dictLayoutVersion;
+    return computeDictionaryLayout(pendingSelection, containerRef.current.getBoundingClientRect());
+  }, [dictionaryOpen, pendingSelection, dictLayoutVersion]);
+
+  useEffect(() => {
+    if (!dictionaryOpen) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setDictLayoutVersion((v) => v + 1));
+    ro.observe(el);
+    const onWin = () => setDictLayoutVersion((v) => v + 1);
+    window.addEventListener("resize", onWin);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", onWin);
+    };
+  }, [dictionaryOpen]);
+
+  useEffect(() => {
+    if (!pendingSelection || dictionaryOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === "d" || e.key === "D")) {
+        e.preventDefault();
+        const t = pendingSelection.selectedText.trim();
+        if (t) setDictionaryOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [pendingSelection, dictionaryOpen]);
+
+  const openDictionary = useCallback(() => {
+    const t = pendingSelection?.selectedText.trim();
+    if (t) setDictionaryOpen(true);
+  }, [pendingSelection]);
 
   const handleSelection = useCallback(
     (selection: { selectedText: string; cfi: string; anchorX: number; anchorY: number }) => {
@@ -568,7 +647,7 @@ export default function FoliateViewer({
     const viewportHeight = window.innerHeight;
     const margin = 12;
     const height = 44;
-    const width = Math.min(250, Math.max(210, viewportWidth - margin * 2));
+    const width = Math.min(320, Math.max(250, viewportWidth - margin * 2));
     // Reserve top area for reader/app chrome (close, display, notes, TOC buttons).
     const topSafeZone = 62;
 
@@ -1104,6 +1183,7 @@ export default function FoliateViewer({
     const onWindowPointerDown = (event: PointerEvent) => {
       const target = event.target;
       if (!(target instanceof Node)) return;
+      if (dictPopupRef.current?.contains(target)) return;
       if (hoverPromptRef.current?.contains(target)) return;
       if (selectionToolbarRef.current?.contains(target)) return;
       setHoveredNote(null);
@@ -1319,16 +1399,17 @@ export default function FoliateViewer({
 
   const handleContainerPointerDownCapture = useCallback(
     (e: React.PointerEvent) => {
-      if (!pendingSelection && !hoveredNote && !addToThreadDropdownOpen) return;
+      if (!pendingSelection && !hoveredNote && !addToThreadDropdownOpen && !dictionaryOpen) return;
       const target = e.target;
       if (!(target instanceof Node)) return;
+      if (dictPopupRef.current?.contains(target)) return;
       if (selectionToolbarRef.current?.contains(target)) return;
       if (hoverPromptRef.current?.contains(target)) return;
       setHoveredNote(null);
       // Don't suppress next selection: user clicked outside toolbar, next gesture may be selecting in the book.
       dismissSelectionUi(false);
     },
-    [dismissSelectionUi, pendingSelection, hoveredNote, addToThreadDropdownOpen]
+    [dismissSelectionUi, pendingSelection, hoveredNote, addToThreadDropdownOpen, dictionaryOpen]
   );
 
   return (
@@ -1556,7 +1637,8 @@ export default function FoliateViewer({
             type="button"
             aria-label="Dismiss selection actions"
             onClick={() => {
-              dismissSelectionUi(false);
+              if (dictionaryOpen) setDictionaryOpen(false);
+              else dismissSelectionUi(false);
             }}
             style={{
               position: "absolute",
@@ -1568,6 +1650,18 @@ export default function FoliateViewer({
               margin: 0,
             }}
           />
+          {dictionaryOpen && pendingSelection && dictionaryLayout && (
+            <div ref={dictPopupRef}>
+              <WiktionaryPopup
+                word={pendingSelection.selectedText.trim()}
+                lang={bookDoc.metadata.language}
+                layout={dictionaryLayout}
+                isDark={theme === "dark"}
+                onDismiss={() => setDictionaryOpen(false)}
+              />
+            </div>
+          )}
+          {!dictionaryOpen && (
           <div
             ref={selectionToolbarRef}
             role="dialog"
@@ -1601,6 +1695,21 @@ export default function FoliateViewer({
                 />
               );
             })}
+            <div className={`${readerChromeStyles.toolbarDivider} ${theme === "dark" ? readerChromeStyles.toolbarDividerDark : ""}`} />
+            <button
+              type="button"
+              aria-label="Dictionary"
+              title="Dictionary"
+              onClick={(e) => {
+                e.stopPropagation();
+                openDictionary();
+              }}
+              disabled={!pendingSelection.selectedText.trim()}
+              className={readerChromeStyles.newThreadButton}
+              style={{ opacity: pendingSelection.selectedText.trim() ? 1 : 0.4 }}
+            >
+              <BookOpen size={16} />
+            </button>
             <div className={`${readerChromeStyles.toolbarDivider} ${theme === "dark" ? readerChromeStyles.toolbarDividerDark : ""}`} />
             <div
               ref={threadDropdownRef}
@@ -1647,6 +1756,7 @@ export default function FoliateViewer({
               </button>
             </div>
           </div>
+          )}
         </>
       )}
     </div>
