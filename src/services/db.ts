@@ -170,7 +170,14 @@ export async function dbDeleteThread(threadId: string): Promise<void> {
 }
 
 export async function dbGetThreadMessages(threadId: string): Promise<ThreadMessage[]> {
-  return invoke<ThreadMessage[]>("db_get_thread_messages", { threadId });
+  const raw = await invoke<Array<ThreadMessage & { webCitations?: string | null }>>(
+    "db_get_thread_messages",
+    { threadId }
+  );
+  return raw.map((m) => ({
+    ...m,
+    webCitations: typeof m.webCitations === "string" ? JSON.parse(m.webCitations) : m.webCitations ?? null,
+  }));
 }
 
 export async function dbSaveThreadMessage(message: ThreadMessage): Promise<void> {
@@ -186,6 +193,7 @@ export async function dbSaveThreadMessage(message: ThreadMessage): Promise<void>
       excerptChapter: message.excerptChapter ?? null,
       excerptColor: message.excerptColor ?? null,
       excerptPage: message.excerptPage ?? null,
+      webCitations: message.webCitations ? JSON.stringify(message.webCitations) : null,
     },
   });
 }

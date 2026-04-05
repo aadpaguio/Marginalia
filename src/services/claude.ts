@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { Highlight, MemoryItem, ThreadMessage } from "@/types/book";
+import type { Highlight, MemoryItem, ThreadMessage, WebCitation } from "@/types/book";
 import type {
   ContextManifest,
   ContextAnchorSource,
@@ -28,6 +28,8 @@ export interface ClaudeResponse {
   };
   /** Phase 33: context manifest for the completed turn (set when persist is triggered). */
   completedManifest?: ContextManifest;
+  /** Web search citations from Anthropic's server-side web_search tool. */
+  webCitations?: WebCitation[];
 }
 
 export interface ThreadContextParams {
@@ -81,6 +83,7 @@ const STABLE_SYSTEM_RULES = [
   "Never assume the gender of the author, use they/them.",
   "Do not summarize the entire book unless asked. Be conversational, not academic.",
   "You need not ask questions all the time to the user, use questions sparingly.",
+  "When web_search is available, use it for: author biography, publication history, or interviews; historical events, people, or places referenced in the text; literary criticism, reviews, or scholarly discussion of the book; factual claims that benefit from verification; current events or recent developments related to themes in the book. Do not search for information that is clearly available in the book text itself.",
 ].join("\n");
 
 /** Session-specific (book, author) — not cached. */
@@ -443,6 +446,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
   // --- RESPONSE RULES ---
   systemParts.push(
     "--- RESPONSE RULES ---\n" +
+    "Don't overexplain unless asked further by the user." +
     "Match response length and scope to the user's question. Start from the smallest scope that honestly answers the question. Definitional or factual questions (e.g. 'what is X?', 'briefly, what's a sanatorium?') should usually get one sentence, or two at most; thematic or interpretive questions may get a paragraph. Do not expand from definition into thematic analysis unless the user asks for it.\n" +
     "Respond as a thoughtful reading companion, not an assistant. " +
     "Never narrate your own actions or observations about the interface: do not say 'I can see you've highlighted', 'I notice the passage', 'you've selected', or any variant. " +
@@ -721,6 +725,12 @@ const SUGGEST_SMART_SCAN_TOOL = {
   input_schema: { type: "object", properties: {}, required: [] },
 } as const;
 
+const WEB_SEARCH_TOOL = {
+  type: "web_search_20250305",
+  name: "web_search",
+  max_uses: 3,
+} as const;
+
 export type AskClaudeThreadParams = ThreadContextParams & {
   getContextAroundCfi: (
     cfi: string,
@@ -734,6 +744,10 @@ export type AskClaudeThreadParams = ThreadContextParams & {
   onToolCall?: (toolName: string) => void;
   /** Called when get_context returns; App uses this to update session-only working context (ref) for the next turn. */
   onContextFetched?: (text: string) => void;
+  /** When true, includes Anthropic's server-side web_search tool so Claude can look up external information. */
+  webSearchEnabled?: boolean;
+  /** Called when the response contains web search activity (server_tool_use for web_search). */
+  onWebSearch?: () => void;
 };
 
 const MAX_TOOL_ROUNDS = 3;
@@ -803,6 +817,27 @@ function isContextSeekingQuery(msg: string): boolean {
   );
 }
 
+/** Extract deduplicated web citations from Anthropic rawContent text blocks with `citations` arrays. */
+function extractWebCitations(rawContent: unknown[]): WebCitation[] {
+  const seen = new Set<string>();
+  const citations: WebCitation[] = [];
+  for (const block of rawContent ?? []) {
+    const b = block as { type?: string; citations?: Array<{ type?: string; url?: string; title?: string; cited_text?: string }> };
+    if (b.type !== "text" || !Array.isArray(b.citations)) continue;
+    for (const c of b.citations) {
+      if (c.type !== "web_search_result_location" || !c.url) continue;
+      if (seen.has(c.url)) continue;
+      seen.add(c.url);
+      citations.push({
+        url: c.url,
+        title: c.title ?? c.url,
+        citedText: c.cited_text,
+      });
+    }
+  }
+  return citations;
+}
+
 export async function askClaudeThread(
   params: AskClaudeThreadParams,
   apiKey: string
@@ -841,6 +876,7 @@ export async function askClaudeThread(
    */
   const forceToolChoice = isContextSeekingQuery(params.userMessage);
   let suggestSmartScanUsed = false;
+  let totalWebSearchRequests = 0;
 
   // Round-0 tool list for manifest (what options the model had when it started)
   const round0Tools: unknown[] = [GET_CONTEXT_TOOL];
@@ -850,6 +886,9 @@ export async function askClaudeThread(
   }
   if (params.scanStatus === "none") {
     round0Tools.push(SUGGEST_SMART_SCAN_TOOL);
+  }
+  if (params.webSearchEnabled) {
+    round0Tools.push(WEB_SEARCH_TOOL);
   }
   const toolsAvailable = round0Tools.map((t) => (t as { name: string }).name);
 
@@ -864,6 +903,9 @@ export async function askClaudeThread(
     }
     if (params.scanStatus === "none" && !suggestSmartScanUsed) {
       tools.push(SUGGEST_SMART_SCAN_TOOL);
+    }
+    if (params.webSearchEnabled) {
+      tools.push(WEB_SEARCH_TOOL);
     }
 
     const roundRequest = {
@@ -886,13 +928,30 @@ export async function askClaudeThread(
       rawContent: unknown[];
       model: string;
       usage?: ClaudeResponse["usage"];
+      stopReason?: string;
+      webSearchRequests?: number;
     }>("ask_claude_thread_proxy", {
       request: roundRequest,
     });
 
+    if (data.webSearchRequests) {
+      totalWebSearchRequests += data.webSearchRequests;
+    }
+
+    const hasWebSearchActivity = (data.rawContent ?? []).some(
+      (b: unknown) => {
+        const block = b as { type?: string; name?: string };
+        return block.type === "server_tool_use" && block.name === "web_search";
+      }
+    );
+    if (hasWebSearchActivity) {
+      params.onWebSearch?.();
+    }
+
     const hasToolCalls = (data.toolCalls?.length ?? 0) > 0;
-    console.log("[Claude thread] round=%d toolChoice=%s tools=%o", round, forceToolChoice && round === 0 ? "any" : "auto", tools.map((t: unknown) => (t as { name: string }).name));
-    console.log("[Claude thread] answer=%o toolCalls=%o", data.answer, data.toolCalls);
+    const isPauseTurn = data.stopReason === "pause_turn";
+    console.log("[Claude thread] round=%d toolChoice=%s stopReason=%s tools=%o", round, forceToolChoice && round === 0 ? "any" : "auto", data.stopReason, tools.map((t: unknown) => (t as { name: string }).name));
+    console.log("[Claude thread] answer=%o toolCalls=%o webSearchRequests=%o", data.answer, data.toolCalls, data.webSearchRequests);
     if (data.toolCalls?.length) {
       for (const call of data.toolCalls) {
         console.log("[Claude thread] tool_call name=%s input=%o", call.name, call.input);
@@ -902,13 +961,26 @@ export async function askClaudeThread(
       console.log("[Claude thread usage]", data.usage);
     }
 
+    // Server-side tool (web search) still running — continue the conversation
+    if (!hasToolCalls && isPauseTurn) {
+      console.log("[Claude thread] pause_turn detected, continuing server-side tool loop");
+      messages = [
+        ...messages,
+        { role: "assistant" as const, content: data.rawContent },
+        { role: "user" as const, content: "Continue." },
+      ];
+      continue;
+    }
+
     if (!hasToolCalls) {
       const answer = data.answer ?? "";
+      const webCitations = extractWebCitations(data.rawContent);
       const completedManifest: ContextManifest = {
         ...assembled.manifestDraft,
         toolsAvailable,
         toolCallsMade: [...toolCallLog],
         finalAnswerChars: answer.length,
+        webSearchesUsed: totalWebSearchRequests || undefined,
       };
       invoke("db_save_manifest", { manifest: completedManifest }).catch(console.error);
       return {
@@ -916,6 +988,7 @@ export async function askClaudeThread(
         model: data.model ?? model,
         usage: data.usage,
         completedManifest,
+        webCitations: webCitations.length > 0 ? webCitations : undefined,
       };
     }
 
@@ -1030,17 +1103,24 @@ export async function askClaudeThread(
 
   const finalData = await invoke<{
     answer: string;
+    rawContent: unknown[];
     model: string;
     usage?: ClaudeResponse["usage"];
+    webSearchRequests?: number;
   }>("ask_claude_thread_proxy", {
     request: finalRequest,
   });
+  if (finalData.webSearchRequests) {
+    totalWebSearchRequests += finalData.webSearchRequests;
+  }
   const answer = finalData.answer ?? "";
+  const webCitations = extractWebCitations(finalData.rawContent);
   const completedManifest: ContextManifest = {
     ...assembled.manifestDraft,
     toolsAvailable,
     toolCallsMade: [...toolCallLog],
     finalAnswerChars: answer.length,
+    webSearchesUsed: totalWebSearchRequests || undefined,
   };
   invoke("db_save_manifest", { manifest: completedManifest }).catch(console.error);
   return {
@@ -1048,5 +1128,6 @@ export async function askClaudeThread(
     model: finalData.model ?? model,
     usage: finalData.usage,
     completedManifest,
+    webCitations: webCitations.length > 0 ? webCitations : undefined,
   };
 }

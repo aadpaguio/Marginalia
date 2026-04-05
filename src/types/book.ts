@@ -60,6 +60,12 @@ export interface Thread {
   flushedAt?: number | null;
 }
 
+export interface WebCitation {
+  url: string;
+  title: string;
+  citedText?: string;
+}
+
 export interface ThreadMessage {
   id: string;
   threadId: string;
@@ -72,6 +78,8 @@ export interface ThreadMessage {
   excerptChapter?: string | null;
   excerptColor?: string | null;
   excerptPage?: string | null;
+  /** Web search citations attached to assistant messages. */
+  webCitations?: WebCitation[] | null;
 }
 
 export interface ThreadWithMessages extends Thread {

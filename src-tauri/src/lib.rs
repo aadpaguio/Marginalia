@@ -186,6 +186,8 @@ struct DbThreadMessageInput {
     excerpt_chapter: Option<String>,
     excerpt_color: Option<String>,
     excerpt_page: Option<String>,
+    /// JSON-serialized array of web search citations (optional).
+    web_citations: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -201,6 +203,8 @@ struct DbThreadMessage {
     excerpt_chapter: Option<String>,
     excerpt_color: Option<String>,
     excerpt_page: Option<String>,
+    /// JSON-serialized array of web search citations (nullable).
+    web_citations: Option<String>,
 }
 
 // Phase 33: context manifest (one per completed thread turn)
@@ -469,6 +473,7 @@ fn init_db(db_path: &Path) -> Result<(), String> {
     let _ = conn.execute("ALTER TABLE thread_messages ADD COLUMN excerpt_chapter TEXT", ());
     let _ = conn.execute("ALTER TABLE thread_messages ADD COLUMN excerpt_color TEXT", ());
     let _ = conn.execute("ALTER TABLE thread_messages ADD COLUMN excerpt_page TEXT", ());
+    let _ = conn.execute("ALTER TABLE thread_messages ADD COLUMN web_citations TEXT", ());
 
     // Migration: add Smart Scan columns to books (ignore if already present)
     let _ = conn.execute("ALTER TABLE books ADD COLUMN smart_scan_status TEXT NOT NULL DEFAULT 'none'", ());
@@ -774,7 +779,7 @@ fn db_get_thread_messages(
     let conn = open_db(&state)?;
     let mut stmt = conn
         .prepare(
-            "SELECT id, thread_id, role, content, created_at, excerpt_text, excerpt_cfi, excerpt_chapter, excerpt_color, excerpt_page
+            "SELECT id, thread_id, role, content, created_at, excerpt_text, excerpt_cfi, excerpt_chapter, excerpt_color, excerpt_page, web_citations
              FROM thread_messages WHERE thread_id = ?1 ORDER BY created_at ASC",
         )
         .map_err(|e| e.to_string())?;
@@ -791,6 +796,7 @@ fn db_get_thread_messages(
                 excerpt_chapter: row.get(7)?,
                 excerpt_color: row.get(8)?,
                 excerpt_page: row.get(9)?,
+                web_citations: row.get(10)?,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -805,8 +811,8 @@ fn db_save_thread_message(
     let conn = open_db(&state)?;
     conn.execute(
         r#"
-        INSERT INTO thread_messages (id, thread_id, role, content, created_at, excerpt_text, excerpt_cfi, excerpt_chapter, excerpt_color, excerpt_page)
-        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+        INSERT INTO thread_messages (id, thread_id, role, content, created_at, excerpt_text, excerpt_cfi, excerpt_chapter, excerpt_color, excerpt_page, web_citations)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
         "#,
         params![
             message.id,
@@ -819,6 +825,7 @@ fn db_save_thread_message(
             message.excerpt_chapter,
             message.excerpt_color,
             message.excerpt_page,
+            message.web_citations,
         ],
     )
     .map_err(|e| e.to_string())?;
@@ -1784,6 +1791,8 @@ struct ClaudeThreadProxyResponse {
     raw_content: Vec<serde_json::Value>,
     model: String,
     usage: Option<ClaudeUsage>,
+    stop_reason: Option<String>,
+    web_search_requests: Option<u64>,
 }
 
 /// Proxy Claude requests through Rust to avoid WebView network/CORS issues.
@@ -2097,7 +2106,8 @@ async fn ask_claude_thread_proxy(
         })
         .collect();
 
-    let usage = parsed.get("usage").and_then(|u| u.as_object()).map(|u| ClaudeUsage {
+    let usage_obj = parsed.get("usage").and_then(|u| u.as_object());
+    let usage = usage_obj.map(|u| ClaudeUsage {
         cache_creation_input_tokens: u
             .get("cache_creation_input_tokens")
             .and_then(|v| v.as_u64()),
@@ -2106,12 +2116,24 @@ async fn ask_claude_thread_proxy(
         output_tokens: u.get("output_tokens").and_then(|v| v.as_u64()),
     });
 
+    let stop_reason = parsed
+        .get("stop_reason")
+        .and_then(|v| v.as_str())
+        .map(String::from);
+
+    let web_search_requests = usage_obj
+        .and_then(|u| u.get("server_tool_use"))
+        .and_then(|s| s.get("web_search_requests"))
+        .and_then(|v| v.as_u64());
+
     Ok(ClaudeThreadProxyResponse {
         answer,
         tool_calls,
         raw_content: content_blocks,
         model,
         usage,
+        stop_reason,
+        web_search_requests,
     })
 }
 
