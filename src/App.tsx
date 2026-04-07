@@ -54,6 +54,7 @@ import {
   persistExtractedMemoryItems,
 } from "@/services/compaction";
 import { askClaudeThread, generateThreadTitle, loadRelevantMemoryItems, type GetContextResult } from "@/services/claude";
+import { getFirstTurnMemoryPlan, hasUserHistory, shouldAcceptPreloadResult } from "@/services/threadMemory";
 import { ArrowRight, ArrowUp, BookMarked, Globe, LogOut, MoreVertical, NotepadText, PanelLeft, PanelLeftClose, Pencil, ScanText, Settings, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -913,6 +914,8 @@ function App() {
       return;
     }
     setThreadChatError(null);
+    setThreadInitialMemoryItems([]);
+    setThreadMemoryLoadedForThreadId(null);
     workingContextRef.current = [];
     const threadId = activeThreadId;
     activeThreadIdRef.current = threadId;
@@ -922,12 +925,10 @@ function App() {
     ]).then(([messages, threadHighlights]) => {
       setActiveThreadMessages(messages);
       setActiveThreadHighlights(threadHighlights);
-      const seedText =
-        messages.find((m) => m.role === "user")?.content?.trim() ||
-        threads.find((t) => t.id === threadId)?.title?.trim() ||
-        "What can you tell me about the passages I've highlighted?";
+      if (!hasUserHistory(messages)) return;
+      const seedText = messages.find((m) => m.role === "user")?.content?.trim() ?? "";
       loadRelevantMemoryItems(currentBookId, seedText).then((items) => {
-        if (activeThreadIdRef.current === threadId) {
+        if (shouldAcceptPreloadResult(activeThreadIdRef.current, threadId)) {
           setThreadInitialMemoryItems(items);
           setThreadMemoryLoadedForThreadId(threadId);
         }
@@ -1332,6 +1333,7 @@ function App() {
   const handleThreadChatSend = async () => {
     const userMessage = threadChatInput.trim() || "What can you tell me about the passages I've highlighted?";
     if (!activeThreadId || !currentBookId || !bookDoc || threadChatAsking) return;
+    activeThreadIdRef.current = activeThreadId;
     const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
     if (!apiKey) {
       setThreadChatError("Add VITE_ANTHROPIC_API_KEY to .env and restart.");
@@ -1348,8 +1350,21 @@ function App() {
       revealIntervalRef.current = null;
     }
     const isFirstTurn = activeThreadMessages.length === 0;
-    const memoryItemsForTurn =
-      isFirstTurn && threadInitialMemoryItems.length > 0 ? threadInitialMemoryItems : undefined;
+    const memoryPlan = getFirstTurnMemoryPlan({
+      isFirstTurn,
+      activeThreadId,
+      loadedForThreadId: threadMemoryLoadedForThreadId,
+      preloadedItems: threadInitialMemoryItems,
+    });
+    let memoryItemsForTurn = memoryPlan.mode === "use_preloaded" ? memoryPlan.items : undefined;
+    if (memoryPlan.mode === "fetch_inline") {
+      const loaded = await loadRelevantMemoryItems(currentBookId, userMessage);
+      if (shouldAcceptPreloadResult(activeThreadIdRef.current, activeThreadId)) {
+        setThreadInitialMemoryItems(loaded);
+        setThreadMemoryLoadedForThreadId(activeThreadId);
+      }
+      memoryItemsForTurn = loaded;
+    }
     try {
       const result = await askClaudeThread(
         {
