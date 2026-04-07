@@ -352,8 +352,7 @@ describe("Phase 27 — assembleThreadContext (blind model posture)", () => {
     expect(first.content).toContain("[MEMORY CONTEXT]");
     expect(first.content).toContain("[/MEMORY CONTEXT]");
     expect(first.content).toContain("You tend to distrust narrators");
-    expect(first.content).toContain("intellectual");
-    expect(first.content).toContain("4×");
+    expect(first.content).toContain("- You tend to distrust narrators");
   });
 
   it("Phase 30.5: no memory block when memoryItems empty or undefined", () => {

@@ -3,6 +3,7 @@ use std::path::PathBuf;
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
+use fastembed::{EmbeddingModel, InitOptions, TextEmbedding};
 use rusqlite::{params, Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, Manager, State};
@@ -28,10 +29,6 @@ fn read_file_base64(path: String) -> Result<String, String> {
 
 struct DbState {
     db_path: PathBuf,
-}
-
-struct MemoryState {
-    base_path: PathBuf,
 }
 
 #[derive(Debug, Deserialize)]
@@ -352,6 +349,7 @@ fn init_db(db_path: &Path) -> Result<(), String> {
           id TEXT PRIMARY KEY,
           book_id TEXT NOT NULL,
           title TEXT,
+          clean_exchange TEXT,
           created_at INTEGER NOT NULL,
           updated_at INTEGER NOT NULL,
           archived INTEGER NOT NULL DEFAULT 0,
@@ -428,6 +426,18 @@ fn init_db(db_path: &Path) -> Result<(), String> {
         CREATE INDEX IF NOT EXISTS idx_memory_anchors_memory ON memory_anchors(memory_id);
         CREATE INDEX IF NOT EXISTS idx_memory_items_type ON memory_items(type);
 
+        CREATE TABLE IF NOT EXISTS memory_vecs (
+          memory_rowid INTEGER PRIMARY KEY,
+          embedding_json TEXT NOT NULL,
+          model TEXT NOT NULL,
+          updated_at INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS app_meta (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL
+        );
+
         CREATE TABLE IF NOT EXISTS context_manifests (
           id TEXT PRIMARY KEY,
           thread_id TEXT NOT NULL,
@@ -494,6 +504,7 @@ fn init_db(db_path: &Path) -> Result<(), String> {
 
     // Migration: mid-thread memory flush idempotency (Phase 30)
     let _ = conn.execute("ALTER TABLE threads ADD COLUMN flushed_at INTEGER", ());
+    let _ = conn.execute("ALTER TABLE threads ADD COLUMN clean_exchange TEXT", ());
 
     Ok(())
 }
@@ -761,6 +772,46 @@ fn db_archive_thread(state: State<DbState>, id: String) -> Result<(), String> {
     conn.execute("UPDATE threads SET archived = 1, updated_at = ?1 WHERE id = ?2", params![chrono_like_now(), id])
         .map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[tauri::command]
+fn db_set_thread_clean_exchange(
+    state: State<DbState>,
+    id: String,
+    clean_exchange: String,
+) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    conn.execute(
+        "UPDATE threads SET clean_exchange = ?1, updated_at = ?2 WHERE id = ?3",
+        params![clean_exchange, chrono_like_now(), id],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn db_increment_archive_counter(state: State<DbState>) -> Result<i64, String> {
+    let conn = open_db(&state)?;
+    let current = conn
+        .query_row(
+            "SELECT value FROM app_meta WHERE key = 'threads_archived_count'",
+            [],
+            |row| row.get::<_, String>(0),
+        )
+        .optional()
+        .map_err(|e| e.to_string())?
+        .and_then(|s| s.parse::<i64>().ok())
+        .unwrap_or(0);
+    let next = current + 1;
+    conn.execute(
+        r#"
+        INSERT INTO app_meta (key, value) VALUES ('threads_archived_count', ?1)
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value
+        "#,
+        params![next.to_string()],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(next)
 }
 
 #[tauri::command]
@@ -1376,6 +1427,84 @@ fn chrono_like_now() -> i64 {
         .unwrap_or(0)
 }
 
+fn embed_text(text: &str) -> Option<Vec<f32>> {
+    let mut model = TextEmbedding::try_new(
+        InitOptions::new(EmbeddingModel::BGESmallENV15Q).with_show_download_progress(false),
+    )
+    .ok()?;
+    let docs = vec![text];
+    let mut out = model.embed(docs, None).ok()?;
+    out.pop()
+}
+
+fn to_embedding_json(values: &[f32]) -> String {
+    let mut out = String::with_capacity(values.len() * 8);
+    out.push('[');
+    for (idx, v) in values.iter().enumerate() {
+        if idx > 0 {
+            out.push(',');
+        }
+        out.push_str(&format!("{:.7}", v));
+    }
+    out.push(']');
+    out
+}
+
+fn parse_embedding_json(s: &str) -> Option<Vec<f32>> {
+    serde_json::from_str::<Vec<f32>>(s).ok()
+}
+
+fn cosine_similarity(a: &[f32], b: &[f32]) -> f32 {
+    let n = a.len().min(b.len());
+    if n == 0 {
+        return 0.0;
+    }
+    let mut dot = 0.0f32;
+    let mut na = 0.0f32;
+    let mut nb = 0.0f32;
+    for i in 0..n {
+        dot += a[i] * b[i];
+        na += a[i] * a[i];
+        nb += b[i] * b[i];
+    }
+    if na <= f32::EPSILON || nb <= f32::EPSILON {
+        return 0.0;
+    }
+    dot / (na.sqrt() * nb.sqrt())
+}
+
+fn upsert_memory_embedding(conn: &Connection, memory_id: &str, content: &str) -> Result<(), String> {
+    let embedding = match embed_text(content) {
+        Some(v) => v,
+        None => return Ok(()),
+    };
+    let memory_rowid: i64 = conn
+        .query_row(
+            "SELECT rowid FROM memory_items WHERE id = ?1",
+            params![memory_id],
+            |row| row.get(0),
+        )
+        .map_err(|e| e.to_string())?;
+    conn.execute(
+        r#"
+        INSERT INTO memory_vecs (memory_rowid, embedding_json, model, updated_at)
+        VALUES (?1, ?2, ?3, ?4)
+        ON CONFLICT(memory_rowid) DO UPDATE SET
+          embedding_json = excluded.embedding_json,
+          model = excluded.model,
+          updated_at = excluded.updated_at
+        "#,
+        params![
+            memory_rowid,
+            to_embedding_json(&embedding),
+            "BGESmallENV15Q",
+            chrono_like_now()
+        ],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 fn cleanup_legacy_progress_file() {
     if let Ok(home) = std::env::var("HOME") {
         let legacy = Path::new(&home).join(".marginalia").join("progress.json");
@@ -1403,72 +1532,6 @@ fn save_cover_image(
     let cover_path = covers_dir.join(format!("{book_id}.jpg"));
     std::fs::write(&cover_path, bytes).map_err(|e| e.to_string())?;
     Ok(cover_path.to_string_lossy().to_string())
-}
-
-#[tauri::command]
-fn memory_ensure_dirs(state: State<MemoryState>) -> Result<(), String> {
-    let books_dir = state.base_path.join("books");
-    std::fs::create_dir_all(&state.base_path).map_err(|e| e.to_string())?;
-    std::fs::create_dir_all(&books_dir).map_err(|e| e.to_string())?;
-    Ok(())
-}
-
-#[tauri::command]
-fn memory_list_books(state: State<MemoryState>) -> Result<Vec<String>, String> {
-    let books_dir = state.base_path.join("books");
-    if !books_dir.is_dir() {
-        return Ok(vec![]);
-    }
-    let mut ids = Vec::new();
-    for entry in std::fs::read_dir(&books_dir).map_err(|e| e.to_string())? {
-        let entry = entry.map_err(|e| e.to_string())?;
-        let path = entry.path();
-        if path.extension().map(|e| e == "md").unwrap_or(false) {
-            if let Some(stem) = path.file_stem() {
-                if let Some(id) = stem.to_str() {
-                    ids.push(id.to_string());
-                }
-            }
-        }
-    }
-    Ok(ids)
-}
-
-#[tauri::command]
-fn memory_read_book(state: State<MemoryState>, book_id: String) -> Result<Option<String>, String> {
-    let path = state.base_path.join("books").join(format!("{}.md", book_id));
-    if !path.is_file() {
-        return Ok(None);
-    }
-    std::fs::read_to_string(&path).map(Some).map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-fn memory_write_book(
-    state: State<MemoryState>,
-    book_id: String,
-    content: String,
-) -> Result<(), String> {
-    let books_dir = state.base_path.join("books");
-    std::fs::create_dir_all(&books_dir).map_err(|e| e.to_string())?;
-    let path = books_dir.join(format!("{}.md", book_id));
-    std::fs::write(&path, content).map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-fn memory_read_reader(state: State<MemoryState>) -> Result<Option<String>, String> {
-    let path = state.base_path.join("reader.md");
-    if !path.is_file() {
-        return Ok(None);
-    }
-    std::fs::read_to_string(&path).map(Some).map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-fn memory_write_reader(state: State<MemoryState>, content: String) -> Result<(), String> {
-    std::fs::create_dir_all(&state.base_path).map_err(|e| e.to_string())?;
-    let path = state.base_path.join("reader.md");
-    std::fs::write(&path, content).map_err(|e| e.to_string())
 }
 
 // Phase 30: structured memory items
@@ -1533,6 +1596,15 @@ fn memory_save_item(
         )
         .map_err(|e| e.to_string())?;
     }
+    let is_global = anchors.iter().all(|a| {
+        a.get("bookId")
+            .and_then(|v| v.as_str())
+            .map(|s| s.trim().is_empty())
+            .unwrap_or(true)
+    });
+    if is_global {
+        let _ = upsert_memory_embedding(&conn, &id, &item.content);
+    }
     Ok(id)
 }
 
@@ -1586,6 +1658,114 @@ fn memory_get_items_global(state: State<DbState>) -> Result<Vec<MemoryItemWithAn
         }
     }
     Ok(out)
+}
+
+#[tauri::command]
+fn memory_get_items_global_for_query(
+    state: State<DbState>,
+    query: String,
+    limit: Option<i64>,
+) -> Result<Vec<MemoryItemWithAnchors>, String> {
+    let conn = open_db(&state)?;
+    let capped = limit.unwrap_or(5).clamp(1, 10) as usize;
+    let query_embedding = match embed_text(query.trim()) {
+        Some(v) => v,
+        None => {
+            let mut fallback_stmt = conn
+                .prepare(
+                    "SELECT id FROM memory_items
+                     WHERE id NOT IN (SELECT memory_id FROM memory_anchors WHERE book_id IS NOT NULL AND book_id != '')
+                     ORDER BY last_reinforced_at DESC, confidence DESC
+                     LIMIT ?1",
+                )
+                .map_err(|e| e.to_string())?;
+            let fallback_ids: Vec<String> = fallback_stmt
+                .query_map(params![capped as i64], |row| row.get(0))
+                .map_err(|e| e.to_string())?
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|e| e.to_string())?;
+            drop(fallback_stmt);
+            let mut fallback = Vec::new();
+            for id in fallback_ids {
+                if let Some(item) = get_memory_item_with_anchors(&conn, &id)? {
+                    fallback.push(item);
+                }
+            }
+            return Ok(fallback);
+        }
+    };
+
+    let mut stmt = conn
+        .prepare(
+            r#"
+            SELECT mi.id, mv.embedding_json
+            FROM memory_items mi
+            JOIN memory_vecs mv ON mv.memory_rowid = mi.rowid
+            WHERE mi.id NOT IN (
+              SELECT memory_id FROM memory_anchors WHERE book_id IS NOT NULL AND book_id != ''
+            )
+            "#,
+        )
+        .map_err(|e| e.to_string())?;
+    let pairs: Vec<(String, String)> = stmt
+        .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+    drop(stmt);
+
+    let mut ranked: Vec<(String, f32)> = pairs
+        .into_iter()
+        .filter_map(|(id, emb_json)| {
+            let emb = parse_embedding_json(&emb_json)?;
+            Some((id, cosine_similarity(&query_embedding, &emb)))
+        })
+        .collect();
+    ranked.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+
+    let mut out = Vec::new();
+    for (id, _) in ranked.into_iter().take(capped) {
+        if let Some(item) = get_memory_item_with_anchors(&conn, &id)? {
+            out.push(item);
+        }
+    }
+    if out.is_empty() {
+        let mut fallback_stmt = conn
+            .prepare(
+                "SELECT id FROM memory_items
+                 WHERE id NOT IN (SELECT memory_id FROM memory_anchors WHERE book_id IS NOT NULL AND book_id != '')
+                 ORDER BY last_reinforced_at DESC, confidence DESC
+                 LIMIT ?1",
+            )
+            .map_err(|e| e.to_string())?;
+        let fallback_ids: Vec<String> = fallback_stmt
+            .query_map(params![capped as i64], |row| row.get(0))
+            .map_err(|e| e.to_string())?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| e.to_string())?;
+        drop(fallback_stmt);
+        for id in fallback_ids {
+            if let Some(item) = get_memory_item_with_anchors(&conn, &id)? {
+                out.push(item);
+            }
+        }
+    }
+    Ok(out)
+}
+
+#[tauri::command]
+fn memory_get_thread_messages(state: State<DbState>, thread_id: String) -> Result<String, String> {
+    let conn = open_db(&state)?;
+    let clean = conn
+        .query_row(
+            "SELECT clean_exchange FROM threads WHERE id = ?1",
+            params![thread_id],
+            |row| row.get::<_, Option<String>>(0),
+        )
+        .optional()
+        .map_err(|e| e.to_string())?
+        .flatten();
+    Ok(clean.unwrap_or_default())
 }
 
 fn get_memory_item_with_anchors(conn: &Connection, id: &str) -> Result<Option<MemoryItemWithAnchors>, String> {
@@ -1670,6 +1850,23 @@ fn memory_reinforce_item(state: State<DbState>, id: String) -> Result<(), String
     )
     .map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[tauri::command]
+fn memory_run_cross_book_synthesis_stub(state: State<DbState>) -> Result<String, String> {
+    let conn = open_db(&state)?;
+    let count: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM memory_items
+             WHERE id NOT IN (SELECT memory_id FROM memory_anchors WHERE book_id IS NOT NULL AND book_id != '')",
+            [],
+            |row| row.get(0),
+        )
+        .map_err(|e| e.to_string())?;
+    Ok(format!(
+        "TODO: run cross-book synthesis over {} global memory items with Haiku",
+        count
+    ))
 }
 
 #[tauri::command]
@@ -2169,6 +2366,8 @@ pub fn run() {
             db_create_thread,
             db_update_thread_title,
             db_archive_thread,
+            db_set_thread_clean_exchange,
+            db_increment_archive_counter,
             db_mark_thread_flushed,
             db_delete_thread,
             db_clear_all_threads,
@@ -2194,17 +2393,14 @@ pub fn run() {
             db_get_book_summary,
             db_set_book_summary,
             db_set_book_structure_type,
-            memory_ensure_dirs,
-            memory_list_books,
-            memory_read_book,
-            memory_write_book,
-            memory_read_reader,
-            memory_write_reader,
             memory_save_item,
             memory_get_items_for_book,
             memory_get_items_global,
+            memory_get_items_global_for_query,
+            memory_get_thread_messages,
             memory_reinforce_item,
             memory_delete_item,
+            memory_run_cross_book_synthesis_stub,
         ])
         .setup(|app| {
             cleanup_legacy_progress_file();
@@ -2213,13 +2409,6 @@ pub fn run() {
             let db_path = marginalia_dir.join("marginalia.db");
             init_db(&db_path)?;
             app.manage(DbState { db_path });
-
-            let memory_path = marginalia_dir.join("memory");
-            std::fs::create_dir_all(&memory_path).map_err(|e| e.to_string())?;
-            std::fs::create_dir_all(memory_path.join("books")).map_err(|e| e.to_string())?;
-            app.manage(MemoryState {
-                base_path: memory_path,
-            });
 
             #[cfg(debug_assertions)]
             {
