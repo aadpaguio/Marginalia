@@ -219,10 +219,12 @@
   margin-top: var(--space-1);
   min-width: 120px;
   padding: var(--space-1);
-  background: var(--surface-raised);
+  background-color: var(--surface-raised);
+  background-image: none;
   border: 1px solid var(--border-moderate);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-md);
+  isolation: isolate;
   z-index: 100;
 }
 
@@ -617,6 +619,11 @@
 .thread-list-item.active {
   border-color: var(--accent-border);
   background: var(--accent-dim);
+}
+
+/* Dropdown extends past the card; without this, the next list item stacks on top (wrong hits + “see-through”). */
+.thread-list-item.thread-list-item-menu-open {
+  z-index: 20;
 }
 
 /* Three-dot in top-right corner of card — out of text flow */

@@ -165,6 +165,14 @@ export async function dbArchiveThread(threadId: string): Promise<void> {
   await invoke("db_archive_thread", { id: threadId });
 }
 
+export async function dbSetThreadCleanExchange(threadId: string, cleanExchange: string): Promise<void> {
+  await invoke("db_set_thread_clean_exchange", { id: threadId, cleanExchange });
+}
+
+export async function dbIncrementArchiveCounter(): Promise<number> {
+  return invoke<number>("db_increment_archive_counter");
+}
+
 export async function dbDeleteThread(threadId: string): Promise<void> {
   await invoke("db_delete_thread", { id: threadId });
 }
@@ -210,31 +218,6 @@ export async function dbAttachHighlightToThread(
   highlightId: string
 ): Promise<void> {
   await invoke("db_attach_highlight_to_thread", { threadId, highlightId });
-}
-
-// Memory (file-based)
-export async function memoryEnsureDirs(): Promise<void> {
-  await invoke("memory_ensure_dirs");
-}
-
-export async function memoryListBooks(): Promise<string[]> {
-  return invoke<string[]>("memory_list_books");
-}
-
-export async function memoryReadBook(bookId: string): Promise<string | null> {
-  return invoke<string | null>("memory_read_book", { bookId });
-}
-
-export async function memoryWriteBook(bookId: string, content: string): Promise<void> {
-  await invoke("memory_write_book", { bookId, content });
-}
-
-export async function memoryReadReader(): Promise<string | null> {
-  return invoke<string | null>("memory_read_reader");
-}
-
-export async function memoryWriteReader(content: string): Promise<void> {
-  await invoke("memory_write_reader", { content });
 }
 
 // Phase 30: structured memory items
@@ -294,12 +277,27 @@ export async function memoryGetItemsGlobal(): Promise<MemoryItem[]> {
   return invoke<MemoryItem[]>("memory_get_items_global");
 }
 
+export async function memoryGetItemsGlobalForQuery(
+  query: string,
+  limit = 5
+): Promise<MemoryItem[]> {
+  return invoke<MemoryItem[]>("memory_get_items_global_for_query", { query, limit });
+}
+
+export async function memoryGetThreadMessages(threadId: string): Promise<string> {
+  return invoke<string>("memory_get_thread_messages", { threadId });
+}
+
 export async function memoryReinforceItem(id: string): Promise<void> {
   await invoke("memory_reinforce_item", { id });
 }
 
 export async function memoryDeleteItem(id: string): Promise<void> {
   await invoke("memory_delete_item", { id });
+}
+
+export async function memoryRunCrossBookSynthesisStub(): Promise<string> {
+  return invoke<string>("memory_run_cross_book_synthesis_stub");
 }
 
 const VALID_STRUCTURE_TYPES: SectionStructureType[] = [

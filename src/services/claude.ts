@@ -6,7 +6,7 @@ import type {
   ContextTurnMode,
 } from "@/types/contextManifest";
 import type { SectionSummary } from "@/services/db";
-import { memoryGetItemsForBook, memoryGetItemsGlobal } from "@/services/db";
+import { memoryGetItemsForBook, memoryGetItemsGlobal, memoryGetItemsGlobalForQuery } from "@/services/db";
 
 export interface ClaudeRequest {
   selectedText: string;
@@ -179,52 +179,42 @@ export async function generateThreadTitle(topicOrQuestion: string, apiKey: strin
   return (data.answer ?? "").trim();
 }
 
-/** Phase 30.5: Load up to 5 relevant memory items (global high-obs + book-scoped + optional cross-book global). */
+/** Load relevant memory items: book by recency, global by semantic relevance with recency fallback. */
 export async function loadRelevantMemoryItems(
   bookId: string,
   userMessage: string
 ): Promise<MemoryItem[]> {
-  const [bookItems, globalItems] = await Promise.all([
-    memoryGetItemsForBook(bookId),
-    memoryGetItemsGlobal(),
-  ]);
-  const globalHighObs = globalItems
-    .filter((i) => i.observationCount >= 3)
-    .sort((a, b) => b.confidence - a.confidence)
-    .slice(0, 3);
-  const topBook = bookItems
-    .sort((a, b) => b.confidence - a.confidence)
-    .slice(0, 3);
-  const crossBookSignals = /\b(have i seen this before|reminds me of|across books|other books|another book)\b/i.test(
-    userMessage
-  );
+  const topBook = (await memoryGetItemsForBook(bookId))
+    .sort((a, b) => b.lastReinforcedAt - a.lastReinforcedAt)
+    .slice(0, 4);
+  let topGlobal: MemoryItem[] = [];
+  try {
+    topGlobal = await memoryGetItemsGlobalForQuery(userMessage, 4);
+  } catch {
+    topGlobal = [];
+  }
+  if (topGlobal.length === 0) {
+    topGlobal = (await memoryGetItemsGlobal())
+      .sort((a, b) => b.lastReinforcedAt - a.lastReinforcedAt)
+      .slice(0, 4);
+  }
   const seen = new Set<string>();
   const out: MemoryItem[] = [];
-  for (const i of globalHighObs) {
-    if (out.length >= 5) break;
-    if (!seen.has(i.id)) {
-      seen.add(i.id);
-      out.push(i);
-    }
-  }
   for (const i of topBook) {
-    if (out.length >= 5) break;
+    if (out.length >= 10) break;
     if (!seen.has(i.id)) {
       seen.add(i.id);
       out.push(i);
     }
   }
-  if (crossBookSignals && out.length < 5) {
-    const moreGlobal = globalItems
-      .sort((a, b) => b.confidence - a.confidence)
-      .filter((i) => !seen.has(i.id))
-      .slice(0, 5 - out.length);
-    for (const i of moreGlobal) {
+  for (const i of topGlobal) {
+    if (out.length >= 10) break;
+    if (!seen.has(i.id)) {
+      seen.add(i.id);
       out.push(i);
-      if (out.length >= 5) break;
     }
   }
-  return out.slice(0, 5);
+  return out.slice(0, 10);
 }
 
 /** Normalize href for comparison: strip fragment, leading ./, lowercase. */
@@ -440,6 +430,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     "Attribution and source-identification: Do not answer attribution questions (e.g. 'what essay is this from?', 'who is speaking?', 'which chapter/section?') by inference or prior knowledge. You may only state a source, speaker, or title if it is explicitly stated in the attached passage or in the CURRENT TURN LEAD-UP CONTEXT block. If the attached passage and CURRENT TURN LEAD-UP CONTEXT together do not explicitly name the source, speaker, or essay, you must call get_context before answering — do not guess. For source-attribution in quoted or critical prose, when the lead-up (before) context does not resolve the attribution, call get_context with direction 'around' or 'after' to look for the title or speaker; then answer only from what the fetched text explicitly states.\n" +
     "- get_section_summary (spine_href): Use to get the summary of a section by its spine_href (from the section index). Helps with thematic questions or deciding if you need that section's full text.\n" +
     "- get_section_text (spine_href): Use when the reader wants exact quotes or specific lines from a section they have not reached. Pass the spine_href from the section index.\n" +
+    "- get_past_thread (thread_id): Use when MEMORY CONTEXT includes a [thread: ...] tag and you need the full archived conversation behind that memory item.\n" +
     "Spoilers: Do not assume the reader has read past the excerpt. If the answer would spoil later content and they did not ask for it, hint instead (e.g. 'this becomes clearer as you read further').\n" +
     "Broader scope: If answering would require content from sections the reader has not reached (e.g. get_section_summary or get_section_text for later sections) or would spoil later material, prefer to say so and ask before fetching or summarising that content."
   );
@@ -537,16 +528,24 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
         : `(No passage is attached to this message.)\n\n${userMessage}`,
   };
 
-  // Phase 30.5: inject memory items as first user block when present (no empty block)
-  const memoryBlock =
+  // Phase 35: inject memory as substantive prose with stable budget.
+  const memoryLines =
     params.memoryItems && params.memoryItems.length > 0
-      ? params.memoryItems
-          .map(
-            (i) =>
-              `— ${i.content} (${i.type}, seen ${i.observationCount}×${i.anchors?.some((a) => a.bookId) ? ", book" : ""})`
-          )
-          .join("\n")
-      : "";
+      ? params.memoryItems.map((i) => {
+          const anchorThreadId = i.anchors?.find((a) => !!a.threadId)?.threadId;
+          const threadTag = anchorThreadId ? ` [thread: ${anchorThreadId}]` : "";
+          return `- ${i.content.trim()}${threadTag}`;
+        })
+      : [];
+  const memoryLinesBounded: string[] = [];
+  let memoryChars = 0;
+  for (const line of memoryLines) {
+    if (memoryLinesBounded.length >= 10) break;
+    if (memoryChars + line.length > 4800) break; // ~1200 token upper bound
+    memoryLinesBounded.push(line);
+    memoryChars += line.length;
+  }
+  const memoryBlock = memoryLinesBounded.join("\n");
   const prefillMessages: AssembledThreadRequest["messages"] =
     memoryBlock.length > 0
       ? [
@@ -628,7 +627,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     highlightsCount: dedupedHighlights.length,
     highlightsCfis: dedupedHighlights.map((h) => h.cfi ?? ""),
     historyMessageCount: messages.length,
-    memoryItemsCount: params.memoryItems?.length ?? 0,
+    memoryItemsCount: memoryLinesBounded.length,
     estimatedInputTokens,
     toolsAvailable: [], // filled in askClaudeThread
     smartScanStatus: params.scanStatus ?? undefined,
@@ -703,6 +702,23 @@ const GET_SECTION_TEXT_TOOL = {
   },
 } as const;
 
+const GET_PAST_THREAD_TOOL = {
+  name: "get_past_thread",
+  description:
+    "Fetch the cleaned archived user/assistant exchange for a prior thread by thread_id. Use this when memory context includes [thread: ...] and you need richer context from that earlier discussion.",
+  input_schema: {
+    type: "object",
+    properties: {
+      thread_id: {
+        type: "string",
+        description:
+          "Thread id from a memory item's [thread: ...] tag. Returns a clean user/assistant transcript with tool scaffolding removed.",
+      },
+    },
+    required: ["thread_id"],
+  },
+} as const;
+
 /** Direction for get_context: where to fetch text relative to the anchor. */
 export type GetContextDirection = "before" | "after" | "around" | "from_section_start";
 
@@ -740,6 +756,8 @@ export type AskClaudeThreadParams = ThreadContextParams & {
   ) => GetContextResult;
   /** When provided, enables get_section_text so the model can fetch full text of a section by spine_href and quote lines. */
   getSectionTextByHref?: (spineHref: string) => Promise<string>;
+  /** Returns a cleaned archived thread exchange by thread id. */
+  getPastThreadMessages?: (threadId: string) => Promise<string>;
   /** Called when the model invokes a tool (e.g. get_context) so the UI can show a fetch indicator. */
   onToolCall?: (toolName: string) => void;
   /** Called when get_context returns; App uses this to update session-only working context (ref) for the next turn. */
@@ -892,6 +910,9 @@ export async function askClaudeThread(
 
   // Round-0 tool list for manifest (what options the model had when it started)
   const round0Tools: unknown[] = [GET_CONTEXT_TOOL];
+  if (params.getPastThreadMessages) {
+    round0Tools.push(GET_PAST_THREAD_TOOL);
+  }
   if (params.scanStatus === "done" && (params.sectionSummaries?.length ?? 0) > 0) {
     round0Tools.push(GET_SECTION_SUMMARY_TOOL);
     if (params.getSectionTextByHref) round0Tools.push(GET_SECTION_TEXT_TOOL);
@@ -907,6 +928,9 @@ export async function askClaudeThread(
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     // Build dynamic tools for this round
     const tools: unknown[] = [GET_CONTEXT_TOOL];
+    if (params.getPastThreadMessages) {
+      tools.push(GET_PAST_THREAD_TOOL);
+    }
     if (params.scanStatus === "done" && (params.sectionSummaries?.length ?? 0) > 0) {
       tools.push(GET_SECTION_SUMMARY_TOOL);
       if (params.getSectionTextByHref) {
@@ -1045,6 +1069,8 @@ export async function askClaudeThread(
           ? `cfi=${(String((call.input as { cfi?: string }).cfi ?? "")).slice(0, 40)}… dir=${(call.input as { direction?: string }).direction ?? "?"} max=${(call.input as { max_chars?: number }).max_chars ?? "?"}`
           : call.name === "get_section_summary" || call.name === "get_section_text"
             ? `spine_href=${String((call.input as { spine_href?: string }).spine_href ?? "")}`
+            : call.name === "get_past_thread"
+              ? `thread_id=${String((call.input as { thread_id?: string }).thread_id ?? "")}`
             : call.name === "suggest_smart_scan"
               ? "(no input)"
               : "(unknown)";
@@ -1105,6 +1131,17 @@ export async function askClaudeThread(
               : "";
           const content =
             text?.trim() || `(Could not load full text for section "${spine_href}". Section may not exist or failed to load.)`;
+          return { tool_use_id: call.id, content };
+        }
+        if (call.name === "get_past_thread") {
+          const { thread_id } = call.input as { thread_id?: string };
+          const id = (thread_id ?? "").trim();
+          if (!id) {
+            return { tool_use_id: call.id, content: "(thread_id is required)" };
+          }
+          const content = params.getPastThreadMessages
+            ? (await params.getPastThreadMessages(id)).trim() || `(No archived exchange found for thread "${id}".)`
+            : "(get_past_thread unavailable in this session)";
           return { tool_use_id: call.id, content };
         }
         if (call.name === "suggest_smart_scan") {

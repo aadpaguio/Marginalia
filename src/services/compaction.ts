@@ -16,14 +16,6 @@ import {
 
 const COMPACTION_MODEL = "claude-haiku-4-5-20251001";
 
-function getApiKey(): string {
-  const key = import.meta.env.VITE_ANTHROPIC_API_KEY;
-  if (!key) {
-    throw new Error("Missing VITE_ANTHROPIC_API_KEY for compaction");
-  }
-  return key;
-}
-
 function formatThreadForPrompt(messages: ThreadMessage[]): string {
   return messages
     .map((m) => `[${m.role}]\n${m.content}`)
@@ -52,141 +44,6 @@ export function extractChapterRange(highlights: { chapterLabel?: string | null }
 }
 
 /** Returns the new journal entry (~50–100 words) to append. */
-export async function compactThreadToJournal(params: {
-  bookTitle: string;
-  author: string;
-  threadTitle: string;
-  threadDate: string;
-  threadMessages: ThreadMessage[];
-  existingMemory?: string | null;
-}): Promise<string> {
-  const {
-    bookTitle,
-    author,
-    threadTitle,
-    threadDate,
-    threadMessages,
-    existingMemory,
-  } = params;
-  const threadBlock = formatThreadForPrompt(threadMessages);
-  const existingBlock =
-    existingMemory?.trim()
-      ? `--- EXISTING JOURNAL ---\n${existingMemory.trim()}\n--- END JOURNAL ---`
-      : "";
-  const systemPrompt = `You are updating the reading journal for a book.
-Book: ${bookTitle} by ${author}
-Thread title: ${threadTitle}
-Thread date: ${threadDate}
-
-The thread uses [user] for the human reader and [assistant] for Marginalia (the app's reading assistant). Treat them as two speakers.
-
---- THREAD ---
-${threadBlock}
---- END THREAD ---
-
-${existingBlock ? `${existingBlock}\n\nIntegrate this thread into the existing journal. Do not repeat what's already there. Extend it while preserving attribution (see below).` : ""}
-
-Write one reading journal entry, 50-100 words, factual and specific. Voice and pronouns:
-- "you" / "your": only for what the human said, asked, or clearly reacted to in [user] turns.
-- "I" / "my": only for what Marginalia said or proposed in [assistant] turns.
-- "we" / "our": optional when both sides genuinely contributed to a line of thought; never credit the reader with assistant-only analysis.
-- If only Marginalia raised an idea, attribute it to Marginalia or to "I" — not to "you".
-
-Include where possible:
-- Specific chapter/section/page if known (e.g. 'Chapter 3, page 10').
-- What sparked the thread (especially from the reader's side when relevant)
-- Distinct reader vs Marginalia contributions when both matter
-- Any unresolved question worth returning to
-- A theme or motif that appeared
-
-Do not include: small talk, meta-commentary about the AI, verbatim quotes longer than one sentence.
-
-Emphasis on brevity.
-
-Output only the journal content. No headers, no preamble.`;
-  const userPrompt = "Generate the journal entry.";
-  const apiKey = getApiKey();
-  const data = await invoke<{ answer: string }>("ask_claude_thread_proxy", {
-    request: {
-      apiKey,
-      model: COMPACTION_MODEL,
-      systemBlocks: [{ text: systemPrompt, cache_control: undefined }],
-      messages: [{ role: "user", content: userPrompt }],
-    },
-  });
-  return (data.answer ?? "").trim();
-}
-
-/** Returns the new reader profile (100–150 words). */
-export async function extractReaderProfile(params: {
-  journalsByTitle: Array<{ title: string; content: string }>;
-  existingProfile?: string | null;
-}): Promise<string> {
-  const { journalsByTitle, existingProfile } = params;
-  const journalsBlock = journalsByTitle
-    .map((j) => `## ${j.title}\n${j.content}`)
-    .join("\n\n");
-  const existingBlock = existingProfile?.trim()
-    ? `--- EXISTING PROFILE ---\n${existingProfile.trim()}\n--- END PROFILE ---`
-    : "";
-  const systemPrompt = `You are building a reader profile from reading journal entries across multiple books.
-
-The journals should use "you" for the human reader and "I" for Marginalia, but older text may blur speakers. When synthesizing, be strict: only attribute a habit, opinion, or question to "you" if the journal evidence supports it as the reader's side — not Marginalia's analysis reframed as the reader's.
-
---- JOURNALS ---
-${journalsBlock}
---- END JOURNALS ---
-
-${existingBlock ? `${existingBlock}\n\n` : ""}
-
-Write a concise reader profile (100-150 words), addressed in second person ("you") to the reader. Describe only patterns grounded in reader-attributable material (questions they asked, positions they took, reactions they showed). You may briefly note "we" or collaborative dynamics when journals show both speakers, without ascribing Marginalia's ideas to the reader.
-
-Capture:
-- Recurring intellectual interests and themes the reader actually engages with
-- How they approach texts (when evidenced)
-- Preferred depth or style when the reader signaled it
-- Patterns in what they highlight or question
-
-Rewrite the profile entirely — don't append. This is a living document, not a log.
-Output only the profile. No headers.`;
-  const userPrompt = "Generate the reader profile.";
-  const apiKey = getApiKey();
-  const data = await invoke<{ answer: string }>("ask_claude_thread_proxy", {
-    request: {
-      apiKey,
-      model: COMPACTION_MODEL,
-      systemBlocks: [{ text: systemPrompt, cache_control: undefined }],
-      messages: [{ role: "user", content: userPrompt }],
-    },
-  });
-  return (data.answer ?? "").trim();
-}
-
-const READER_FRONTMATTER_REGEX = /^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/;
-const THREADS_CLOSED_REGEX = /threads_closed:\s*(\d+)/;
-const LAST_PROFILE_REGEX = /last_profile_update:\s*([^\s\n]+)/;
-
-export function parseReaderMd(content: string): { threadsClosed: number; lastProfileUpdate: string; body: string } {
-  const match = content.match(READER_FRONTMATTER_REGEX);
-  if (!match) {
-    return { threadsClosed: 0, lastProfileUpdate: "", body: content };
-  }
-  const [, front, body] = match;
-  const threadsClosed = parseInt(front.match(THREADS_CLOSED_REGEX)?.[1] ?? "0", 10);
-  const lastProfileUpdate = front.match(LAST_PROFILE_REGEX)?.[1] ?? "";
-  return { threadsClosed, lastProfileUpdate, body: body.trim() };
-}
-
-export function formatReaderMd(params: { threadsClosed: number; body: string }): string {
-  const date = new Date().toISOString().slice(0, 10);
-  return `---
-threads_closed: ${params.threadsClosed}
-last_profile_update: ${date}
----
-
-${params.body}`;
-}
-
 // --- Phase 30.4: structured memory extraction ---
 
 export interface ExtractedMemoryItem {
@@ -203,6 +60,10 @@ function normalizeForSimilarity(s: string): string {
     .toLowerCase()
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function countWords(s: string): number {
+  return s.trim().split(/\s+/).filter(Boolean).length;
 }
 
 /** Simple normalized-string similarity (no embeddings). Returns true if a and b are near-duplicate. */
@@ -224,7 +85,7 @@ export function isNearDuplicate(a: string, b: string, threshold = 0.85): boolean
   return matchLen / shorter.length >= threshold;
 }
 
-/** Extract 2–5 discrete memory items from a thread via Haiku. Returns empty array on parse failure. */
+/** Extract 3–6 substantive memory items from a thread via Haiku. Returns empty array on parse failure. */
 export async function extractMemoryItems(params: {
   thread: Thread;
   messages: ThreadMessage[];
@@ -245,15 +106,17 @@ The transcript uses [user] for the human reader and [assistant] for Marginalia (
 
 ${threadBlock}
 
-Extract 2–5 discrete memory items worth keeping for future reading chats.
+Extract 3–6 discrete memory items worth keeping for future reading chats.
+Each item must be substantial, 50–100 words, and stand alone without extra context.
 Prioritize what the human actually contributed: questions they asked, opinions they stated, reactions they expressed, preferences they gave.
+Include key unresolved questions when they exist.
 You may also record a joint thread fact using "we" when both sides genuinely participated, but never credit the user with ideas that appear only in [assistant].
 
 Return ONLY a JSON array. No preamble, no markdown fences.
 
 [
   {
-    "content": "one factual sentence: correct attribution (see rules below)",
+    "content": "50-100 words of substantive prose with correct attribution (see rules below)",
     "type": "reading_identity|intellectual|emotional|preference|book_insight|book_question|book_reaction",
     "confidence": 0.5,
     "scope": "global|book|passage",
@@ -270,8 +133,12 @@ Attribution in "content" (be strict — this is the main quality bar):
 
 Other rules:
 - Only extract what is clearly evidenced — no inference beyond the transcript.
-- book_insight / book_question / book_reaction are always scope: book or passage
-- reading_identity / intellectual / preference / emotional can be scope: global
+- Scope discipline:
+  - book scope is the default. Use it for anything tied to this book's content, characters, arguments, or the reader's engagement with them.
+  - global scope has a high bar: only explicit reader statements that clearly generalize beyond any single book.
+  - when in doubt, use book scope or skip the item.
+- book_insight / book_question / book_reaction are always scope: book or passage.
+- reading_identity / intellectual / preference / emotional can be scope: global, but only under the high bar above.
 - confidence: 0.5 for a single observation, 0.7 if strongly stated, 0.9 only for explicit [user] statements`;
 
   const userPrompt = "Output only the JSON array of memory items.";
@@ -304,7 +171,13 @@ Other rules:
         });
       }
     }
-    return items;
+    return items
+      .map((i) => ({ ...i, content: i.content.trim() }))
+      .filter((i) => {
+        const words = countWords(i.content);
+        return words >= 50 && words <= 100;
+      })
+      .slice(0, 6);
   } catch (e) {
     console.warn("[extractMemoryItems] Parse or API error:", e);
     return [];
@@ -394,44 +267,6 @@ Other rules:
     console.warn("[extractMemoryItemsPartial] Parse or API error:", e);
     return [];
   }
-}
-
-/** Phase 30.1: Consolidate book memory when it exceeds ~600 words. Rewrites file to Reading Summary + Recent Threads. */
-export async function consolidateBookMemory(params: {
-  bookId: string;
-  bookTitle: string;
-  author: string;
-  currentMemory: string;
-  apiKey: string;
-}): Promise<string> {
-  const { bookTitle, author, currentMemory, apiKey } = params;
-  const systemPrompt = `You are maintaining a reading journal for a book.
-Below is the accumulated journal for: ${bookTitle} by ${author}
-
-${currentMemory}
-
-Entries should distinguish the human reader ("you") from Marginalia ("I" / Marginalia). When summarizing, preserve that split: do not collapse Marginalia's contributions into the reader's.
-
-Rewrite this into two sections:
-1. "## Reading Summary" — about 150 words. Durable synthesis of the reading arc using factual attribution:
-   - "you" / "your" only for themes, questions, and reactions that belong to the reader in the source material.
-   - "I" / "my" or "Marginalia" for insights or framings that came from the assistant side in the source.
-   - "we" / "our" when the journal shows genuine back-and-forth; never assign assistant-only points to "you".
-   If speaker attribution in an older fragment is ambiguous, prefer conservative wording or "the discussion touched on..." rather than guessing.
-2. "## Recent Threads" — copy the two most recent ## sections verbatim, unchanged.
-
-Output only the two sections. No preamble.`;
-
-  const userPrompt = "Output the two sections.";
-  const data = await invoke<{ answer: string }>("ask_claude_thread_proxy", {
-    request: {
-      apiKey,
-      model: COMPACTION_MODEL,
-      systemBlocks: [{ text: systemPrompt, cache_control: undefined }],
-      messages: [{ role: "user", content: userPrompt }],
-    },
-  });
-  return (data.answer ?? "").trim();
 }
 
 /** Persist extracted items: reinforce existing near-duplicate or save new with anchors. Fire-and-forget. */
