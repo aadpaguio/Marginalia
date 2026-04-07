@@ -1,0 +1,9 @@
+/Users/arnaldpaguio/Documents/Portofolio /Marginalia/target/debug/deps/ort_sys-debf040532af01e5.d: /Users/arnaldpaguio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ort-sys-2.0.0-rc.11/src/lib.rs /Users/arnaldpaguio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ort-sys-2.0.0-rc.11/src/internal/mod.rs /Users/arnaldpaguio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ort-sys-2.0.0-rc.11/src/internal/dirs.rs /Users/arnaldpaguio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ort-sys-2.0.0-rc.11/src/stub.rs /Users/arnaldpaguio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ort-sys-2.0.0-rc.11/src/version.rs
+
+/Users/arnaldpaguio/Documents/Portofolio /Marginalia/target/debug/deps/libort_sys-debf040532af01e5.rmeta: /Users/arnaldpaguio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ort-sys-2.0.0-rc.11/src/lib.rs /Users/arnaldpaguio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ort-sys-2.0.0-rc.11/src/internal/mod.rs /Users/arnaldpaguio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ort-sys-2.0.0-rc.11/src/internal/dirs.rs /Users/arnaldpaguio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ort-sys-2.0.0-rc.11/src/stub.rs /Users/arnaldpaguio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ort-sys-2.0.0-rc.11/src/version.rs
+
+/Users/arnaldpaguio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ort-sys-2.0.0-rc.11/src/lib.rs:
+/Users/arnaldpaguio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ort-sys-2.0.0-rc.11/src/internal/mod.rs:
+/Users/arnaldpaguio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ort-sys-2.0.0-rc.11/src/internal/dirs.rs:
+/Users/arnaldpaguio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ort-sys-2.0.0-rc.11/src/stub.rs:
+/Users/arnaldpaguio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ort-sys-2.0.0-rc.11/src/version.rs:

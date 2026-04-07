@@ -1,5 +1,6 @@
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::Mutex;
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
@@ -29,6 +30,10 @@ fn read_file_base64(path: String) -> Result<String, String> {
 
 struct DbState {
     db_path: PathBuf,
+}
+
+struct EmbeddingState {
+    model: Mutex<Option<TextEmbedding>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -1427,11 +1432,16 @@ fn chrono_like_now() -> i64 {
         .unwrap_or(0)
 }
 
-fn embed_text(text: &str) -> Option<Vec<f32>> {
-    let mut model = TextEmbedding::try_new(
-        InitOptions::new(EmbeddingModel::BGESmallENV15Q).with_show_download_progress(false),
-    )
-    .ok()?;
+fn embed_text(state: &EmbeddingState, text: &str) -> Option<Vec<f32>> {
+    let mut guard = state.model.lock().ok()?;
+    if guard.is_none() {
+        let init = TextEmbedding::try_new(
+            InitOptions::new(EmbeddingModel::BGESmallENV15Q).with_show_download_progress(false),
+        )
+        .ok()?;
+        *guard = Some(init);
+    }
+    let model = guard.as_mut()?;
     let docs = vec![text];
     let mut out = model.embed(docs, None).ok()?;
     out.pop()
@@ -1473,8 +1483,13 @@ fn cosine_similarity(a: &[f32], b: &[f32]) -> f32 {
     dot / (na.sqrt() * nb.sqrt())
 }
 
-fn upsert_memory_embedding(conn: &Connection, memory_id: &str, content: &str) -> Result<(), String> {
-    let embedding = match embed_text(content) {
+fn upsert_memory_embedding(
+    embedding_state: &EmbeddingState,
+    conn: &Connection,
+    memory_id: &str,
+    content: &str,
+) -> Result<(), String> {
+    let embedding = match embed_text(embedding_state, content) {
         Some(v) => v,
         None => return Ok(()),
     };
@@ -1538,6 +1553,7 @@ fn save_cover_image(
 #[tauri::command]
 fn memory_save_item(
     state: State<DbState>,
+    embedding_state: State<EmbeddingState>,
     item: serde_json::Value,
     anchors: Vec<serde_json::Value>,
 ) -> Result<String, String> {
@@ -1603,7 +1619,7 @@ fn memory_save_item(
             .unwrap_or(true)
     });
     if is_global {
-        let _ = upsert_memory_embedding(&conn, &id, &item.content);
+        let _ = upsert_memory_embedding(&embedding_state, &conn, &id, &item.content);
     }
     Ok(id)
 }
@@ -1663,12 +1679,13 @@ fn memory_get_items_global(state: State<DbState>) -> Result<Vec<MemoryItemWithAn
 #[tauri::command]
 fn memory_get_items_global_for_query(
     state: State<DbState>,
+    embedding_state: State<EmbeddingState>,
     query: String,
     limit: Option<i64>,
 ) -> Result<Vec<MemoryItemWithAnchors>, String> {
     let conn = open_db(&state)?;
     let capped = limit.unwrap_or(5).clamp(1, 10) as usize;
-    let query_embedding = match embed_text(query.trim()) {
+    let query_embedding = match embed_text(&embedding_state, query.trim()) {
         Some(v) => v,
         None => {
             let mut fallback_stmt = conn
@@ -2409,6 +2426,18 @@ pub fn run() {
             let db_path = marginalia_dir.join("marginalia.db");
             init_db(&db_path)?;
             app.manage(DbState { db_path });
+            app.manage(EmbeddingState {
+                model: Mutex::new(None),
+            });
+            let app_handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                let embedding_state = app_handle.state::<EmbeddingState>();
+                if embed_text(&embedding_state, "warmup marginalia memory embeddings").is_some() {
+                    eprintln!("[embeddings] warm-up complete");
+                } else {
+                    eprintln!("[embeddings] warm-up failed; lazy init remains enabled");
+                }
+            });
 
             #[cfg(debug_assertions)]
             {
