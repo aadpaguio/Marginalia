@@ -16,6 +16,10 @@ import {
 
 const COMPACTION_MODEL = "claude-haiku-4-5-20251001";
 
+/** Filter for full-thread archive extraction: relaxed so short model outputs still persist (was 50–100). */
+const MEMORY_ITEM_ARCHIVE_MIN_WORDS = 12;
+const MEMORY_ITEM_ARCHIVE_MAX_WORDS = 120;
+
 function formatThreadForPrompt(messages: ThreadMessage[]): string {
   return messages
     .map((m) => `[${m.role}]\n${m.content}`)
@@ -107,7 +111,7 @@ The transcript uses [user] for the human reader and [assistant] for Marginalia (
 ${threadBlock}
 
 Extract 3–6 discrete memory items worth keeping for future reading chats.
-Each item must be substantial, 50–100 words, and stand alone without extra context.
+Each item must stand alone: aim for ~20–80 words when the transcript supports it; never fluff—short grounded items (roughly 12+ words) are fine if that is all the discussion warrants.
 Prioritize what the human actually contributed: questions they asked, opinions they stated, reactions they expressed, preferences they gave.
 Include key unresolved questions when they exist.
 You may also record a joint thread fact using "we" when both sides genuinely participated, but never credit the user with ideas that appear only in [assistant].
@@ -116,7 +120,7 @@ Return ONLY a JSON array. No preamble, no markdown fences.
 
 [
   {
-    "content": "50-100 words of substantive prose with correct attribution (see rules below)",
+    "content": "Substantive prose with correct attribution (see rules below); ~20–80 words typical, minimum ~12 when the source is thin.",
     "type": "reading_identity|intellectual|emotional|preference|book_insight|book_question|book_reaction",
     "confidence": 0.5,
     "scope": "global|book|passage",
@@ -175,7 +179,7 @@ Other rules:
       .map((i) => ({ ...i, content: i.content.trim() }))
       .filter((i) => {
         const words = countWords(i.content);
-        return words >= 50 && words <= 100;
+        return words >= MEMORY_ITEM_ARCHIVE_MIN_WORDS && words <= MEMORY_ITEM_ARCHIVE_MAX_WORDS;
       })
       .slice(0, 6);
   } catch (e) {
