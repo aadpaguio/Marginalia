@@ -329,7 +329,7 @@ describe("Phase 27 — assembleThreadContext (blind model posture)", () => {
     expect(content).toContain("Can you unpack this?");
   });
 
-  it("Phase 30.5: injects memory items as first user message when memoryItems provided", () => {
+  it("Phase 30 structured memory: injects --- MEMORY --- system block when memoryItems provided", () => {
     const result = assembleThreadContext({
       ...baseParams,
       memoryItems: [
@@ -337,6 +337,7 @@ describe("Phase 27 — assembleThreadContext (blind model posture)", () => {
           id: "mi-1",
           content: "You tend to distrust narrators who over-justify.",
           type: "intellectual",
+          scope: "global",
           confidence: 0.82,
           observationCount: 4,
           source: "compaction",
@@ -346,22 +347,28 @@ describe("Phase 27 — assembleThreadContext (blind model posture)", () => {
         },
       ],
     });
-    expect(result.messages.length).toBeGreaterThanOrEqual(2);
-    const first = result.messages[0];
-    expect(first.role).toBe("user");
-    expect(first.content).toContain("[MEMORY CONTEXT]");
-    expect(first.content).toContain("[/MEMORY CONTEXT]");
-    expect(first.content).toContain("You tend to distrust narrators");
-    expect(first.content).toContain("- You tend to distrust narrators");
+    expect(result.systemBlocks.length).toBeGreaterThanOrEqual(2);
+    const memBlock = result.systemBlocks.find((b) => b.text.startsWith("--- MEMORY ---\n"));
+    expect(memBlock).toBeDefined();
+    expect(memBlock!.text).toContain("implicitly by default");
+    expect(memBlock!.text).toContain("type: intellectual");
+    expect(memBlock!.text).toContain("scope: global");
+    expect(memBlock!.text).toContain("usageMode: implicit");
+    expect(memBlock!.text).toContain("content: You tend to distrust narrators who over-justify.");
+    expect(result.messages).toHaveLength(1);
+    const userTurn = result.messages[0];
+    expect(userTurn.role).toBe("user");
+    expect(userTurn.content as string).not.toContain("[MEMORY CONTEXT]");
   });
 
-  it("Phase 30.5: no memory block when memoryItems empty or undefined", () => {
+  it("Phase 30 structured memory: no MEMORY system block when memoryItems empty or undefined", () => {
     const result = assembleThreadContext(baseParams);
     expect(result.messages).toHaveLength(1);
+    expect(result.systemBlocks.some((b) => b.text.startsWith("--- MEMORY ---\n"))).toBe(false);
     expect((result.messages[0].content as string)).not.toContain("[MEMORY CONTEXT]");
   });
 
-  it("Phase 30.5: first turn with memoryItems -> memory block present", () => {
+  it("Phase 30 structured memory: first turn with memoryItems -> MEMORY system block only (no extra user message)", () => {
     const result = assembleThreadContext({
       ...baseParams,
       messages: [],
@@ -370,6 +377,7 @@ describe("Phase 27 — assembleThreadContext (blind model posture)", () => {
           id: "mi-1",
           content: "You prefer concise answers.",
           type: "preference",
+          scope: "global",
           confidence: 0.8,
           observationCount: 2,
           source: "compaction",
@@ -379,10 +387,37 @@ describe("Phase 27 — assembleThreadContext (blind model posture)", () => {
         },
       ],
     });
-    expect(result.messages.length).toBeGreaterThanOrEqual(2);
-    const first = result.messages[0];
-    expect(first.content).toContain("[MEMORY CONTEXT]");
-    expect(first.content).toContain("You prefer concise answers.");
+    expect(result.messages).toHaveLength(1);
+    const memBlock = result.systemBlocks.find((b) => b.text.startsWith("--- MEMORY ---\n"));
+    expect(memBlock?.text).toContain("You prefer concise answers.");
+    expect(memBlock?.text).toContain("scope: global");
+    expect(memBlock?.text).toContain("type: preference");
+  });
+
+  it("Phase 30 structured memory: sanitizes conversational phrasing before system injection", () => {
+    const result = assembleThreadContext({
+      ...baseParams,
+      memoryItems: [
+        {
+          id: "mi-1",
+          content:
+            "You asked before about grounding abstract ideas. You prefer sensory, concrete examples when reading philosophy.",
+          type: "preference",
+          scope: "global",
+          confidence: 0.85,
+          observationCount: 3,
+          source: "compaction",
+          createdAt: 0,
+          lastReinforcedAt: 0,
+          anchors: [],
+        },
+      ],
+    });
+    const memBlock = result.systemBlocks.find((b) => b.text.startsWith("--- MEMORY ---\n"));
+    expect(memBlock?.text).toMatch(/sensory, concrete examples/i);
+    const contentLine = memBlock!.text.split("\n").find((l) => l.trimStart().startsWith("content:"));
+    expect(contentLine).toBeDefined();
+    expect(contentLine!.toLowerCase()).not.toContain("you asked before");
   });
 
   it("Phase 30.5: second turn without memoryItems -> memory block absent", () => {
@@ -557,8 +592,9 @@ describe("Phase 27 — assembleThreadContext (blind model posture)", () => {
         memoryItems: [
           {
             id: "mi-1",
-            content: "Pref.",
+            content: "You generally prefer short, direct answers when reading.",
             type: "preference",
+            scope: "global",
             confidence: 0.5,
             observationCount: 1,
             source: "compaction",

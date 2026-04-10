@@ -10,6 +10,7 @@ const memory: MemoryItem = {
   id: "mi-1",
   content: "Reader often compares narrators across books.",
   type: "reading_identity",
+  scope: "global",
   confidence: 0.8,
   observationCount: 2,
   source: "compaction",

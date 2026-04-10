@@ -255,6 +255,10 @@ struct MemoryItemInput {
     content: String,
     #[serde(rename = "type")]
     type_: String,
+    #[serde(default)]
+    scope: Option<String>,
+    #[serde(default)]
+    usage_mode: Option<String>,
     confidence: Option<f64>,
     observation_count: Option<i64>,
     source: Option<String>,
@@ -293,6 +297,9 @@ struct MemoryItemWithAnchors {
     content: String,
     #[serde(rename = "type")]
     type_: String,
+    scope: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    usage_mode: Option<String>,
     confidence: f64,
     observation_count: i64,
     source: String,
@@ -511,6 +518,52 @@ fn init_db(db_path: &Path) -> Result<(), String> {
     let _ = conn.execute("ALTER TABLE threads ADD COLUMN flushed_at INTEGER", ());
     let _ = conn.execute("ALTER TABLE threads ADD COLUMN clean_exchange TEXT", ());
 
+    // Migration: memory item scope + usage metadata (structured prompt injection)
+    let _ = conn.execute("ALTER TABLE memory_items ADD COLUMN scope TEXT", ());
+    let _ = conn.execute("ALTER TABLE memory_items ADD COLUMN usage_mode TEXT", ());
+    backfill_memory_item_scope(&conn)?;
+
+    Ok(())
+}
+
+fn normalize_memory_scope(s: &str) -> Option<String> {
+    match s.trim() {
+        "global" | "book" | "passage" => Some(s.trim().to_string()),
+        _ => None,
+    }
+}
+
+fn derive_memory_scope_from_anchors_json(anchors: &[serde_json::Value]) -> String {
+    let has_book = anchors.iter().any(|a| {
+        a.get("bookId")
+            .and_then(|v| v.as_str())
+            .map(|s| !s.trim().is_empty())
+            .unwrap_or(false)
+    });
+    if has_book {
+        "book".to_string()
+    } else {
+        "global".to_string()
+    }
+}
+
+/// Backfill scope for legacy rows: book when any anchor has book_id, else global.
+fn backfill_memory_item_scope(conn: &Connection) -> Result<(), String> {
+    conn.execute(
+        "UPDATE memory_items SET scope = 'book'
+         WHERE (scope IS NULL OR scope = '')
+           AND id IN (
+             SELECT memory_id FROM memory_anchors
+             WHERE book_id IS NOT NULL AND TRIM(book_id) != ''
+           )",
+        [],
+    )
+    .map_err(|e| e.to_string())?;
+    conn.execute(
+        "UPDATE memory_items SET scope = 'global' WHERE scope IS NULL OR scope = ''",
+        [],
+    )
+    .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -1572,11 +1625,28 @@ fn memory_save_item(
     let observation_count = item.observation_count.unwrap_or(1);
     let created_at = item.created_at.unwrap_or(now);
     let last_reinforced_at = item.last_reinforced_at.unwrap_or(now);
+    let scope_final = item
+        .scope
+        .as_ref()
+        .and_then(|s| normalize_memory_scope(s))
+        .unwrap_or_else(|| derive_memory_scope_from_anchors_json(&anchors));
+    let usage_mode_out = item
+        .usage_mode
+        .as_ref()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .and_then(|s| {
+            if s == "implicit" || s == "callout_ok" {
+                Some(s)
+            } else {
+                None
+            }
+        });
 
     let conn = open_db(&state)?;
     conn.execute(
-        "INSERT INTO memory_items (id, content, type, confidence, observation_count, source, created_at, last_reinforced_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+        "INSERT INTO memory_items (id, content, type, confidence, observation_count, source, created_at, last_reinforced_at, scope, usage_mode)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
         params![
             id,
             item.content,
@@ -1586,6 +1656,8 @@ fn memory_save_item(
             source,
             created_at,
             last_reinforced_at,
+            scope_final,
+            usage_mode_out,
         ],
     )
     .map_err(|e| e.to_string())?;
@@ -1788,7 +1860,8 @@ fn memory_get_thread_messages(state: State<DbState>, thread_id: String) -> Resul
 fn get_memory_item_with_anchors(conn: &Connection, id: &str) -> Result<Option<MemoryItemWithAnchors>, String> {
     let item_row = conn
         .query_row(
-            "SELECT id, content, type, confidence, observation_count, source, created_at, last_reinforced_at
+            "SELECT id, content, type, confidence, observation_count, source, created_at, last_reinforced_at,
+                    COALESCE(NULLIF(TRIM(scope), ''), 'global'), usage_mode
              FROM memory_items WHERE id = ?1",
             params![id],
             |row| {
@@ -1801,16 +1874,28 @@ fn get_memory_item_with_anchors(conn: &Connection, id: &str) -> Result<Option<Me
                     row.get::<_, String>(5)?,
                     row.get::<_, i64>(6)?,
                     row.get::<_, i64>(7)?,
+                    row.get::<_, String>(8)?,
+                    row.get::<_, Option<String>>(9)?,
                 ))
             },
         )
         .optional()
         .map_err(|e| e.to_string())?;
-    let (id_s, content, type_, confidence, observation_count, source, created_at, last_reinforced_at) =
-        match item_row {
-            Some(r) => r,
-            None => return Ok(None),
-        };
+    let (
+        id_s,
+        content,
+        type_,
+        confidence,
+        observation_count,
+        source,
+        created_at,
+        last_reinforced_at,
+        scope,
+        usage_mode,
+    ) = match item_row {
+        Some(r) => r,
+        None => return Ok(None),
+    };
 
     let mut stmt = conn
         .prepare("SELECT id, memory_id, book_id, highlight_id, thread_id, cfi, passage_text FROM memory_anchors WHERE memory_id = ?1")
@@ -1835,6 +1920,8 @@ fn get_memory_item_with_anchors(conn: &Connection, id: &str) -> Result<Option<Me
         id: id_s,
         content,
         type_,
+        scope,
+        usage_mode,
         confidence,
         observation_count,
         source,

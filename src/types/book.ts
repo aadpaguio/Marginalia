@@ -108,6 +108,11 @@ export type MemoryItemType =
 
 export type MemoryItemSource = "compaction" | "user_explicit" | "extracted";
 
+export type MemoryScope = "global" | "book" | "passage";
+
+/** implicit = shape answer invisibly; callout_ok = may reference prior thread when natural. */
+export type MemoryUsageMode = "implicit" | "callout_ok";
+
 export interface MemoryAnchor {
   id: string;
   memoryId: string;
@@ -122,6 +127,8 @@ export interface MemoryItem {
   id: string;
   content: string;
   type: MemoryItemType;
+  scope: MemoryScope;
+  usageMode?: MemoryUsageMode;
   confidence: number;
   observationCount: number;
   source: MemoryItemSource;

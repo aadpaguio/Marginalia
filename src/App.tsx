@@ -2661,7 +2661,14 @@ function App() {
                 {memoryTransparencyItems.map((item) => (
                   <div key={item.id} style={{ border: `1px solid ${chrome.panelBorder}`, borderRadius: 8, padding: 10 }}>
                     <div style={{ fontSize: 11, color: chrome.muted, marginBottom: 6 }}>
-                      {item.type} · conf {item.confidence.toFixed(2)} · seen {item.observationCount}x
+                      {item.type}
+                      {" · "}
+                      {item.scope}
+                      {item.usageMode ? ` · ${item.usageMode}` : ""}
+                      {" · conf "}
+                      {item.confidence.toFixed(2)}
+                      {" · seen "}
+                      {item.observationCount}x
                     </div>
                     <div style={{ fontSize: 13, lineHeight: 1.45, whiteSpace: "pre-wrap" }}>{item.content}</div>
                     <div style={{ marginTop: 6, fontSize: 11, color: chrome.muted }}>
