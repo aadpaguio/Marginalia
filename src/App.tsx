@@ -14,6 +14,7 @@ import {
   dbArchiveThread,
   dbDeleteThread,
   dbAttachHighlightToThread,
+  dbIncrementArchiveCounter,
   dbCreateThread,
   dbGetHighlightsForThread,
   dbGetStandaloneHighlights,
@@ -21,6 +22,7 @@ import {
   dbGetThreads,
   dbMarkThreadFlushed,
   dbSaveThreadMessage,
+  dbSetThreadCleanExchange,
   dbUpdateThreadTitle,
   dbDeleteBook,
   dbDeleteBookmark,
@@ -37,29 +39,22 @@ import {
   dbClearAllScanData,
   dbGetSectionSummaries,
   dbSetBookScanStatus,
-  memoryEnsureDirs,
-  memoryListBooks,
-  memoryReadBook,
-  memoryReadReader,
-  memoryWriteBook,
-  memoryWriteReader,
+  memoryGetItemsForBook,
+  memoryGetItemsGlobal,
+  memoryGetThreadMessages,
+  memoryRunCrossBookSynthesisStub,
   type StoredBookmark,
   type StoredBook,
   type SectionSummary,
 } from "@/services/db";
 import { runSmartScan } from "@/services/smartScan";
 import {
-  compactThreadToJournal,
-  consolidateBookMemory,
-  extractChapterRange,
   extractMemoryItems,
   extractMemoryItemsPartial,
-  extractReaderProfile,
-  formatReaderMd,
-  parseReaderMd,
   persistExtractedMemoryItems,
 } from "@/services/compaction";
 import { askClaudeThread, generateThreadTitle, loadRelevantMemoryItems, type GetContextResult } from "@/services/claude";
+import { getFirstTurnMemoryPlan, hasUserHistory, shouldAcceptPreloadResult } from "@/services/threadMemory";
 import { ArrowRight, ArrowUp, BookMarked, Globe, LogOut, MoreVertical, NotepadText, PanelLeft, PanelLeftClose, Pencil, ScanText, Settings, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -128,6 +123,22 @@ function metadataAuthor(meta: { author?: unknown } | null | undefined, fallback:
     return joined || fallback;
   }
   return fallback;
+}
+
+function cleanThreadMessagesForArchive(messages: ThreadMessage[]): string {
+  return messages
+    .map((m) => {
+      const raw = m.content ?? "";
+      const withoutMemoryBlocks = raw
+        .replace(/\[MEMORY CONTEXT\][\s\S]*?\[\/MEMORY CONTEXT\]/g, "")
+        .replace(/\(Unknown tool\)/g, "")
+        .replace(/\(Smart Scan suggestion surfaced to user\)/g, "")
+        .trim();
+      if (!withoutMemoryBlocks) return null;
+      return `${m.role === "user" ? "User" : "Assistant"}: ${withoutMemoryBlocks}`;
+    })
+    .filter((line): line is string => Boolean(line))
+    .join("\n\n");
 }
 
 function formatBookmarkTimestamp(timestamp: number): string {
@@ -457,12 +468,16 @@ function App() {
   const [threadChatInput, setThreadChatInput] = useState("");
   const [threadChatAsking, setThreadChatAsking] = useState(false);
   const [threadChatError, setThreadChatError] = useState<string | null>(null);
+  const [isMemoryTransparencyOpen, setIsMemoryTransparencyOpen] = useState(false);
+  const [memoryTransparencyItems, setMemoryTransparencyItems] = useState<MemoryItem[]>([]);
+  const [memoryTransparencyLoading, setMemoryTransparencyLoading] = useState(false);
   /** When the model is running a tool, show this message in chat; null when thinking or done. */
   const [pendingToolMessage, setPendingToolMessage] = useState<string | null>(null);
   const TOOL_CHAT_LABELS: Record<string, string> = {
     get_context: "Reading nearby text…",
     get_section_summary: "Fetching section summary…",
     get_section_text: "Loading section text…",
+    get_past_thread: "Opening archived thread…",
     suggest_smart_scan: "Suggesting Smart Scan…",
   };
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
@@ -857,10 +872,6 @@ function App() {
     void refreshLibrary();
   }, []);
 
-  useEffect(() => {
-    void memoryEnsureDirs();
-  }, []);
-
   /* Auto-scroll thread messages to bottom when new content appears. */
   useEffect(() => {
     const el = threadChatMessagesScrollRef.current;
@@ -903,6 +914,8 @@ function App() {
       return;
     }
     setThreadChatError(null);
+    setThreadInitialMemoryItems([]);
+    setThreadMemoryLoadedForThreadId(null);
     workingContextRef.current = [];
     const threadId = activeThreadId;
     activeThreadIdRef.current = threadId;
@@ -912,12 +925,10 @@ function App() {
     ]).then(([messages, threadHighlights]) => {
       setActiveThreadMessages(messages);
       setActiveThreadHighlights(threadHighlights);
-      const seedText =
-        messages.find((m) => m.role === "user")?.content?.trim() ||
-        threads.find((t) => t.id === threadId)?.title?.trim() ||
-        "What can you tell me about the passages I've highlighted?";
+      if (!hasUserHistory(messages)) return;
+      const seedText = messages.find((m) => m.role === "user")?.content?.trim() ?? "";
       loadRelevantMemoryItems(currentBookId, seedText).then((items) => {
-        if (activeThreadIdRef.current === threadId) {
+        if (shouldAcceptPreloadResult(activeThreadIdRef.current, threadId)) {
           setThreadInitialMemoryItems(items);
           setThreadMemoryLoadedForThreadId(threadId);
         }
@@ -1224,92 +1235,25 @@ function App() {
   }) => {
     const { threadId, threadTitle, threadMessages, bookId, bookTitle, author, thread, attachedHighlights } = params;
     if (threadMessages.length === 0) return;
+    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+    if (!apiKey || !thread || !attachedHighlights) return;
     try {
-      const currentBook = (await memoryReadBook(bookId)) ?? "";
-      const entry = await compactThreadToJournal({
+      const items = await extractMemoryItems({
+        thread: { ...thread, id: threadId, bookId, title: threadTitle ?? undefined, createdAt: 0, updatedAt: 0, archived: false },
+        messages: threadMessages,
+        attachedHighlights,
+        bookId,
         bookTitle,
         author,
-        threadTitle: threadTitle ?? "Discussion",
-        threadDate: new Date().toISOString().slice(0, 10),
-        threadMessages,
-        existingMemory: currentBook || null,
+        apiKey,
       });
-      if (!entry) return;
-      const chapterRange = attachedHighlights ? extractChapterRange(attachedHighlights) : "";
-      const chapterTag = chapterRange ? `chapters: ${chapterRange}\n\n` : "";
-      const newSection = `\n\n## ${threadTitle ?? "Discussion"} — ${new Date().toISOString().slice(0, 10)}\n${chapterTag}${entry}`;
-      let newBookContent = currentBook + newSection;
-      await memoryWriteBook(bookId, newBookContent);
-
-      const wordCount = newBookContent.trim().split(/\s+/).filter(Boolean).length;
-      if (wordCount > 600) {
-        const apiKeyForConsolidation = import.meta.env.VITE_ANTHROPIC_API_KEY;
-        if (apiKeyForConsolidation) {
-          try {
-            const consolidated = await consolidateBookMemory({
-              bookId,
-              bookTitle,
-              author,
-              currentMemory: newBookContent,
-              apiKey: apiKeyForConsolidation,
-            });
-            if (consolidated.trim()) {
-              newBookContent = consolidated.trim();
-              await memoryWriteBook(bookId, newBookContent);
-            }
-          } catch (e) {
-            console.warn("[Compaction] consolidateBookMemory:", e);
-          }
-        }
-      }
-
-      const readerContent = (await memoryReadReader()) ?? "";
-      const { threadsClosed, body } = parseReaderMd(readerContent);
-      const nextClosed = threadsClosed + 1;
-      if (nextClosed % 5 === 0) {
-        const bookIds = await memoryListBooks();
-        const journalsByTitle = await Promise.all(
-          bookIds.map(async (id) => {
-            const content = await memoryReadBook(id);
-            const book = libraryBooks.find((b) => b.id === id);
-            return { title: book?.title ?? id, content: content ?? "" };
-          })
-        );
-        const newProfile = await extractReaderProfile({
-          journalsByTitle,
-          existingProfile: body,
+      if (items.length > 0) {
+        await persistExtractedMemoryItems({
+          items,
+          threadId,
+          bookId,
+          attachedHighlights,
         });
-        await memoryWriteReader(formatReaderMd({ threadsClosed: nextClosed, body: newProfile }));
-      } else {
-        await memoryWriteReader(formatReaderMd({ threadsClosed: nextClosed, body }));
-      }
-
-      // Phase 30.4: extract memory items fire-and-forget (non-blocking)
-      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-      if (apiKey && thread && attachedHighlights) {
-        void (async () => {
-          try {
-            const items = await extractMemoryItems({
-              thread: { ...thread, id: threadId, bookId, title: threadTitle ?? undefined, createdAt: 0, updatedAt: 0, archived: false },
-              messages: threadMessages,
-              attachedHighlights,
-              bookId,
-              bookTitle,
-              author,
-              apiKey,
-            });
-            if (items.length > 0) {
-              await persistExtractedMemoryItems({
-                items,
-                threadId,
-                bookId,
-                attachedHighlights,
-              });
-            }
-          } catch (e) {
-            console.warn("[Compaction] extractMemoryItems:", e);
-          }
-        })();
       }
     } catch (e) {
       console.error("[Compaction]", e);
@@ -1329,6 +1273,8 @@ function App() {
           dbGetThreadMessages(threadId),
           dbGetHighlightsForThread(threadId),
         ]);
+        const cleanExchange = cleanThreadMessagesForArchive(msgs);
+        await dbSetThreadCleanExchange(threadId, cleanExchange);
         await runCompactionForThread({
           threadId,
           threadTitle: thread.title ?? "Discussion",
@@ -1341,6 +1287,12 @@ function App() {
         });
       }
       await dbArchiveThread(threadId);
+      const archivedCount = await dbIncrementArchiveCounter();
+      if (archivedCount % 5 === 0) {
+        void memoryRunCrossBookSynthesisStub().catch((e) =>
+          console.warn("[Memory synthesis stub]", e)
+        );
+      }
       setThreads((prev) => prev.filter((t) => t.id !== threadId));
       if (activeThreadId === threadId) setActiveThreadId(null);
       setArchiveToast("Thread archived");
@@ -1381,6 +1333,7 @@ function App() {
   const handleThreadChatSend = async () => {
     const userMessage = threadChatInput.trim() || "What can you tell me about the passages I've highlighted?";
     if (!activeThreadId || !currentBookId || !bookDoc || threadChatAsking) return;
+    activeThreadIdRef.current = activeThreadId;
     const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
     if (!apiKey) {
       setThreadChatError("Add VITE_ANTHROPIC_API_KEY to .env and restart.");
@@ -1397,13 +1350,22 @@ function App() {
       revealIntervalRef.current = null;
     }
     const isFirstTurn = activeThreadMessages.length === 0;
-    const memoryItemsForTurn =
-      isFirstTurn && threadInitialMemoryItems.length > 0 ? threadInitialMemoryItems : undefined;
+    const memoryPlan = getFirstTurnMemoryPlan({
+      isFirstTurn,
+      activeThreadId,
+      loadedForThreadId: threadMemoryLoadedForThreadId,
+      preloadedItems: threadInitialMemoryItems,
+    });
+    let memoryItemsForTurn = memoryPlan.mode === "use_preloaded" ? memoryPlan.items : undefined;
+    if (memoryPlan.mode === "fetch_inline") {
+      const loaded = await loadRelevantMemoryItems(currentBookId, userMessage);
+      if (shouldAcceptPreloadResult(activeThreadIdRef.current, activeThreadId)) {
+        setThreadInitialMemoryItems(loaded);
+        setThreadMemoryLoadedForThreadId(activeThreadId);
+      }
+      memoryItemsForTurn = loaded;
+    }
     try {
-      const [bookMemory, readerProfile] = await Promise.all([
-        memoryReadBook(currentBookId),
-        memoryReadReader(),
-      ]);
       const result = await askClaudeThread(
         {
           threadId: activeThreadId,
@@ -1420,8 +1382,8 @@ function App() {
           bookTitle: toDisplayString(bookDoc.metadata?.title, "Book"),
           author: metadataAuthor(bookDoc.metadata, "Unknown"),
           bookId: currentBookId,
-          bookMemory: bookMemory ?? undefined,
-          readerProfile: readerProfile ?? undefined,
+          bookMemory: undefined,
+          readerProfile: undefined,
           memoryItems: memoryItemsForTurn,
           workingContext: workingContextRef.current.join("\n\n---\n\n"),
           bookSummary: bookSummary ?? undefined,
@@ -1442,6 +1404,7 @@ function App() {
               anchorUnresolved: true,
             })),
           getSectionTextByHref,
+          getPastThreadMessages: (threadId: string) => memoryGetThreadMessages(threadId),
           onToolCall: (toolName) =>
             setPendingToolMessage(TOOL_CHAT_LABELS[toolName] ?? "Working…"),
           onContextFetched: (text: string) => {
@@ -1575,6 +1538,29 @@ function App() {
     });
   };
 
+  const openMemoryTransparency = async () => {
+    if (!currentBookId) return;
+    setIsMemoryTransparencyOpen(true);
+    setMemoryTransparencyLoading(true);
+    try {
+      const [bookItems, globalItems] = await Promise.all([
+        memoryGetItemsForBook(currentBookId),
+        memoryGetItemsGlobal(),
+      ]);
+      const seen = new Set<string>();
+      const merged = [...bookItems, ...globalItems]
+        .filter((item) => {
+          if (seen.has(item.id)) return false;
+          seen.add(item.id);
+          return true;
+        })
+        .sort((a, b) => b.lastReinforcedAt - a.lastReinforcedAt);
+      setMemoryTransparencyItems(merged);
+    } finally {
+      setMemoryTransparencyLoading(false);
+    }
+  };
+
   if (bookDoc) {
     return (
       <div
@@ -1668,6 +1654,15 @@ function App() {
                   aria-label="Settings"
                 >
                   <Settings size={18} />
+                </button>
+                <button
+                  type="button"
+                  className={`${tocPanelStyles.actionButton} ${isMemoryTransparencyOpen ? tocPanelStyles.actionButtonActive : ""}`}
+                  onClick={() => void openMemoryTransparency()}
+                  title="Memory transparency"
+                  aria-label="Memory transparency"
+                >
+                  <BookMarked size={18} />
                 </button>
                 <button
                   type="button"
@@ -2293,7 +2288,11 @@ function App() {
                       threads.map((thread) => (
                         <div
                           key={thread.id}
-                          className="thread-list-item"
+                          className={
+                            threadMenuOpenId === thread.id
+                              ? "thread-list-item thread-list-item-menu-open"
+                              : "thread-list-item"
+                          }
                           style={{ marginBottom: "var(--space-2)" }}
                         >
                           <div
@@ -2623,6 +2622,56 @@ function App() {
               )}
             </aside>
           </>
+        )}
+        {isMemoryTransparencyOpen && (
+          <div
+            style={{
+              position: "absolute",
+              right: 24,
+              top: 72,
+              width: 440,
+              maxHeight: "70vh",
+              overflow: "auto",
+              zIndex: 140,
+              borderRadius: 12,
+              border: `1px solid ${chrome.panelBorder}`,
+              background: chrome.panelBg,
+              color: chrome.appFg,
+              boxShadow: "0 6px 24px rgba(0,0,0,0.18)",
+              padding: 14,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <strong>Memory Transparency</strong>
+              <button
+                type="button"
+                onClick={() => setIsMemoryTransparencyOpen(false)}
+                aria-label="Close memory transparency"
+                style={{ border: "none", background: "transparent", cursor: "pointer", color: chrome.muted }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+            {memoryTransparencyLoading ? (
+              <div style={{ fontSize: 13, color: chrome.muted }}>Loading memory items…</div>
+            ) : memoryTransparencyItems.length === 0 ? (
+              <div style={{ fontSize: 13, color: chrome.muted }}>No memory items yet.</div>
+            ) : (
+              <div style={{ display: "grid", gap: 10 }}>
+                {memoryTransparencyItems.map((item) => (
+                  <div key={item.id} style={{ border: `1px solid ${chrome.panelBorder}`, borderRadius: 8, padding: 10 }}>
+                    <div style={{ fontSize: 11, color: chrome.muted, marginBottom: 6 }}>
+                      {item.type} · conf {item.confidence.toFixed(2)} · seen {item.observationCount}x
+                    </div>
+                    <div style={{ fontSize: 13, lineHeight: 1.45, whiteSpace: "pre-wrap" }}>{item.content}</div>
+                    <div style={{ marginTop: 6, fontSize: 11, color: chrome.muted }}>
+                      {item.anchors.map((a) => [a.threadId ? `thread:${a.threadId}` : "", a.bookId ? `book:${a.bookId}` : "", a.highlightId ? `highlight:${a.highlightId}` : ""].filter(Boolean).join(" · ")).filter(Boolean).join(" | ")}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
         {showSmartScanBanner && (
           <div
