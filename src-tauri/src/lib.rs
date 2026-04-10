@@ -534,6 +534,30 @@ fn normalize_memory_scope(s: &str) -> Option<String> {
 }
 
 fn derive_memory_scope_from_anchors_json(anchors: &[serde_json::Value]) -> String {
+    let has_passage = anchors.iter().any(|a| {
+        let book = a
+            .get("bookId")
+            .and_then(|v| v.as_str())
+            .map(|s| !s.trim().is_empty())
+            .unwrap_or(false);
+        if !book {
+            return false;
+        }
+        let cfi = a
+            .get("cfi")
+            .and_then(|v| v.as_str())
+            .map(|s| !s.trim().is_empty())
+            .unwrap_or(false);
+        let passage_text = a
+            .get("passageText")
+            .and_then(|v| v.as_str())
+            .map(|s| !s.trim().is_empty())
+            .unwrap_or(false);
+        cfi || passage_text
+    });
+    if has_passage {
+        return "passage".to_string();
+    }
     let has_book = anchors.iter().any(|a| {
         a.get("bookId")
             .and_then(|v| v.as_str())
@@ -547,8 +571,22 @@ fn derive_memory_scope_from_anchors_json(anchors: &[serde_json::Value]) -> Strin
     }
 }
 
-/// Backfill scope for legacy rows: book when any anchor has book_id, else global.
+/// Backfill scope for legacy rows: passage when anchor ties to book + CFI or passage text, else book when book_id only, else global.
 fn backfill_memory_item_scope(conn: &Connection) -> Result<(), String> {
+    conn.execute(
+        "UPDATE memory_items SET scope = 'passage'
+         WHERE (scope IS NULL OR scope = '')
+           AND id IN (
+             SELECT memory_id FROM memory_anchors
+             WHERE book_id IS NOT NULL AND TRIM(book_id) != ''
+               AND (
+                 (cfi IS NOT NULL AND TRIM(cfi) != '')
+                 OR (passage_text IS NOT NULL AND TRIM(passage_text) != '')
+               )
+           )",
+        [],
+    )
+    .map_err(|e| e.to_string())?;
     conn.execute(
         "UPDATE memory_items SET scope = 'book'
          WHERE (scope IS NULL OR scope = '')
@@ -561,6 +599,21 @@ fn backfill_memory_item_scope(conn: &Connection) -> Result<(), String> {
     .map_err(|e| e.to_string())?;
     conn.execute(
         "UPDATE memory_items SET scope = 'global' WHERE scope IS NULL OR scope = ''",
+        [],
+    )
+    .map_err(|e| e.to_string())?;
+    // Upgrade book → passage when anchors carry CFI or passage text (fixes DBs migrated before passage backfill).
+    conn.execute(
+        "UPDATE memory_items SET scope = 'passage'
+         WHERE scope = 'book'
+           AND id IN (
+             SELECT memory_id FROM memory_anchors
+             WHERE book_id IS NOT NULL AND TRIM(book_id) != ''
+               AND (
+                 (cfi IS NOT NULL AND TRIM(cfi) != '')
+                 OR (passage_text IS NOT NULL AND TRIM(passage_text) != '')
+               )
+           )",
         [],
     )
     .map_err(|e| e.to_string())?;

@@ -20,8 +20,13 @@ function mi(partial: Partial<MemoryItem> & Pick<MemoryItem, "id" | "content" | "
 }
 
 describe("memoryPrompt", () => {
-  it("sanitizeMemoryContentForPrompt strips conversational callbacks", () => {
-    expect(sanitizeMemoryContentForPrompt("You asked before about grounding ideas in concrete images.")).toBeNull();
+  it("sanitizeMemoryContentForPrompt strips conversational callbacks and keeps substantive tail", () => {
+    expect(sanitizeMemoryContentForPrompt("You asked before about grounding ideas in concrete images.")).toContain(
+      "grounding ideas"
+    );
+    expect(sanitizeMemoryContentForPrompt("You asked before about grounding ideas in concrete images.") ?? "").not.toMatch(
+      /you asked before/i
+    );
     expect(
       sanitizeMemoryContentForPrompt(
         "You asked before about grounding. You prefer abstract claims tied to physical process."

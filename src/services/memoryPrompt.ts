@@ -4,6 +4,8 @@
 import type { MemoryItem, MemoryItemType, MemoryScope, MemoryUsageMode } from "@/types/book";
 
 const MIN_INJECTED_WORDS = 4;
+/** After aggressive stripping, allow slightly shorter recovered lines so legacy memories still inject. */
+const MIN_RECOVERED_WORDS = 3;
 
 /** Phrases that encourage performative "callback" replies; strip or rewrite before injection. */
 const CONVERSATIONAL_CALLBACK_PATTERNS: RegExp[] = [
@@ -31,6 +33,39 @@ function countWords(s: string): number {
   return s.trim().split(/\s+/).filter(Boolean).length;
 }
 
+/** Split on sentence boundaries for per-sentence cleanup. */
+function splitSentences(text: string): string[] {
+  return text
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Remove common conversational openers from the start only (preserves the substantive tail).
+ */
+function stripLeadingConversationalClauses(raw: string): string {
+  let s = raw.trim();
+  const leadPatterns: RegExp[] = [
+    /^(?:you\s+asked\s+before\s+about|you\s+asked\s+before)\s*[,:]?\s*/gi,
+    /^(?:earlier\s+you\s+asked\s+about|earlier\s+you\s+asked)\s*[,:]?\s*/gi,
+    /^(?:early\s+on\s+you\s+asked)\s*[,:]?\s*/gi,
+    /^(?:in\s+a\s+previous\s+thread,?\s*|in\s+previous\s+threads?,?\s*)/gi,
+    /^(?:we\s+discussed|we\s+talked\s+about)\s*[,:]?\s*/gi,
+    /^(?:you\s+mentioned\s+before)\s*[,:]?\s*/gi,
+    /^(?:as\s+you\s+said\s+earlier)\s*[,:]?\s*/gi,
+    /^(?:previously\s+you|last\s+time\s+you)\s*[,:]?\s*/gi,
+  ];
+  let prev = "";
+  while (prev !== s) {
+    prev = s;
+    for (const re of leadPatterns) {
+      s = s.replace(re, "").trim();
+    }
+  }
+  return s.replace(/^(?:[,;:\s]+|and\s+|so\s+|that\s+)+/i, "").trim();
+}
+
 function tokenizeForOverlap(s: string): Set<string> {
   return new Set(
     s
@@ -55,18 +90,40 @@ export function inferMemoryScopeFromAnchors(item: MemoryItem): MemoryScope {
 }
 
 /**
- * Strip conversational framing from legacy memory prose. Returns null if nothing substantive remains.
+ * Strip conversational framing from legacy memory prose. Uses recovery paths so
+ * "you asked before about X…" still yields injectable X when possible.
  */
 export function sanitizeMemoryContentForPrompt(content: string): string | null {
-  let s = content.trim();
-  if (!s) return null;
+  const original = content.trim();
+  if (!original) return null;
+
+  let s = original;
   for (const re of CONVERSATIONAL_CALLBACK_PATTERNS) {
     s = s.replace(re, " ").replace(/\s+/g, " ").trim();
   }
-  // Clean orphaned connectives at start
   s = s.replace(/^(?:[,;:\s]+|and\s+|so\s+|that\s+|when\s+)*/i, "").trim();
-  if (countWords(s) < MIN_INJECTED_WORDS) return null;
-  return s;
+  if (countWords(s) >= MIN_INJECTED_WORDS) return s;
+
+  // Recovery: clean each sentence, join those that still have substance.
+  const fromSentences = splitSentences(original)
+    .map((sent) => {
+      let t = sent.trim();
+      for (const re of CONVERSATIONAL_CALLBACK_PATTERNS) {
+        t = t.replace(re, " ").replace(/\s+/g, " ").trim();
+      }
+      return t.replace(/^(?:[,;:\s]+|and\s+|so\s+|that\s+|when\s+)*/i, "").trim();
+    })
+    .filter((t) => countWords(t) >= MIN_RECOVERED_WORDS);
+  const joined = fromSentences.join(" ").replace(/\s+/g, " ").trim();
+  if (countWords(joined) >= MIN_INJECTED_WORDS) return joined;
+  if (countWords(joined) >= MIN_RECOVERED_WORDS && fromSentences.length > 0) return joined;
+
+  // Recovery: strip leading chatty clauses only, keep tail (handles single-sentence memories).
+  const tail = stripLeadingConversationalClauses(original);
+  if (countWords(tail) >= MIN_INJECTED_WORDS) return tail;
+  if (countWords(tail) >= MIN_RECOVERED_WORDS && tail.length > 0) return tail;
+
+  return null;
 }
 
 export interface PromptReadyMemoryItem {
