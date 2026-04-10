@@ -7,6 +7,13 @@ import type {
 } from "@/types/contextManifest";
 import type { SectionSummary } from "@/services/db";
 import { memoryGetItemsForBook, memoryGetItemsGlobal, memoryGetItemsGlobalForQuery } from "@/services/db";
+import {
+  formatMemoryItemsSystemBlock,
+  promptReadyMemoryItem,
+  rankMemoryItemsForPrompt,
+  shouldIncludeMemoryItemForQuery,
+  type PromptReadyMemoryItem,
+} from "@/services/memoryPrompt";
 
 export interface ClaudeRequest {
   selectedText: string;
@@ -199,22 +206,24 @@ export async function loadRelevantMemoryItems(
       .slice(0, 4);
   }
   const seen = new Set<string>();
-  const out: MemoryItem[] = [];
+  const merged: MemoryItem[] = [];
   for (const i of topBook) {
-    if (out.length >= 10) break;
+    if (merged.length >= 10) break;
     if (!seen.has(i.id)) {
       seen.add(i.id);
-      out.push(i);
+      merged.push(i);
     }
   }
   for (const i of topGlobal) {
-    if (out.length >= 10) break;
+    if (merged.length >= 10) break;
     if (!seen.has(i.id)) {
       seen.add(i.id);
-      out.push(i);
+      merged.push(i);
     }
   }
-  return out.slice(0, 10);
+  const ranked = rankMemoryItemsForPrompt(merged);
+  const filtered = ranked.filter((i) => shouldIncludeMemoryItemForQuery(i, userMessage, bookId));
+  return filtered.slice(0, 10);
 }
 
 /** Normalize href for comparison: strip fragment, leading ./, lowercase. */
@@ -430,7 +439,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     "Attribution and source-identification: Do not answer attribution questions (e.g. 'what essay is this from?', 'who is speaking?', 'which chapter/section?') by inference or prior knowledge. You may only state a source, speaker, or title if it is explicitly stated in the attached passage or in the CURRENT TURN LEAD-UP CONTEXT block. If the attached passage and CURRENT TURN LEAD-UP CONTEXT together do not explicitly name the source, speaker, or essay, you must call get_context before answering — do not guess. For source-attribution in quoted or critical prose, when the lead-up (before) context does not resolve the attribution, call get_context with direction 'around' or 'after' to look for the title or speaker; then answer only from what the fetched text explicitly states.\n" +
     "- get_section_summary (spine_href): Use to get the summary of a section by its spine_href (from the section index). Helps with thematic questions or deciding if you need that section's full text.\n" +
     "- get_section_text (spine_href): Use when the reader wants exact quotes or specific lines from a section they have not reached. Pass the spine_href from the section index.\n" +
-    "- get_past_thread (thread_id): Use when MEMORY CONTEXT includes a [thread: ...] tag and you need the full archived conversation behind that memory item.\n" +
+    "- get_past_thread (thread_id): Use when the --- MEMORY --- block lists a thread: line for an item and you need the archived conversation behind that memory.\n" +
     "Spoilers: Do not assume the reader has read past the excerpt. If the answer would spoil later content and they did not ask for it, hint instead (e.g. 'this becomes clearer as you read further').\n" +
     "Broader scope: If answering would require content from sections the reader has not reached (e.g. get_section_summary or get_section_text for later sections) or would spoil later material, prefer to say so and ask before fetching or summarising that content."
   );
@@ -528,37 +537,37 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
         : `(No passage is attached to this message.)\n\n${userMessage}`,
   };
 
-  // Phase 35: inject memory as substantive prose with stable budget.
-  const memoryLines =
-    params.memoryItems && params.memoryItems.length > 0
-      ? params.memoryItems.map((i) => {
-          const anchorThreadId = i.anchors?.find((a) => !!a.threadId)?.threadId;
-          const threadTag = anchorThreadId ? ` [thread: ${anchorThreadId}]` : "";
-          return `- ${i.content.trim()}${threadTag}`;
-        })
-      : [];
-  const memoryLinesBounded: string[] = [];
-  let memoryChars = 0;
-  for (const line of memoryLines) {
-    if (memoryLinesBounded.length >= 10) break;
-    if (memoryChars + line.length > 4800) break; // ~1200 token upper bound
-    memoryLinesBounded.push(line);
-    memoryChars += line.length;
+  const memoryReady: PromptReadyMemoryItem[] = [];
+  let memoryCharBudget = 0;
+  if (params.memoryItems?.length) {
+    for (const raw of params.memoryItems) {
+      if (memoryReady.length >= 10) break;
+      const pr = promptReadyMemoryItem(raw);
+      if (!pr) continue;
+      const entryLen =
+        pr.contentForPrompt.length + pr.item.type.length + pr.scope.length + (pr.usageMode?.length ?? 0) + 96;
+      if (memoryCharBudget + entryLen > 4800) break;
+      memoryReady.push(pr);
+      memoryCharBudget += entryLen;
+    }
   }
-  const memoryBlock = memoryLinesBounded.join("\n");
-  const prefillMessages: AssembledThreadRequest["messages"] =
-    memoryBlock.length > 0
-      ? [
-          {
-            role: "user" as const,
-            content: `[MEMORY CONTEXT]\n${memoryBlock}\n[/MEMORY CONTEXT]`,
-          },
-        ]
-      : [];
+  const memoryInstructions =
+    "Use these memory items implicitly by default: let them shape tone, depth, and examples without announcing that they come from stored memory.\n" +
+    "Do not say \"you asked before\", \"as you said earlier\", \"in a previous discussion\", or similar unless the reader is clearly revisiting that thread and a brief callback is genuinely natural and materially helpful.\n" +
+    "Treat global preference and reading-identity items as background guidance — not as dialogue to quote or attribute.\n" +
+    "Treat book- and passage-scoped items as contextual hints about this book, not as quoted prior chat.";
+  const memoryBlockBody =
+    memoryReady.length > 0 ? `${memoryInstructions}\n\n${formatMemoryItemsSystemBlock(memoryReady)}` : "";
 
   const systemBlocks: AssembledThreadRequest["systemBlocks"] = [
     { text: systemParts.join("\n\n"), cacheControl: "ephemeral" },
   ];
+  if (memoryBlockBody) {
+    systemBlocks.push({
+      text: `--- MEMORY ---\n${memoryBlockBody}`,
+      cacheControl: "ephemeral",
+    });
+  }
   if (params.prefetchedLeadUpContext?.trim()) {
     systemBlocks.push({
       text: `--- CURRENT TURN LEAD-UP CONTEXT ---\nText immediately before the reader's attached passage (this turn only). Use it to ground attribution or identification answers; it is not carried to later turns.\n\n${params.prefetchedLeadUpContext.trim()}`,
@@ -600,7 +609,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
       0
     );
   }
-  const allMessages = [...prefillMessages, ...historyMessages, currentTurn];
+  const allMessages = [...historyMessages, currentTurn];
   const messagesChars = allMessages.reduce(
     (s, m) => s + messageContentChars(m.content),
     0
@@ -627,7 +636,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     highlightsCount: dedupedHighlights.length,
     highlightsCfis: dedupedHighlights.map((h) => h.cfi ?? ""),
     historyMessageCount: messages.length,
-    memoryItemsCount: memoryLinesBounded.length,
+    memoryItemsCount: memoryReady.length,
     estimatedInputTokens,
     toolsAvailable: [], // filled in askClaudeThread
     smartScanStatus: params.scanStatus ?? undefined,
@@ -705,14 +714,14 @@ const GET_SECTION_TEXT_TOOL = {
 const GET_PAST_THREAD_TOOL = {
   name: "get_past_thread",
   description:
-    "Fetch the cleaned archived user/assistant exchange for a prior thread by thread_id. Use this when memory context includes [thread: ...] and you need richer context from that earlier discussion.",
+    "Fetch the cleaned archived user/assistant exchange for a prior thread by thread_id. Use this when the --- MEMORY --- block includes a thread: field on an item and you need richer context from that archived discussion.",
   input_schema: {
     type: "object",
     properties: {
       thread_id: {
         type: "string",
         description:
-          "Thread id from a memory item's [thread: ...] tag. Returns a clean user/assistant transcript with tool scaffolding removed.",
+          "Thread id from a memory item's thread: line in the --- MEMORY --- block. Returns a clean user/assistant transcript with tool scaffolding removed.",
       },
     },
     required: ["thread_id"],

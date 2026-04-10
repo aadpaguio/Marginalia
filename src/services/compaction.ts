@@ -16,6 +16,10 @@ import {
 
 const COMPACTION_MODEL = "claude-haiku-4-5-20251001";
 
+/** Filter for full-thread archive extraction: relaxed so short model outputs still persist (was 50–100). */
+const MEMORY_ITEM_ARCHIVE_MIN_WORDS = 12;
+const MEMORY_ITEM_ARCHIVE_MAX_WORDS = 120;
+
 function formatThreadForPrompt(messages: ThreadMessage[]): string {
   return messages
     .map((m) => `[${m.role}]\n${m.content}`)
@@ -52,6 +56,8 @@ export interface ExtractedMemoryItem {
   confidence: number;
   scope: "global" | "book" | "passage";
   passage_text: string | null;
+  /** Optional; stored as usage_mode when set. */
+  usage_mode?: "implicit" | "callout_ok";
 }
 
 /** Normalize string for similarity: lowercase, collapse whitespace. */
@@ -107,38 +113,50 @@ The transcript uses [user] for the human reader and [assistant] for Marginalia (
 ${threadBlock}
 
 Extract 3–6 discrete memory items worth keeping for future reading chats.
-Each item must be substantial, 50–100 words, and stand alone without extra context.
-Prioritize what the human actually contributed: questions they asked, opinions they stated, reactions they expressed, preferences they gave.
-Include key unresolved questions when they exist.
-You may also record a joint thread fact using "we" when both sides genuinely participated, but never credit the user with ideas that appear only in [assistant].
+Each item must stand alone: aim for ~20–80 words when the transcript supports it; never fluff—short grounded items (roughly 12+ words) are fine if that is all the discussion warrants.
+
+Write each item as durable reader context or preference — phrased so it can shape future answers invisibly. Store the stable underlying preference, stance, or pattern — NOT a summary of the chat as an event.
+
+FORBIDDEN in "content" (these produce awkward model callbacks):
+- Phrases like: "you asked before", "earlier you", "in a previous thread", "we discussed", "you mentioned before", "as you said earlier", "last time", "previously you".
+- Any framing that refers to the conversation as past dialogue instead of stating the fact or preference directly.
+
+Good pattern: "You prefer abstract claims grounded in concrete, sensory examples."
+Bad pattern: "You asked before about grounding abstract ideas in something concrete."
+
+Prioritize what the human actually contributed: questions they care about (rephrase as ongoing interests), opinions, reactions, preferences.
+Include key unresolved questions when they exist, as stable questions (not "you asked...").
+You may use "we" when both sides genuinely contributed to a shared point; never attribute assistant-only ideas to "you".
 
 Return ONLY a JSON array. No preamble, no markdown fences.
 
 [
   {
-    "content": "50-100 words of substantive prose with correct attribution (see rules below)",
+    "content": "Durable statement (see rules above); ~20–80 words typical, minimum ~12 when the source is thin.",
     "type": "reading_identity|intellectual|emotional|preference|book_insight|book_question|book_reaction",
     "confidence": 0.5,
     "scope": "global|book|passage",
-    "passage_text": "exact quote if passage-specific, otherwise null"
+    "passage_text": "exact quote if passage-specific, otherwise null",
+    "usage_mode": "implicit"
   }
 ]
 
-Attribution in "content" (be strict — this is the main quality bar):
-- "you" / "your": ONLY for what the human said or clearly committed to in [user] turns. Paraphrase tightly; a short quoted phrase from the user is good when it grounds the item.
-- "I" / "my": ONLY for what Marginalia said in [assistant] turns (the assistant in the transcript). Do not invent Marginalia lines.
-- "we" / "our": optional for the shared arc when both speakers contributed; still never attribute an assistant-only point to "you".
-- If something matters but only Marginalia said it, write it as Marginalia's side (e.g. "Marginalia suggested …" or "I noted …") — not as something "you" said.
-- Do not use "you" for summaries of the assistant's reasoning, hypotheses, or literary analysis unless the user echoed or adopted them in [user].
+usage_mode is optional; use "implicit" unless the item is only useful when explicitly referencing prior discussion (rare).
+
+Attribution in "content" (be strict):
+- "you" / "your": ONLY for what the human said or clearly committed to in [user] turns. Paraphrase as stable preference where possible (not as something that happened in chat).
+- "I" / "my": ONLY for [assistant] turns. Do not invent lines.
+- "we" / "our": optional when both contributed; never attribute assistant-only points to "you".
+- If something matters but only Marginalia said it, attribute to the assistant — not as the reader's past question.
 
 Other rules:
 - Only extract what is clearly evidenced — no inference beyond the transcript.
 - Scope discipline:
-  - book scope is the default. Use it for anything tied to this book's content, characters, arguments, or the reader's engagement with them.
-  - global scope has a high bar: only explicit reader statements that clearly generalize beyond any single book.
+  - book scope is the default for material tied to this book's content, characters, arguments, or the reader's engagement with them.
+  - global scope has a high bar: explicit reader statements that generalize beyond any single book.
   - when in doubt, use book scope or skip the item.
 - book_insight / book_question / book_reaction are always scope: book or passage.
-- reading_identity / intellectual / preference / emotional can be scope: global, but only under the high bar above.
+- reading_identity / intellectual / preference / emotional can be scope: global only under the high bar above.
 - confidence: 0.5 for a single observation, 0.7 if strongly stated, 0.9 only for explicit [user] statements`;
 
   const userPrompt = "Output only the JSON array of memory items.";
@@ -161,13 +179,23 @@ Other rules:
     const items: ExtractedMemoryItem[] = [];
     for (const entry of parsed) {
       if (entry && typeof entry === "object" && typeof (entry as { content?: unknown }).content === "string") {
-        const o = entry as { content: string; type?: string; confidence?: number; scope?: string; passage_text?: string | null };
+        const o = entry as {
+          content: string;
+          type?: string;
+          confidence?: number;
+          scope?: string;
+          passage_text?: string | null;
+          usage_mode?: string;
+        };
+        const usage_mode =
+          o.usage_mode === "callout_ok" || o.usage_mode === "implicit" ? o.usage_mode : undefined;
         items.push({
           content: o.content,
           type: typeof o.type === "string" ? o.type : "book_insight",
           confidence: typeof o.confidence === "number" ? o.confidence : 0.5,
           scope: o.scope === "global" || o.scope === "book" || o.scope === "passage" ? o.scope : "book",
           passage_text: o.passage_text != null && typeof o.passage_text === "string" ? o.passage_text : null,
+          ...(usage_mode ? { usage_mode } : {}),
         });
       }
     }
@@ -175,7 +203,7 @@ Other rules:
       .map((i) => ({ ...i, content: i.content.trim() }))
       .filter((i) => {
         const words = countWords(i.content);
-        return words >= 50 && words <= 100;
+        return words >= MEMORY_ITEM_ARCHIVE_MIN_WORDS && words <= MEMORY_ITEM_ARCHIVE_MAX_WORDS;
       })
       .slice(0, 6);
   } catch (e) {
@@ -205,26 +233,29 @@ The transcript uses [user] for the human reader and [assistant] for Marginalia. 
 ${threadBlock}
 
 Only extract items with confidence >= 0.7.
-This is a partial read — be conservative. Prefer verbatim or near-verbatim [user] contributions.
+This is a partial read — be conservative. Prefer durable [user] stances phrased as stable context (not "you asked before" or "earlier in this thread").
 
-Extract 1–3 discrete memory items. Focus on explicit [user] opinions, questions, and preferences.
+Extract 1–3 discrete memory items. Focus on explicit [user] opinions, questions reframed as interests, and preferences.
+
+Do NOT use: "you asked before", "earlier you", "in a previous thread", "we discussed", "you mentioned before", "as you said earlier".
 
 Return ONLY a JSON array. No preamble, no markdown fences.
 
 [
   {
-    "content": "one factual sentence with correct attribution (same rules as full extraction)",
+    "content": "one durable sentence (same quality rules as full extraction)",
     "type": "reading_identity|intellectual|emotional|preference|book_insight|book_question|book_reaction",
     "confidence": 0.7,
     "scope": "global|book|passage",
-    "passage_text": "exact quote if passage-specific, otherwise null"
+    "passage_text": "exact quote if passage-specific, otherwise null",
+    "usage_mode": "implicit"
   }
 ]
 
 Attribution in "content":
-- "you" / "your": ONLY for [user] turns. Short user quotes welcome.
+- "you" / "your": ONLY for [user] turns.
 - "I" / "my": ONLY for [assistant] (Marginalia) turns.
-- "we" optional when both sides contributed; never assign assistant-only ideas to "you".
+- "we" optional when both contributed.
 
 Other rules:
 - Only include what is clearly evidenced — no inference beyond what's said
@@ -250,15 +281,25 @@ Other rules:
     const items: ExtractedMemoryItem[] = [];
     for (const entry of parsed) {
       if (entry && typeof entry === "object" && typeof (entry as { content?: unknown }).content === "string") {
-        const o = entry as { content: string; type?: string; confidence?: number; scope?: string; passage_text?: string | null };
+        const o = entry as {
+          content: string;
+          type?: string;
+          confidence?: number;
+          scope?: string;
+          passage_text?: string | null;
+          usage_mode?: string;
+        };
         const confidence = typeof o.confidence === "number" ? o.confidence : 0.7;
         if (confidence < 0.7) continue;
+        const usage_mode =
+          o.usage_mode === "callout_ok" || o.usage_mode === "implicit" ? o.usage_mode : undefined;
         items.push({
           content: o.content,
           type: typeof o.type === "string" ? o.type : "book_insight",
           confidence,
           scope: o.scope === "global" || o.scope === "book" || o.scope === "passage" ? o.scope : "book",
           passage_text: o.passage_text != null && typeof o.passage_text === "string" ? o.passage_text : null,
+          ...(usage_mode ? { usage_mode } : {}),
         });
       }
     }
@@ -327,6 +368,8 @@ export async function persistExtractedMemoryItems(params: {
     const memoryItem: MemoryItemInput = {
       content: item.content,
       type,
+      scope: item.scope,
+      usageMode: item.usage_mode,
       confidence: item.confidence,
       source: "compaction",
     };

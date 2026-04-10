@@ -225,6 +225,8 @@ export interface MemoryItemInput {
   id?: string;
   content: string;
   type: MemoryItem["type"];
+  scope?: MemoryItem["scope"];
+  usageMode?: MemoryItem["usageMode"];
   confidence?: number;
   observationCount?: number;
   source?: MemoryItem["source"];
@@ -251,6 +253,8 @@ export async function memorySaveItem(
       id: item.id ?? null,
       content: item.content,
       type: item.type,
+      scope: item.scope ?? null,
+      usageMode: item.usageMode ?? null,
       confidence: item.confidence ?? 0.5,
       observationCount: item.observationCount ?? 1,
       source: item.source ?? "compaction",
