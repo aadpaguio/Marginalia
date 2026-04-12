@@ -39,6 +39,9 @@ export interface ClaudeResponse {
   webCitations?: WebCitation[];
 }
 
+/** Hybrid evaluation ablations (see EVALUATION_PLAN.md). */
+export type EvaluationToolPreset = "passage_only" | "tools" | "smart_scan_tools";
+
 export interface ThreadContextParams {
   threadId: string;
   messages: ThreadMessage[];
@@ -59,6 +62,12 @@ export interface ThreadContextParams {
   workingContext?: string;
   /** Turn-scoped auto-prefetched lead-up text (before first API call). Not sent through onContextFetched; not part of workingContext. */
   prefetchedLeadUpContext?: string;
+  /**
+   * Hybrid evaluation ablations: restricts tools and what is injected into the system prompt
+   * so passage-only / tools-only / Smart Scan runs are reproducible.
+   * Passage-only still runs the same auto-prefetch of text before the anchor as non-eval turns (not a tool call).
+   */
+  evaluationToolPreset?: EvaluationToolPreset;
   bookSummary?: string | null;
   sectionSummaries?: SectionSummary[];
   scanStatus?: "none" | "in_progress" | "done";
@@ -366,6 +375,10 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     userMessage,
   } = params;
 
+  const evalPreset = params.evaluationToolPreset;
+  const evalHidesScanAndOverview =
+    evalPreset === "passage_only" || evalPreset === "tools";
+
   const systemParts: string[] = [];
   // --- IDENTITY ---
   systemParts.push(
@@ -389,11 +402,12 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     }
   }
   // --- BOOK OVERVIEW ---
-  if (params.bookSummary?.trim()) {
+  if (params.bookSummary?.trim() && !evalHidesScanAndOverview) {
     systemParts.push(`--- BOOK OVERVIEW ---\n${params.bookSummary.trim()}`);
   }
   // --- SECTION INDEX --- (single collapsed list: spine_href | section name | spine N | type | tokens | radii | [ahead])
   if (
+    !evalHidesScanAndOverview &&
     params.scanStatus === "done" &&
     params.sectionSummaries &&
     params.sectionSummaries.length > 0
@@ -430,19 +444,39 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     );
   }
   // --- TOOLS & CONTEXT ---
-  systemParts.push(
-    "--- TOOLS & CONTEXT ---\n" +
-    "The reader only ever sees your final message. They do not see tool calls, tool output, or any text you fetched. So: never imply they can see it. Do not say 'as you can see from the context', 'what I retrieved shows', 'the passage I pulled', 'in the text I fetched', or similar. Answer as if the relevant content were already in front of you — quote or paraphrase it in your reply; that is the only way the reader gets the information.\n" +
-    "Two normal turn types: (1) When a passage is attached to the message, you have that passage and the reader's question — use it as your default evidence base. (2) When no passage is attached but an ACTIVE THREAD PASSAGE (inherited) block is present below, this turn inherits the most recent thread passage — use it as the default anchor and its CFI for get_context when needed. (3) When no passage is attached and there is no active thread passage, this is a freeform thread question: you have only the reader's question. Only ask the user to point to the text again when there is no active anchor (no passage on this message and no ACTIVE THREAD PASSAGE block). Do not assume the reader has read beyond what is in front of them.\n" +
-    "When to use tools:\n" +
-    "- get_context (CFI + direction + max_chars): Use when the question needs text around the reader's current passage. Pass the EPUB CFI and direction: use 'from_section_start' when you need what led up to the anchor from the start of the chapter/section; 'before' for immediate lead-up; 'after' for what follows; 'around' for local context. Use max_chars (snippet ~2000, section ~8000, full ~20000). The tool returns atSectionStart, atSectionEnd, charsBefore, charsAfter so you can reason about position (e.g. 'there may not be much prior context yet'). Use it in this turn if you need it; no need to ask first.\n" +
-    "Attribution and source-identification: Do not answer attribution questions (e.g. 'what essay is this from?', 'who is speaking?', 'which chapter/section?') by inference or prior knowledge. You may only state a source, speaker, or title if it is explicitly stated in the attached passage or in the CURRENT TURN LEAD-UP CONTEXT block. If the attached passage and CURRENT TURN LEAD-UP CONTEXT together do not explicitly name the source, speaker, or essay, you must call get_context before answering — do not guess. For source-attribution in quoted or critical prose, when the lead-up (before) context does not resolve the attribution, call get_context with direction 'around' or 'after' to look for the title or speaker; then answer only from what the fetched text explicitly states.\n" +
-    "- get_section_summary (spine_href): Use to get the summary of a section by its spine_href (from the section index). Helps with thematic questions or deciding if you need that section's full text.\n" +
-    "- get_section_text (spine_href): Use when the reader wants exact quotes or specific lines from a section they have not reached. Pass the spine_href from the section index.\n" +
-    "- get_past_thread (thread_id): Use when the --- MEMORY --- block lists a thread: line for an item and you need the archived conversation behind that memory.\n" +
-    "Spoilers: Do not assume the reader has read past the excerpt. If the answer would spoil later content and they did not ask for it, hint instead (e.g. 'this becomes clearer as you read further').\n" +
-    "Broader scope: If answering would require content from sections the reader has not reached (e.g. get_section_summary or get_section_text for later sections) or would spoil later material, prefer to say so and ask before fetching or summarising that content."
-  );
+  if (evalPreset === "passage_only") {
+    systemParts.push(
+      "--- CONTEXT (EVALUATION RUN) ---\n" +
+        "This is a controlled evaluation run. You have no retrieval tools: do not use get_context, section summaries, or section text. " +
+        "Answer using the passage attached to this message, the reader profile slot above, and — when present — the separate system block titled CURRENT TURN LEAD-UP CONTEXT " +
+        "(text immediately before the anchor on this turn only; not carried to later turns). " +
+        "Use that lead-up only to ground attribution, identification, or continuity the excerpt alone does not spell out; do not infer beyond what those two sources state. " +
+        "Do not rely on book-wide structure, section index, or book overview — those are withheld for this condition.\n" +
+        "Spoilers: Do not assume the reader has read past the excerpt."
+    );
+  } else if (evalPreset === "tools") {
+    systemParts.push(
+      "--- TOOLS & CONTEXT (EVALUATION RUN) ---\n" +
+        "The reader only ever sees your final message. They do not see tool calls, tool output, or any text you fetched.\n" +
+        "You have exactly one retrieval tool: get_context (CFI + direction + max_chars). There is no section index or get_section_summary / get_section_text in this condition.\n" +
+        "When to use get_context: when the question needs text around the reader's passage anchor. Pass the EPUB CFI from the passage or ACTIVE THREAD PASSAGE block, direction (before / after / around / from_section_start), and max_chars (snippet ~2000, section ~8000, full ~20000).\n" +
+        "Spoilers: Do not assume the reader has read past the excerpt."
+    );
+  } else {
+    systemParts.push(
+      "--- TOOLS & CONTEXT ---\n" +
+        "The reader only ever sees your final message. They do not see tool calls, tool output, or any text you fetched. So: never imply they can see it. Do not say 'as you can see from the context', 'what I retrieved shows', 'the passage I pulled', 'in the text I fetched', or similar. Answer as if the relevant content were already in front of you — quote or paraphrase it in your reply; that is the only way the reader gets the information.\n" +
+        "Two normal turn types: (1) When a passage is attached to the message, you have that passage and the reader's question — use it as your default evidence base. (2) When no passage is attached but an ACTIVE THREAD PASSAGE (inherited) block is present below, this turn inherits the most recent thread passage — use it as the default anchor and its CFI for get_context when needed. (3) When no passage is attached and there is no active thread passage, this is a freeform thread question: you have only the reader's question. Only ask the user to point to the text again when there is no active anchor (no passage on this message and no ACTIVE THREAD PASSAGE block). Do not assume the reader has read beyond what is in front of them.\n" +
+        "When to use tools:\n" +
+        "- get_context (CFI + direction + max_chars): Use when the question needs text around the reader's current passage. Pass the EPUB CFI and direction: use 'from_section_start' when you need what led up to the anchor from the start of the chapter/section; 'before' for immediate lead-up; 'after' for what follows; 'around' for local context. Use max_chars (snippet ~2000, section ~8000, full ~20000). The tool returns atSectionStart, atSectionEnd, charsBefore, charsAfter so you can reason about position (e.g. 'there may not be much prior context yet'). Use it in this turn if you need it; no need to ask first.\n" +
+        "Attribution and source-identification: Do not answer attribution questions (e.g. 'what essay is this from?', 'who is speaking?', 'which chapter/section?') by inference or prior knowledge. You may only state a source, speaker, or title if it is explicitly stated in the attached passage or in the CURRENT TURN LEAD-UP CONTEXT block. If the attached passage and CURRENT TURN LEAD-UP CONTEXT together do not explicitly name the source, speaker, or essay, you must call get_context before answering — do not guess. For source-attribution in quoted or critical prose, when the lead-up (before) context does not resolve the attribution, call get_context with direction 'around' or 'after' to look for the title or speaker; then answer only from what the fetched text explicitly states.\n" +
+        "- get_section_summary (spine_href): Use to get the summary of a section by its spine_href (from the section index). Helps with thematic questions or deciding if you need that section's full text.\n" +
+        "- get_section_text (spine_href): Use when the reader wants exact quotes or specific lines from a section they have not reached. Pass the spine_href from the section index.\n" +
+        "- get_past_thread (thread_id): Use when the --- MEMORY --- block lists a thread: line for an item and you need the archived conversation behind that memory.\n" +
+        "Spoilers: Do not assume the reader has read past the excerpt. If the answer would spoil later content and they did not ask for it, hint instead (e.g. 'this becomes clearer as you read further').\n" +
+        "Broader scope: If answering would require content from sections the reader has not reached (e.g. get_section_summary or get_section_text for later sections) or would spoil later material, prefer to say so and ask before fetching or summarising that content."
+    );
+  }
   // --- RESPONSE RULES ---
   systemParts.push(
     "--- RESPONSE RULES ---\n" +
@@ -539,7 +573,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
 
   const memoryReady: PromptReadyMemoryItem[] = [];
   let memoryCharBudget = 0;
-  if (params.memoryItems?.length) {
+  if (params.memoryItems?.length && !evalPreset) {
     for (const raw of params.memoryItems) {
       if (memoryReady.length >= 10) break;
       const pr = promptReadyMemoryItem(raw);
@@ -574,7 +608,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
       cacheControl: "ephemeral",
     });
   }
-  if (params.workingContext?.trim()) {
+  if (params.workingContext?.trim() && !evalPreset) {
     systemBlocks.push({
       text: `Current working context (fetched this session):\n\n${params.workingContext.trim()}`,
       cacheControl: "ephemeral",
@@ -877,14 +911,69 @@ function extractWebCitations(rawContent: unknown[]): WebCitation[] {
   return citations;
 }
 
+/** Anthropic tool list for one round (evaluation presets vs production). */
+function buildThreadToolList(
+  params: AskClaudeThreadParams,
+  suggestSmartScanUsed: boolean
+): unknown[] {
+  const preset = params.evaluationToolPreset;
+  if (preset === "passage_only") {
+    return [];
+  }
+  if (preset === "tools") {
+    return [GET_CONTEXT_TOOL];
+  }
+  if (preset === "smart_scan_tools") {
+    const tools: unknown[] = [GET_CONTEXT_TOOL];
+    if (params.getPastThreadMessages) {
+      tools.push(GET_PAST_THREAD_TOOL);
+    }
+    if (params.scanStatus === "done" && (params.sectionSummaries?.length ?? 0) > 0) {
+      tools.push(GET_SECTION_SUMMARY_TOOL);
+      if (params.getSectionTextByHref) {
+        tools.push(GET_SECTION_TEXT_TOOL);
+      }
+    }
+    if (params.scanStatus === "none" && !suggestSmartScanUsed) {
+      tools.push(SUGGEST_SMART_SCAN_TOOL);
+    }
+    if (params.webSearchEnabled) {
+      tools.push(WEB_SEARCH_TOOL);
+    }
+    return tools;
+  }
+  const tools: unknown[] = [GET_CONTEXT_TOOL];
+  if (params.getPastThreadMessages) {
+    tools.push(GET_PAST_THREAD_TOOL);
+  }
+  if (params.scanStatus === "done" && (params.sectionSummaries?.length ?? 0) > 0) {
+    tools.push(GET_SECTION_SUMMARY_TOOL);
+    if (params.getSectionTextByHref) {
+      tools.push(GET_SECTION_TEXT_TOOL);
+    }
+  }
+  if (params.scanStatus === "none" && !suggestSmartScanUsed) {
+    tools.push(SUGGEST_SMART_SCAN_TOOL);
+  }
+  if (params.webSearchEnabled) {
+    tools.push(WEB_SEARCH_TOOL);
+  }
+  return tools;
+}
+
 export async function askClaudeThread(
   params: AskClaudeThreadParams,
   apiKey: string
 ): Promise<ClaudeResponse> {
   // One-time auto-prefetch for current-turn attached passage only (before first API call). Not sent through onContextFetched.
   // Best-effort: if prefetch throws (e.g. resolver edge case), continue without a lead-up block so the turn still reaches the model.
+  // Skipped for tools / smart_scan_tools eval (model must use get_context). Kept for passage_only so lead-up matches production turns.
   let prefetchedLeadUpContext: string | undefined;
-  if (params.pendingExcerpt?.text?.trim() && params.pendingExcerpt?.cfi?.trim()) {
+  if (
+    (!params.evaluationToolPreset || params.evaluationToolPreset === "passage_only") &&
+    params.pendingExcerpt?.text?.trim() &&
+    params.pendingExcerpt?.cfi?.trim()
+  ) {
     try {
       const result = params.getContextAroundCfi(
         params.pendingExcerpt.cfi.trim(),
@@ -913,45 +1002,19 @@ export async function askClaudeThread(
    * Do not force for simple clarifications (e.g. "what does X mean") — the model can
    * answer from the passage. Subsequent rounds always use "auto".
    */
-  const forceToolChoice = isContextSeekingQuery(params.userMessage);
+  const forceToolChoice =
+    !params.evaluationToolPreset && isContextSeekingQuery(params.userMessage);
   let suggestSmartScanUsed = false;
   let totalWebSearchRequests = 0;
 
   // Round-0 tool list for manifest (what options the model had when it started)
-  const round0Tools: unknown[] = [GET_CONTEXT_TOOL];
-  if (params.getPastThreadMessages) {
-    round0Tools.push(GET_PAST_THREAD_TOOL);
-  }
-  if (params.scanStatus === "done" && (params.sectionSummaries?.length ?? 0) > 0) {
-    round0Tools.push(GET_SECTION_SUMMARY_TOOL);
-    if (params.getSectionTextByHref) round0Tools.push(GET_SECTION_TEXT_TOOL);
-  }
-  if (params.scanStatus === "none") {
-    round0Tools.push(SUGGEST_SMART_SCAN_TOOL);
-  }
-  if (params.webSearchEnabled) {
-    round0Tools.push(WEB_SEARCH_TOOL);
-  }
-  const toolsAvailable = round0Tools.map((t) => (t as { name: string }).name);
+  const toolsAvailable = buildThreadToolList(params, false).map(
+    (t) => (t as { name: string }).name
+  );
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     // Build dynamic tools for this round
-    const tools: unknown[] = [GET_CONTEXT_TOOL];
-    if (params.getPastThreadMessages) {
-      tools.push(GET_PAST_THREAD_TOOL);
-    }
-    if (params.scanStatus === "done" && (params.sectionSummaries?.length ?? 0) > 0) {
-      tools.push(GET_SECTION_SUMMARY_TOOL);
-      if (params.getSectionTextByHref) {
-        tools.push(GET_SECTION_TEXT_TOOL);
-      }
-    }
-    if (params.scanStatus === "none" && !suggestSmartScanUsed) {
-      tools.push(SUGGEST_SMART_SCAN_TOOL);
-    }
-    if (params.webSearchEnabled) {
-      tools.push(WEB_SEARCH_TOOL);
-    }
+    const tools = buildThreadToolList(params, suggestSmartScanUsed);
 
     let pauseTurnSteps = 0;
     let data: ClaudeThreadProxyRoundData;

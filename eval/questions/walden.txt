@@ -1,0 +1,243 @@
+## Q1
+Category: passage-local
+Expected tools: none
+Chapter/Section: Economy
+Prompt: Thoreau stacks negations about ‘comforts’—what rhetorical effect does ‘not only not indispensable, but positive hindrances’ produce?
+Anchor passage: Most of the luxuries, and many of the so called comforts of life, are
+not only not indispensable, but positive hindrances to the elevation of
+mankind.
+Notes: Close reading of piled-up negation.
+
+
+---
+
+## Q2
+Category: passage-local
+Expected tools: none
+Chapter/Section: Economy
+Prompt: What layered image is he building with birds’ nests, moles, and ‘shelter within a shelter’—and who is the ‘poor man’ complaining of cold?
+Anchor passage: night-clothes, robbing the nests and breasts of birds to prepare this
+shelter within a shelter, as the mole has its bed of grass and leaves
+at the end of its burrow! The poor man is wont to complain that this is
+Notes: Close reading of metaphor stack; all referents appear in the anchor.
+
+
+---
+
+## Q3
+Category: passage-local
+Expected tools: none
+Chapter/Section: Economy
+Prompt: How does he sharpen the joke about ‘professors of philosophy’ versus ‘philosophers’?
+Anchor passage: There are nowadays
+professors of philosophy, but not philosophers. Yet it is admirable to
+profess because it was once admirable to live. To be a philosopher is
+not merely to have subtle thoughts, nor even to found a school, but so
+to love wisdom as to live according to its dictates, a life of
+simplicity, independence, magnanimity, and trust. It is to solve some
+of the problems of life, not only theoretically, but practically. The
+success of great scholars and thinkers is commonly a courtier-like
+success, not kingly, not manly. They make shift to live merely by
+conformity, practically as their fathers did, and are in no sense the
+progenitors of a nobler race of men.
+Notes: Antithesis and definition-by-contrast in the anchor.
+
+
+---
+
+## Q4
+Category: passage-local
+Expected tools: none
+Chapter/Section: Economy
+Prompt: What work does the seed / root metaphor do in distinguishing two ways of living?
+Anchor passage: The soil, it appears, is suited to the seed, for it has sent its
+radicle downward, and it may now send its shoot upward also with
+confidence. Why has man rooted himself thus firmly in the earth, but
+that he may rise in the same proportion into the heavens above?—for the
+nobler plants are valued for the fruit they bear at last in the air and
+light, far from the ground, and are not treated like the humbler
+esculents, which, though they may be biennials, are cultivated only
+till they have perfected their root, and often cut down at top for this
+purpose, so that most would not know them in their flowering season.
+
+Notes: Interpret plant imagery without leaving the passage.
+
+
+---
+
+## Q5
+Category: passage-local
+Expected tools: none
+Chapter/Section: Economy
+Prompt: Who are the two groups bracketed off with long dashes before he says he speaks ‘mainly to the mass of men’?
+Anchor passage: I do not mean to prescribe rules to strong and valiant natures, who
+will mind their own affairs whether in heaven or hell, and perchance
+build more magnificently and spend more lavishly than the richest,
+without ever impoverishing themselves, not knowing how they live,—if,
+indeed, there are any such, as has been dreamed; nor to those who find
+their encouragement and inspiration in precisely the present condition
+of things, and cherish it with the fondness and enthusiasm of
+lovers,—and, to some extent, I reckon myself in this number; I do not
+speak to those who are well employed, in whatever circumstances, and
+they know whether they are well employed or not;—but mainly to the mass
+Notes: Parsing an elaborate sentence; referents are in the anchor.
+
+
+---
+
+## Q6
+Category: nearby-context
+Expected tools: get_context
+Chapter/Section: Economy
+Prompt: He asks what a warmed man wants next—what list of things does he immediately refuse as the wrong kind of ‘more warmth’?
+Anchor passage: When a man is warmed by the several modes which I have described, what
+does he want next? Surely not more warmth of the same kind, as more and
+richer food, larger and more splendid houses, finer and more abundant
+clothing, more numerous incessant and hotter fires, and the like. When
+he has obtained those things which are necessary to life, there is
+another alternative than to obtain the superfluities; and that is, to
+adventure on life now, his vacation from humbler toil having commenced.
+
+Notes: The refusal list follows in the next sentences; get_context ‘after’.
+
+
+---
+
+## Q7
+Category: nearby-context
+Expected tools: get_context
+Chapter/Section: Economy
+Prompt: What concrete implements and ‘studious’ extras does he rank just after true necessaries in this paragraph?
+Anchor passage: At the present day, and in this country, as I find by my
+own experience, a few implements, a knife, an axe, a spade, a
+wheelbarrow, &c., and for the studious, lamplight, stationery, and
+access to a few books, rank next to necessaries, and can all be
+obtained at a trifling cost.
+Notes: Items appear earlier in the same paragraph; slight ‘before’ within paragraph.
+
+
+---
+
+## Q8
+Category: nearby-context
+Expected tools: get_context
+Chapter/Section: Economy
+Prompt: What seasonal contrast does he set up right before this claim that fuel is ‘unnecessary’ in some climates?
+Anchor passage: Fuel, except to cook his Food,
+is then unnecessary; the sun is his fire, and many of the fruits are
+sufficiently cooked by its rays; while Food generally is more various,
+and more easily obtained, and Clothing and Shelter are wholly or half
+unnecessary.
+Notes: Prior sentences contrast summer vs. present-day country; get_context ‘before’.
+
+
+---
+
+## Q9
+Category: nearby-context
+Expected tools: get_context
+Chapter/Section: Economy
+Prompt: He pivots from New England cold to ‘Elysian’ summer—what transition phrase opens that pivot a few lines above this sentence?
+Anchor passage: The summer, in some climates, makes
+possible to man a sort of Elysian life. Fuel, except to cook his Food,
+is then unnecessary; the sun is his fire, and many of the fruits are
+sufficiently cooked by its rays; while Food generally is more various,
+and more easily obtained, and Clothing and Shelter are wholly or half
+unnecessary.
+Notes: Connective logic sits just above; get_context ‘before’.
+
+
+---
+
+## Q10
+Category: cross-section
+Expected tools: get_section_summary
+Chapter/Section: Economy
+Prompt: Here he is still cataloguing daily costs—where later in Walden does he report what he actually paid for his cabin boards and borrowed axe, down to cents?
+Anchor passage: Yet some, not wise, go to the other side
+of the globe, to barbarous and unhealthy regions, and devote themselves
+to trade for ten or twenty years, in order that they may live,—that is,
+keep comfortably warm,—and die in New England at last.
+Notes: Jump to the accounts / building detail sections.
+
+
+---
+
+## Q11
+Category: cross-section
+Expected tools: get_section_summary
+Chapter/Section: Economy
+Prompt: This paragraph scolds ‘the mass of men’—where does he later describe his own experiment living beside the pond in concrete, seasonal terms?
+Anchor passage: There are some
+who complain most energetically and inconsolably of any, because they
+are, as they say, doing their duty. I also have in my mind that
+seemingly wealthy, but most terribly impoverished class of all, who
+have accumulated dross, but know not how to use it, or get rid of it,
+and thus have forged their own golden or silver fetters.
+
+Notes: Orient to ‘Where I Lived’ / pond chapters from Economy’s abstraction.
+
+
+---
+
+## Q12
+Category: cross-section
+Expected tools: get_section_summary
+Chapter/Section: Economy
+Prompt: He is arguing about clothing and shelter as defenses against cold—where does he revisit ice, water, and bathing as a different kind of bodily discipline?
+Anchor passage: a cold world; and to cold, no less physical than social, we refer
+directly a great part of our ails. The summer, in some climates, makes
+possible to man a sort of Elysian life. Fuel, except to cook his Food,
+is then unnecessary; the sun is his fire, and many of the fruits are
+sufficiently cooked by its rays; while Food generally is more various,
+and more easily obtained, and Clothing and Shelter are wholly or half
+unnecessary.
+Notes: Cross-section to pond / winter water passages.
+
+
+---
+
+## Q13
+Category: book-level-thematic
+Expected tools: get_section_text
+Chapter/Section: Economy
+Prompt: He half-jokes about Walden as a place for “business” because of the railroad and ice trade—how does that glancing mention of the railroad tie his pond experiment to the wider noise and hurry he critiques elsewhere?
+Anchor passage: I have thought that Walden Pond would be a good place for business, not
+solely on account of the railroad and the ice trade; it offers
+advantages which it may not be good policy to divulge; it is a good
+port and a good foundation.
+Notes: Thematic: link this aside to Sounds / village / commerce passages; cite lines from other sections.
+
+
+---
+
+## Q14
+Category: book-level-thematic
+Expected tools: get_section_text
+Chapter/Section: Economy
+Prompt: He praises voluntary poverty as a vantage point—how does that ideal interact with his portraits of real poverty in the book (e.g. the ‘Poor Man’)?
+Anchor passage: None can be an impartial or wise observer of
+human life but from the vantage ground of what we should call voluntary
+poverty.
+Notes: Compare voluntary simplicity vs. involuntary want.
+
+
+---
+
+## Q15
+Category: book-level-thematic
+Expected tools: get_section_summary
+Chapter/Section: Economy
+Prompt: He asks why families ‘run out’ and nations are ‘enervated’ by luxury—trace how his answers in Economy echo his later praise of wildness, beans, and unmarked paths.
+Anchor passage: But why do men degenerate ever?
+What makes families run out? What is the nature of the luxury which
+enervates and destroys nations? Are we sure that there is none of it in
+our own lives? The philosopher is in advance of his age even in the
+outward form of his life. He is not fed, sheltered, clothed, warmed,
+like his contemporaries. How can a man be a philosopher and not
+maintain his vital heat by better methods than other men?
+
+Notes: Book-level synthesis of decay and renewal imagery.
+
+
+---
