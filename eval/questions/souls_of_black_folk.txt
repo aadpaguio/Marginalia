@@ -1,0 +1,278 @@
+## Q1
+Category: passage-local
+Expected tools: none
+Chapter/Section: The Forethought
+Prompt: What does Du Bois mean by framing the century’s ‘problem’ as ‘the color line’ in this single sentence?
+Anchor passage: This meaning is not without interest to you, Gentle Reader;
+for the problem of the Twentieth Century is the problem of the color
+line.
+
+Notes: Definitions and public stakes; answerable inside the anchor.
+
+
+---
+
+## Q2
+Category: passage-local
+Expected tools: none
+Chapter/Section: I. Of Our Spiritual Strivings
+Prompt: How does he turn polite white small talk into evidence of the ‘unasked question’?
+Anchor passage: They approach me in a half-hesitant sort of way, eye me curiously or
+compassionately, and then, instead of saying directly, How does it feel
+to be a problem? they say, I know an excellent colored man in my town;
+or, I fought at Mechanicsville; or, Do not these Southern outrages make
+your blood boil? At these I smile, or am interested, or reduce the
+boiling to a simmer, as the occasion may require. To the real question,
+How does it feel to be a problem? I answer seldom a word.
+
+Notes: Close reading of the list of substitutes vs. the real question.
+
+
+---
+
+## Q3
+Category: passage-local
+Expected tools: none
+Chapter/Section: I. Of Our Spiritual Strivings
+Prompt: What does the schoolhouse visiting-card episode show about ‘the Veil’ as an image?
+Anchor passage: In a wee wooden schoolhouse, something
+put it into the boys’ and girls’ heads to buy gorgeous
+visiting-cards—ten cents a package—and exchange. The exchange was
+merry, till one girl, a tall newcomer, refused my card,—refused it
+peremptorily, with a glance. Then it dawned upon me with a certain
+suddenness that I was different from the others; or like, mayhap, in
+heart and life and longing, but shut out from their world by a vast
+veil.
+Notes: Metaphor and childhood recognition; local to the anchor.
+
+
+---
+
+## Q4
+Category: passage-local
+Expected tools: none
+Chapter/Section: I. Of Our Spiritual Strivings
+Prompt: How does his tone shift between ‘fine contempt’ in boyhood and ‘Alas’ in the next sentences?
+Anchor passage: I had thereafter no desire to tear down that veil, to creep
+through; I held all beyond it in common contempt, and lived above it in
+a region of blue sky and great wandering shadows. That sky was bluest
+when I could beat my mates at examination-time, or beat them at a
+foot-race, or even beat their stringy heads. Alas, with the years all
+this fine contempt began to fade; for the words I longed for, and all
+their dazzling opportunities, were theirs, not mine. But they should
+not keep these prizes, I said; some, all, I would wrest from them.
+Notes: Temporal contrast inside the passage.
+
+
+---
+
+## Q5
+Category: passage-local
+Expected tools: none
+Chapter/Section: I. Of Our Spiritual Strivings
+Prompt: What rhetorical work do the parallel questions (‘Why did God make me…’) do at the end of this paragraph?
+Anchor passage: With other black boys the strife was not so fiercely sunny: their youth
+shrunk into tasteless sycophancy, or into silent hatred of the pale
+world about them and mocking distrust of everything white; or wasted
+itself in a bitter cry, Why did God make me an outcast and a stranger
+in mine own house? The
+Notes: Rhetorical questions and alienation; answerable locally.
+
+
+---
+
+## Q6
+Category: nearby-context
+Expected tools: get_context
+Chapter/Section: I. Of Our Spiritual Strivings
+Prompt: He says he answers the real question ‘seldom a word’—what is that real question, stated a few lines above?
+Anchor passage: And yet, being a problem is a strange experience,—peculiar even for one
+who has never been anything else, save perhaps in babyhood and in
+Europe. It is in the early days of rollicking boyhood that the
+revelation first bursts upon one, all in a day, as it were.
+Notes: The exact phrasing appears earlier in the same section.
+
+
+---
+
+## Q7
+Category: nearby-context
+Expected tools: get_context
+Chapter/Section: I. Of Our Spiritual Strivings
+Prompt: The tall newcomer refuses his card—what had the children been exchanging just before that refusal?
+Anchor passage: The exchange was
+merry, till one girl, a tall newcomer, refused my card,—refused it
+peremptorily, with a glance.
+Notes: Visiting-cards purchase/exchange is described immediately above.
+
+
+---
+
+## Q8
+Category: nearby-context
+Expected tools: get_context
+Chapter/Section: The Forethought
+Prompt: He asks the reader for charity—what does he promise his book will show if read with patience?
+Anchor passage: I pray you, then, receive my little book in all charity, studying my
+words with me, forgiving mistake and foible for sake of the faith and
+passion that is in me, and seeking the grain of truth hidden there.
+
+Notes: Promise is in the preceding sentences of the Forethought.
+
+
+---
+
+## Q9
+Category: nearby-context
+Expected tools: get_context
+Chapter/Section: The Forethought
+Prompt: He thanks publishers for consenting to republication—what magazines does he name in the lines just before this thanks?
+Anchor passage: Some of these thoughts of mine have seen the light before in other
+guise. For kindly consenting to their republication here, in altered
+and extended form, I must thank the publishers of the Atlantic Monthly,
+The World’s Work, the Dial, The New World, and the Annals of the
+American Academy of Political and Social Science.
+Notes: List appears immediately above the gratitude sentence.
+
+
+---
+
+## Q10
+Category: cross-section
+Expected tools: get_section_summary
+Chapter/Section: I. Of Our Spiritual Strivings
+Prompt: Du Bois is still narrating childhood humiliation here—where later does he turn to Washington’s leadership as the era’s dominant strategy, and why is that a pivot?
+Anchor passage: Between me and the other world there is ever an unasked question:
+unasked by some through feelings of delicacy; by others through the
+difficulty of rightly framing it. All, nevertheless, flutter round it.
+They approach me in a half-hesitant sort of way, eye me curiously or
+compassionately, and then, instead of saying directly, How does it feel
+to be a problem? they say, I know an excellent colored man in my town;
+or, I fought at Mechanicsville; or, Do not these Southern outrages make
+your blood boil? At these I smile, or am interested, or reduce the
+boiling to a simmer, as the occasion may require. To the real question,
+How does it feel to be a problem? I answer seldom a word.
+
+Notes: Jump to the Washington chapter for contrast.
+
+
+---
+
+## Q11
+Category: cross-section
+Expected tools: get_section_summary
+Chapter/Section: I. Of Our Spiritual Strivings
+Prompt: The Forethought’s epigraph poems dramatize water and crying—where later does Du Bois analyze the sorrow songs as historical witness?
+Anchor passage: O water, voice of my heart, crying in the sand,
+    All night long crying with a mournful cry,
+As I lie and listen, and cannot understand
+        The voice of my heart in my side or the voice of the sea,
+    O water, crying for rest, is it I, is it I?
+        All night long the water is crying to me.
+
+
+Unresting water, there shall never be rest
+    Till the last moon droop and the last tide fail,
+And the fire of the end begin to burn in the west;
+        And the heart shall be weary and wonder and cry like the sea,
+    All life long crying without avail,
+        As the water all night long is crying to me.
+
+ARTHUR SYMONS.
+
+Notes: Cross-section to ‘Of the Sorrow Songs’.
+
+
+---
+
+## Q12
+Category: cross-section
+Expected tools: get_section_summary
+Chapter/Section: I. Of Our Spiritual Strivings
+Prompt: He sketches ‘two worlds within and without the Veil’ in the Forethought’s outline—where does he give ground-level reporting from the Black Belt?
+Anchor passage: I have sought here to sketch, in vague, uncertain outline, the
+spiritual world in which ten thousand thousand Americans live and
+strive. First, in two chapters I have tried to show what Emancipation
+meant to them, and what was its aftermath. In a third chapter I have
+pointed out the slow rise of personal leadership, and criticized
+candidly the leader who bears the chief burden of his race to-day.
+Then, in two other chapters I have sketched in swift outline the two
+worlds within and without the Veil, and thus have come to the central
+problem of training men for life. Venturing now into deeper detail, I
+have in two chapters studied the struggles of the massed millions of
+the black peasantry, and in another have sought to make clear the
+present relations of the sons of master and man. Leaving, then, the
+white world, I have stepped within the Veil, raising it that you may
+view faintly its deeper recesses,—the meaning of its religion, the
+passion of its human sorrow, and the struggle of its greater souls. All
+this I have ended with a tale twice told but seldom written, and a
+chapter of song.
+
+Notes: Move from program to rural sociology chapters.
+
+
+---
+
+## Q13
+Category: book-level-thematic
+Expected tools: get_section_text
+Chapter/Section: The Forethought
+Prompt: The Forethought promises both spiritual autobiography and sociology—how does Du Bois hold those modes together across the book’s alternating scales?
+Anchor passage: I have sought here to sketch, in vague, uncertain outline, the
+spiritual world in which ten thousand thousand Americans live and
+strive. First, in two chapters I have tried to show what Emancipation
+meant to them, and what was its aftermath. In a third chapter I have
+pointed out the slow rise of personal leadership, and criticized
+candidly the leader who bears the chief burden of his race to-day.
+Then, in two other chapters I have sketched in swift outline the two
+worlds within and without the Veil, and thus have come to the central
+problem of training men for life. Venturing now into deeper detail, I
+have in two chapters studied the struggles of the massed millions of
+the black peasantry, and in another have sought to make clear the
+present relations of the sons of master and man. Leaving, then, the
+white world, I have stepped within the Veil, raising it that you may
+view faintly its deeper recesses,—the meaning of its religion, the
+passion of its human sorrow, and the struggle of its greater souls. All
+this I have ended with a tale twice told but seldom written, and a
+chapter of song.
+
+Notes: Genre and method; pull examples from multiple chapters.
+
+
+---
+
+## Q14
+Category: book-level-thematic
+Expected tools: get_section_text
+Chapter/Section: I. Of Our Spiritual Strivings
+Prompt: The ‘Veil’ begins as a childhood shock here—how does the image accrue political, religious, and musical meanings by the final chapters?
+Anchor passage: Then it dawned upon me with a certain
+suddenness that I was different from the others; or like, mayhap, in
+heart and life and longing, but shut out from their world by a vast
+veil.
+Notes: Track metaphor evolution.
+
+
+---
+
+## Q15
+Category: book-level-thematic
+Expected tools: get_section_summary
+Chapter/Section: I. Of Our Spiritual Strivings
+Prompt: Du Bois names the color line in the Forethought as the century’s problem—how do his later chapters on education, economics, and religion each reinterpret that single phrase in light of this image of “twoness” and “second-sight”?
+Anchor passage: After the Egyptian and Indian, the Greek and Roman, the Teuton and
+Mongolian, the Negro is a sort of seventh son, born with a veil, and
+gifted with second-sight in this American world,—a world which yields
+him no true self-consciousness, but only lets him see himself through
+the revelation of the other world. It is a peculiar sensation, this
+double-consciousness, this sense of always looking at one’s self
+through the eyes of others, of measuring one’s soul by the tape of a
+world that looks on in amused contempt and pity. One ever feels his
+twoness,—an American, a Negro; two souls, two thoughts, two
+unreconciled strivings; two warring ideals in one dark body, whose
+dogged strength alone keeps it from being torn asunder.
+
+Notes: Book-level thematic synthesis across the essay-chapters.
+
+
+---

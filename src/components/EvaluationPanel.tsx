@@ -22,7 +22,11 @@ type EvaluationPanelProps = {
 };
 
 const CONDITIONS: { id: EvalCondition; label: string; hint: string }[] = [
-  { id: "passage_only", label: "Passage-only", hint: "No tools, no scan context in prompt" },
+  {
+    id: "passage_only",
+    label: "Passage-only",
+    hint: "No tools, no scan in prompt; same turn-scoped lead-up prefetch as normal reading",
+  },
   { id: "tools", label: "Tools (get_context)", hint: "Local retrieval only" },
   {
     id: "smart_scan_tools",

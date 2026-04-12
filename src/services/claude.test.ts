@@ -939,6 +939,100 @@ describe("Phase 27 — askClaudeThread agentic loop", () => {
       expect(leadUpBlock!.text).toContain(leadUp);
     });
 
+    it("auto-prefetches for passage_only eval like non-eval turns", async () => {
+      const leadUp = "Lead before anchor.";
+      const getContextAroundCfi = vi.fn().mockReturnValue({
+        sectionLabel: "Ch 1",
+        charsBefore: 100,
+        charsAfter: 0,
+        atSectionStart: false,
+        atSectionEnd: false,
+        text: leadUp,
+      } satisfies GetContextResult);
+      vi.mocked(invoke)
+        .mockResolvedValueOnce({
+          answer: "Eval answer.",
+          toolCalls: [],
+          rawContent: [{ type: "text", text: "Eval answer." }],
+          model: "claude-haiku-4-5-20251001",
+        })
+        .mockResolvedValueOnce(undefined);
+
+      await askClaudeThread(
+        {
+          threadId: "t-eval",
+          messages: [],
+          attachedHighlights: [],
+          pendingExcerpt: { text: "Anchor bit", cfi: "epubcfi(/6/2!/4/8)", chapter: "Ch 1" },
+          userMessage: "Who is speaking?",
+          bookTitle: "Book",
+          author: "Author",
+          bookId: "b1",
+          getContextAroundCfi,
+          evaluationToolPreset: "passage_only",
+        },
+        "test-api-key"
+      );
+
+      expect(getContextAroundCfi).toHaveBeenCalledWith(
+        "epubcfi(/6/2!/4/8)",
+        "before",
+        2000,
+        "Anchor bit"
+      );
+      const proxyCall = vi.mocked(invoke).mock.calls.find((c) => c[0] === "ask_claude_thread_proxy");
+      const systemBlocks = (proxyCall![1] as { request: { systemBlocks: Array<{ text: string }> } })
+        .request.systemBlocks;
+      const leadUpBlock = systemBlocks.find((b) =>
+        b.text.includes("--- CURRENT TURN LEAD-UP CONTEXT ---")
+      );
+      expect(leadUpBlock).toBeDefined();
+      expect(leadUpBlock!.text).toContain(leadUp);
+    });
+
+    it("does not auto-prefetch for tools eval (passage_only only)", async () => {
+      const getContextAroundCfi = vi.fn().mockReturnValue({
+        sectionLabel: "Ch 1",
+        charsBefore: 100,
+        charsAfter: 0,
+        atSectionStart: false,
+        atSectionEnd: false,
+        text: "Should not appear.",
+      } satisfies GetContextResult);
+      vi.mocked(invoke)
+        .mockResolvedValueOnce({
+          answer: "Answer.",
+          toolCalls: [],
+          rawContent: [{ type: "text", text: "Answer." }],
+          model: "claude-haiku-4-5-20251001",
+        })
+        .mockResolvedValueOnce(undefined);
+
+      await askClaudeThread(
+        {
+          threadId: "t-tools-eval",
+          messages: [],
+          attachedHighlights: [],
+          pendingExcerpt: { text: "excerpt", cfi: "epubcfi(/6/4!/4/2)", chapter: "Ch 1" },
+          userMessage: "Explain.",
+          bookTitle: "Book",
+          author: "Author",
+          bookId: "b1",
+          getContextAroundCfi,
+          evaluationToolPreset: "tools",
+        },
+        "test-api-key"
+      );
+
+      expect(getContextAroundCfi).not.toHaveBeenCalled();
+      const proxyCall = vi.mocked(invoke).mock.calls.find((c) => c[0] === "ask_claude_thread_proxy");
+      const systemBlocks = (proxyCall![1] as { request: { systemBlocks: Array<{ text: string }> } })
+        .request.systemBlocks;
+      expect(
+        systemBlocks.some((b) => b.text.includes("--- CURRENT TURN LEAD-UP CONTEXT ---"))
+      ).toBe(false);
+    });
+
     it("auto-prefetch does not call onContextFetched", async () => {
       const onContextFetched = vi.fn();
       const getContextAroundCfi = vi.fn().mockReturnValue({

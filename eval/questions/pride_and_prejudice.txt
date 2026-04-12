@@ -1,0 +1,230 @@
+## Q1
+Category: passage-local
+Expected tools: none
+Chapter/Section: Chapter I
+Prompt: That opening sentence sounds like plain social fact—what in the very next sentences signals the narrator is not quite endorsing it straight?
+Anchor passage: It is a truth universally acknowledged, that a single man in possession
+of a good fortune, must be in want of a wife.
+
+However little known the feelings or views of such a man may be on his
+first entering a neighbourhood, this truth is so well fixed in the minds
+of the surrounding families, that he is considered as the rightful
+property of some one or other of their daughters.
+Notes: Irony and who ‘owns’ the truth; answerable inside the anchor.
+
+
+---
+
+## Q2
+Category: passage-local
+Expected tools: none
+Chapter/Section: Chapter II
+Prompt: What tone does Mr. Bennet strike in his one-line answer to his wife here—and what does it imply about how he treats her news?
+Anchor passage: "My dear Mr. Bennet," said his lady to him one day, "have you heard that
+Netherfield Park is let at last?"
+
+Mr. Bennet replied that he had not.
+
+Notes: Close reading of brevity and withholding; no outside context required.
+
+
+---
+
+## Q3
+Category: passage-local
+Expected tools: none
+Chapter/Section: Chapter XVIII
+Prompt: Elizabeth insists she is ‘not’ what Miss Bingley claims—how does that little negation sharpen the social sparring?
+Anchor passage: "I deserve neither such praise nor such censure," cried Elizabeth; "I am
+_not_ a great reader, and I have pleasure in many things."
+
+Notes: Self-definition vs. caricature; all in the quoted line.
+
+
+---
+
+## Q4
+Category: passage-local
+Expected tools: none
+Chapter/Section: Chapter XV
+Prompt: What is Mrs. Bennet really doing with all those hedges (‘could not… could not… did not know’) about Jane versus the younger girls?
+Anchor passage: produced from her, amid very complaisant smiles and general
+encouragement, a caution against the very Jane he had fixed on.--"As to
+her _younger_ daughters she could not take upon her to say--she could
+not positively answer--but she did not _know_ of any prepossession;--her
+_eldest_ daughter, she must just mention--she felt it incumbent on her
+to hint, was likely to be very soon engaged."
+
+Notes: Rhetoric of negation and indirection; answerable from the quoted speech.
+
+
+---
+
+## Q5
+Category: passage-local
+Expected tools: none
+Chapter/Section: Chapter XXXIV (Volume III)
+Prompt: What does ‘scrupled not’ suggest about how the narrator is coloring the accuser’s moral posture here?
+Anchor passage: The extravagance and general profligacy which he scrupled not to lay to
+Mr. Wickham's charge, exceedingly shocked her; the more so, as she could
+bring no proof of its injustice.
+Notes: Lexical / moral tone; Wickham is named in the anchor.
+
+
+---
+
+## Q6
+Category: nearby-context
+Expected tools: get_context
+Chapter/Section: Chapter XVIII
+Prompt: Who is speaking this line, and which absent officer are they hinting about—details given in the exchange just above this sentence?
+Anchor passage: "I do not imagine his business would have called him away just now, if
+he had not wished to avoid a certain gentleman here."
+
+Notes: Speaker and referents are clarified a few lines earlier; get_context ‘before’.
+
+
+---
+
+## Q7
+Category: nearby-context
+Expected tools: get_context
+Chapter/Section: Chapter XI
+Prompt: What deflecting reply does Mr. Darcy give immediately after Miss Bingley begins praising Georgiana’s harp progress in this stretch?
+Anchor passage: "How can you contrive to write so even?"
+
+He was silent.
+
+"Tell your sister I am delighted to hear of her improvement on the harp,
+and pray let her know that I am quite in raptures with her beautiful
+little design for a table, and I think it infinitely superior to Miss
+Grantley's."
+
+Notes: Answer is in the lines following the anchor; get_context ‘after’.
+
+
+---
+
+## Q8
+Category: nearby-context
+Expected tools: get_context
+Chapter/Section: Chapter XIII (Volume III)
+Prompt: Right before Elizabeth falls into this spiral of re-reading, what single object has she been working through line by line?
+Anchor passage: Her feelings as she read were scarcely to be defined. With amazement did
+she first understand that he believed any apology to be in his power;
+and steadfastly was she persuaded that he could have no explanation to
+give, which a just sense of shame would not conceal.
+Notes: The letter frame is in the preceding paragraph; get_context ‘before’.
+
+
+---
+
+## Q9
+Category: nearby-context
+Expected tools: get_context
+Chapter/Section: Chapter XVIII
+Prompt: Maria has just dragged Elizabeth downstairs—what two-word spectacle are they running toward that Maria refused to name in the lines just before this?
+Anchor passage: Elizabeth asked questions in vain; Maria would tell her nothing more,
+and down they ran into the dining-room, which fronted the lane, in quest
+of this wonder; it was two ladies stopping in a low phaeton at the
+garden gate.
+
+Notes: ‘this wonder’ points back to Maria’s teasing; get_context ‘before’.
+
+
+---
+
+## Q10
+Category: cross-section
+Expected tools: get_section_summary
+Chapter/Section: Chapter XV
+Prompt: Collins is settling on Elizabeth here after private talk with Mrs. Bennet—where earlier in the novel did he first spell out his ‘plan of amends’ for inheriting Longbourn, and what was its original target?
+Anchor passage: Mr. Collins had only to change from Jane to Elizabeth--and it was soon
+done--done while Mrs. Bennet was stirring the fire. Elizabeth, equally
+next to Jane in birth and beauty, succeeded her of course.
+
+Notes: Callback to Collins’s introduction and marriage scheme; orient with section summary.
+
+
+---
+
+## Q11
+Category: cross-section
+Expected tools: get_section_summary
+Chapter/Section: Chapter XVIII
+Prompt: Elizabeth is furious with Darcy at the Netherfield ball here—where does she later receive the long written account that reframes Wickham’s history?
+Anchor passage: Attention, forbearance, patience with Darcy, was injury to
+Wickham. She was resolved against any sort of conversation with him, and
+turned away with a degree of ill humour, which she could not wholly
+surmount even in speaking to Mr. Bingley, whose blind partiality
+provoked her.
+
+Notes: Cross-chapter link to the letter episode.
+
+
+---
+
+## Q12
+Category: cross-section
+Expected tools: get_section_summary
+Chapter/Section: Chapter III
+Prompt: Here Darcy slights Elizabeth at the assembly—much later she teases him about another woman admiring his handwriting. Who was that other woman?
+Anchor passage: "Which do you mean?" and turning round, he looked for a moment at
+Elizabeth, till catching her eye, he withdrew his own and coldly said,
+"She is tolerable; but not handsome enough to tempt _me_; and I am in no
+humour at present to give consequence to young ladies who are slighted
+by other men. You had better return to your partner and enjoy her
+smiles, for you are wasting your time with me."
+
+Notes: Links assembly insult to later drawing-room banter.
+
+
+---
+
+## Q13
+Category: book-level-thematic
+Expected tools: get_section_text
+Chapter/Section: Chapter II
+Prompt: Mrs. Bennet’s nerves and Kitty’s cough get played for laughs—how does this early domestic comedy relate to the novel’s larger pressure on daughters to marry well?
+Anchor passage: "Don't keep coughing so, Kitty, for heaven's sake! Have a little
+compassion on my nerves. You tear them to pieces."
+
+"Kitty has no discretion in her coughs," said her father; "she times
+them ill."
+
+Notes: Thematic synthesis: money, entailment, and marriage stakes elsewhere.
+
+
+---
+
+## Q14
+Category: book-level-thematic
+Expected tools: get_section_text
+Chapter/Section: Chapter XIII (Volume III)
+Prompt: Elizabeth’s shame and anger here mix with reluctant re-evaluation—how does Austen trace her prejudice against Darcy from early misreadings to this turning point?
+Anchor passage: But every line proved more clearly that the affair, which she had
+believed it impossible that any contrivance could so represent, as to
+render Mr. Darcy's conduct in it less than infamous, was capable of a
+turn which must make him entirely blameless throughout the whole.
+
+Notes: Arc across volumes; cite earlier encounters.
+
+
+---
+
+## Q15
+Category: book-level-thematic
+Expected tools: get_section_summary
+Chapter/Section: Chapter XIX (Volume III)
+Prompt: Lady Catherine’s bullying visit is raised here as a comic ‘moral’—how does that episode’s logic of rank and interference connect back to Charlotte’s acceptance of life at Hunsford?
+Anchor passage: "You need not distress yourself. The moral will be perfectly fair. Lady
+Catherine's unjustifiable endeavours to separate us, were the means of
+removing all my doubts. I am not indebted for my present happiness to
+your eager desire of expressing your gratitude. I was not in a humour to
+wait for any opening of your's. My aunt's intelligence had given me
+hope, and I was determined at once to know every thing."
+
+Notes: Compare class security, interference, and ‘practical’ marriage.
+
+
+---

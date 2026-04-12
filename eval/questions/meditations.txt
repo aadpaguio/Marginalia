@@ -1,0 +1,230 @@
+## Q1
+Category: passage-local
+Expected tools: none
+Chapter/Section: Sixth Book (section IV)
+Prompt: What two-step self-check does he prescribe when someone offends you—‘teach with love’ versus what if you cannot?
+Anchor passage: IV. Him that offends, to teach with love and meek ness, and to show him
+his error. But if thou canst not, then to blame thyself; or rather not
+thyself neither, if thy will and endeavours have not been wanting.
+
+Notes: Logical structure inside the anchor.
+
+
+---
+
+## Q2
+Category: passage-local
+Expected tools: none
+Chapter/Section: Sixth Book (section V–VI)
+Prompt: How does he connect ‘whatsoever happens’ to fate’s ‘coherence of causes’ in these lines?
+Anchor passage: V. Whatsoever it be that happens unto thee, it is that which from all
+time was appointed unto thee. For by the same coherence of causes, by
+which thy substance from all eternity was appointed to be, was also
+whatsoever should happen unto it, destinated and appointed.
+
+Notes: Stoic determinism; answerable locally.
+
+
+---
+
+## Q3
+Category: passage-local
+Expected tools: none
+Chapter/Section: Sixth Book (section VII)
+Prompt: He corrects himself from ‘corruption’ to ‘alteration’—why does that distinction matter in his argument?
+Anchor passage: VII. All parts of the world, (all things I mean that are contained
+within the whole world), must of necessity at some time or other come to
+corruption. Alteration I should say, to speak truly and properly; but
+that I may be the better understood, I am content at this time to use
+that more common word.
+Notes: Word choice and consolation; local reasoning.
+
+
+---
+
+## Q4
+Category: passage-local
+Expected tools: none
+Chapter/Section: Sixth Book (section VI)
+Prompt: What dilemma does he pose about atoms versus a governing nature—and which horn does he tell himself to take first?
+Anchor passage: VI. Either with Epicurus, we must fondly imagine the atoms to be the
+cause of all things, or we must needs grant a nature. Let this then be
+thy first ground, that thou art part of that universe, which is governed
+Notes: Close reading of disjunction and first step.
+
+
+---
+
+## Q5
+Category: passage-local
+Expected tools: none
+Chapter/Section: Sixth Book (section VII)
+Prompt: When parts alter, why does he call it ‘absurd’ to wonder ‘as though some strange thing had happened’?
+Anchor passage: And did nature then either
+of herself thus project and purpose the affliction and misery of her
+parts, and therefore of purpose so made them, not only that haply they
+might, but of necessity that they should fall into evil; or did not she
+know what she did, when she made them? For either of these two to say,
+is equally absurd. But to let pass nature in general, and to reason of
+things particular according to their own particular natures; how absurd
+and ridiculous is it, first to say that all parts of the whole are, by
+their proper natural constitution, subject to alteration; and then when
+any such thing doth happen, as when one doth fall sick and dieth, to
+take on and wonder as though some strange thing had happened?
+Notes: Internal logic of expectations vs. nature.
+
+
+---
+
+## Q6
+Category: nearby-context
+Expected tools: get_context
+Chapter/Section: Sixth Book (section VII)
+Prompt: He asks whether nature ‘did not she know what she did’—what two absurd options did he set up immediately before this question?
+Anchor passage: And did nature then either
+of herself thus project and purpose the affliction and misery of her
+parts, and therefore of purpose so made them, not only that haply they
+might, but of necessity that they should fall into evil; or did not she
+know what she did, when she made them? For either of these two to say,
+is equally absurd. But
+Notes: The either/or is in the preceding sentences.
+
+
+---
+
+## Q7
+Category: nearby-context
+Expected tools: get_context
+Chapter/Section: Sixth Book (section IV)
+Prompt: He tells you to show an offender his error—what attitude toward the offender does the section opening prescribe just before this?
+Anchor passage: IV. Him that offends, to teach with love and meek ness, and to show him
+his error. But
+Notes: Opening line of section IV is above; get_context ‘before’.
+
+
+---
+
+## Q8
+Category: nearby-context
+Expected tools: get_context
+Chapter/Section: Sixth Book (section VI)
+Prompt: He will be ‘careful to do nothing prejudicial to the community’—what relation to other rational parts did he affirm immediately before that pledge?
+Anchor passage: And as I have relation of kindred to those parts that
+are of the same kind and nature that I am, so I shall be careful to
+do nothing that is prejudicial to the community, but in all my
+deliberations shall they that are of my kind ever be; and the common
+good, that, which all my intentions and resolutions shall drive unto,
+as that which is contrary unto it, I shall by all means endeavour to
+prevent and avoid.
+Notes: Kinship / kindred clause precedes within the same long paragraph.
+
+
+---
+
+## Q9
+Category: nearby-context
+Expected tools: get_context
+Chapter/Section: Sixth Book (section V)
+Prompt: Fate appoints what happens to you—what earlier clause in this same section states you have been appointed ‘from all time’?
+Anchor passage: V. Whatsoever it be that happens unto thee, it is that which from all
+time was appointed unto thee. For by the same coherence of causes, by
+which thy substance from all eternity was appointed to be, was also
+whatsoever should happen unto it, destinated and appointed.
+
+Notes: First sentence of section V; get_context ‘before’ within section.
+
+
+---
+
+## Q10
+Category: cross-section
+Expected tools: get_section_summary
+Chapter/Section: Sixth Book (section VI)
+Prompt: This book argues from cosmic nature down to civic duty—where does Marcus elsewhere counsel starting the day by expecting meddling people and ingratitude?
+Anchor passage: VI. Either with Epicurus, we must fondly imagine the atoms to be the
+cause of all things, or we must needs grant a nature. Let this then be
+thy first ground, that thou art part of that universe, which is governed
+by nature.
+Notes: Cross-book link to morning premeditation motifs.
+
+
+---
+
+## Q11
+Category: cross-section
+Expected tools: get_section_summary
+Chapter/Section: Sixth Book (section VII)
+Prompt: He consoles with dissolution into elements—where does he return to the image of the city as a hive of cooperation in another book?
+Anchor passage: So that by this means nothing is lost, but all resumed again into those
+rational generative seeds of the universe; and this universe, either
+after a certain period of time to lie consumed by fire, or by continual
+changes to be renewed, and so for ever to endure.
+Notes: Community metaphor elsewhere in Meditations.
+
+
+---
+
+## Q12
+Category: cross-section
+Expected tools: get_section_summary
+Chapter/Section: Sixth Book (section VII)
+Prompt: Alteration vs. corruption is debated here—where does Marcus speak of fame as smoke or bones as mere dust in a more sharply memento-mori register?
+Anchor passage: Alteration I should say, to speak truly and properly; but
+that I may be the better understood, I am content at this time to use
+that more common word.
+Notes: Cross-section to other books’ death imagery.
+
+
+---
+
+## Q13
+Category: book-level-thematic
+Expected tools: get_section_text
+Chapter/Section: Introduction (translator essay)
+Prompt: The introduction says Marcus ‘drills his soul’ because thought issues in act—how does Book VI’s argument about community harm exemplify that habit?
+Anchor passage: But Marcus Aurelius knows that what the heart is full of,
+the man will do. 'Such as thy thoughts and ordinary cogitations are,' he
+says, 'such will thy mind be in time.' And every page of the book shows
+us that he knew thought was sure to issue in act.
+Notes: Connect editorial portrait to this book’s ethics.
+
+
+---
+
+## Q14
+Category: book-level-thematic
+Expected tools: get_section_text
+Chapter/Section: Sixth Book (section VI)
+Prompt: Part vs. whole reasoning here underwrites acceptance—how does that Stoic physics echo Marcus’s recurring reminders that emperors and slaves share the same breath of life?
+Anchor passage: For nothing that is behoveful unto the
+whole, can be truly hurtful to that which is part of it. For this
+being the common privilege of all natures, that they contain nothing in
+themselves that is hurtful unto them; it cannot be that the nature of
+the universe (whose privilege beyond other particular natures, is,
+that she cannot against her will by any higher external cause be
+constrained,) should beget anything and cherish it in her bosom that
+should tend to her own hurt and prejudice. As then I bear in mind that
+I am a part of such an universe, I shall not be displeased with anything
+that happens.
+Notes: Thematic synthesis across books.
+
+
+---
+
+## Q15
+Category: book-level-thematic
+Expected tools: get_section_summary
+Chapter/Section: Sixth Book (section IX)
+Prompt: He describes the disciplined mind as incapable of concealment—how does that ideal of inner transparency relate to his political role as emperor elsewhere?
+Anchor passage: IX. In the mind that is once truly disciplined and purged, thou canst
+not find anything, either foul or impure, or as it were festered:
+nothing that is either servile, or affected: no partial tie; no
+malicious averseness; nothing obnoxious; nothing concealed. The life of
+such an one, death can never surprise as imperfect; as of an actor, that
+should die before he had ended, or the play itself were at an end, a man
+might speak.
+
+Notes: Role ethics vs. inner life across the work.
+
+
+---

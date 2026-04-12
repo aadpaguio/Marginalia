@@ -65,6 +65,7 @@ export interface ThreadContextParams {
   /**
    * Hybrid evaluation ablations: restricts tools and what is injected into the system prompt
    * so passage-only / tools-only / Smart Scan runs are reproducible.
+   * Passage-only still runs the same auto-prefetch of text before the anchor as non-eval turns (not a tool call).
    */
   evaluationToolPreset?: EvaluationToolPreset;
   bookSummary?: string | null;
@@ -447,7 +448,9 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     systemParts.push(
       "--- CONTEXT (EVALUATION RUN) ---\n" +
         "This is a controlled evaluation run. You have no retrieval tools: do not use get_context, section summaries, or section text. " +
-        "Answer using only the passage attached to this message (and the reader profile slot above). " +
+        "Answer using the passage attached to this message, the reader profile slot above, and — when present — the separate system block titled CURRENT TURN LEAD-UP CONTEXT " +
+        "(text immediately before the anchor on this turn only; not carried to later turns). " +
+        "Use that lead-up only to ground attribution, identification, or continuity the excerpt alone does not spell out; do not infer beyond what those two sources state. " +
         "Do not rely on book-wide structure, section index, or book overview — those are withheld for this condition.\n" +
         "Spoilers: Do not assume the reader has read past the excerpt."
     );
@@ -964,10 +967,10 @@ export async function askClaudeThread(
 ): Promise<ClaudeResponse> {
   // One-time auto-prefetch for current-turn attached passage only (before first API call). Not sent through onContextFetched.
   // Best-effort: if prefetch throws (e.g. resolver edge case), continue without a lead-up block so the turn still reaches the model.
-  // Skipped during evaluation runs so passage-only / tools conditions stay clean.
+  // Skipped for tools / smart_scan_tools eval (model must use get_context). Kept for passage_only so lead-up matches production turns.
   let prefetchedLeadUpContext: string | undefined;
   if (
-    !params.evaluationToolPreset &&
+    (!params.evaluationToolPreset || params.evaluationToolPreset === "passage_only") &&
     params.pendingExcerpt?.text?.trim() &&
     params.pendingExcerpt?.cfi?.trim()
   ) {
