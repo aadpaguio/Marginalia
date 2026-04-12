@@ -53,7 +53,15 @@ import {
   extractMemoryItemsPartial,
   persistExtractedMemoryItems,
 } from "@/services/compaction";
-import { askClaudeThread, generateThreadTitle, loadRelevantMemoryItems, type GetContextResult } from "@/services/claude";
+import {
+  askClaudeThread,
+  generateThreadTitle,
+  loadRelevantMemoryItems,
+  type AskClaudeThreadParams,
+  type GetContextResult,
+} from "@/services/claude";
+import { evalCompleteRun, evalCreateRun, type EvalCondition, type EvalQuestionRow } from "@/services/eval";
+import { EvaluationPanel } from "@/components/EvaluationPanel";
 import { getFirstTurnMemoryPlan, hasUserHistory, shouldAcceptPreloadResult } from "@/services/threadMemory";
 import { ArrowRight, ArrowUp, BookMarked, Globe, LogOut, MoreVertical, NotepadText, PanelLeft, PanelLeftClose, Pencil, ScanText, Settings, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -517,6 +525,17 @@ function App() {
   /** When rate limited, seconds left until next retry (0 = retrying now). null = not waiting. */
   const [scanRetryInSeconds, setScanRetryInSeconds] = useState<number | null>(null);
   const [showSmartScanBanner, setShowSmartScanBanner] = useState(false);
+  /** Hybrid evaluation mode: benchmark runs + export (see EVALUATION_PLAN.md). */
+  const [evalModeEnabled, setEvalModeEnabled] = useState(
+    () => typeof localStorage !== "undefined" && localStorage.getItem("marginalia_eval_mode") === "1"
+  );
+  useEffect(() => {
+    try {
+      localStorage.setItem("marginalia_eval_mode", evalModeEnabled ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  }, [evalModeEnabled]);
   /** When true, open the next book and immediately trigger a Smart Scan. */
   const pendingScanAfterOpenRef = useRef(false);
   const getSectionTextRef = useRef<((tocHref?: string) => string) | null>(null);
@@ -1465,6 +1484,157 @@ function App() {
       threadChatInputRef.current?.focus();
     }
   };
+
+  const handleEvalRunCondition = useCallback(
+    async (question: EvalQuestionRow, condition: EvalCondition) => {
+      if (!currentBookId || !bookDoc) {
+        throw new Error("Open a book before running evaluation.");
+      }
+      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+      if (!apiKey) {
+        throw new Error("Add VITE_ANTHROPIC_API_KEY to .env and restart.");
+      }
+
+      const runId = `evalrun-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+      const threadId = `thread-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+      const now = Date.now();
+
+      await dbCreateThread({
+        id: threadId,
+        bookId: currentBookId,
+        title: `Eval · ${condition}`,
+        createdAt: now,
+        updatedAt: now,
+        archived: false,
+      });
+
+      await evalCreateRun({
+        id: runId,
+        questionId: question.id,
+        condition,
+        threadId,
+      });
+
+      const emptyContext = (): GetContextResult => ({
+        sectionLabel: null,
+        charsBefore: 0,
+        charsAfter: 0,
+        atSectionStart: false,
+        atSectionEnd: false,
+        text: "",
+        anchorUnresolved: true,
+      });
+
+      const pendingExcerpt =
+        question.anchorCfi?.trim() && question.anchorText?.trim()
+          ? {
+              text: question.anchorText.trim(),
+              cfi: question.anchorCfi.trim(),
+              chapter: question.chapterLabel ?? null,
+            }
+          : undefined;
+
+      const branch: Partial<AskClaudeThreadParams> =
+        condition === "passage_only" || condition === "tools"
+          ? {
+              scanStatus: "none",
+              sectionSummaries: undefined,
+              bookSummary: undefined,
+              bookStructureType: undefined,
+              currentCfi: undefined,
+              getSectionTextByHref: undefined,
+              getPastThreadMessages: undefined,
+            }
+          : {
+              scanStatus,
+              sectionSummaries: sectionSummaries.length > 0 ? sectionSummaries : undefined,
+              bookSummary: bookSummary ?? undefined,
+              bookStructureType: bookStructureType ?? undefined,
+              currentCfi: currentTocHref ?? currentCfi ?? undefined,
+              getSectionTextByHref,
+              getPastThreadMessages: undefined,
+            };
+
+      const params: AskClaudeThreadParams = {
+        threadId,
+        messages: [],
+        attachedHighlights: [],
+        pendingExcerpt,
+        userMessage: question.prompt,
+        bookTitle: toDisplayString(bookDoc.metadata?.title, "Book"),
+        author: metadataAuthor(bookDoc.metadata, "Unknown"),
+        bookId: currentBookId,
+        bookMemory: undefined,
+        readerProfile: undefined,
+        memoryItems: undefined,
+        workingContext: "",
+        evaluationToolPreset: condition,
+        onSuggestSmartScan: () => {},
+        getContextAroundCfi: getContextAroundCfiRef.current ?? (() => emptyContext()),
+        onContextFetched: () => {},
+        webSearchEnabled: false,
+        ...branch,
+      };
+
+      try {
+        const result = await askClaudeThread(params, apiKey);
+        const userMsg: ThreadMessage = {
+          id: `msg-${now}-evu`,
+          threadId,
+          role: "user",
+          content: question.prompt,
+          createdAt: now,
+          ...(pendingExcerpt
+            ? {
+                excerptText: pendingExcerpt.text,
+                excerptCfi: pendingExcerpt.cfi,
+                excerptChapter: pendingExcerpt.chapter,
+                excerptColor: "yellow",
+                excerptPage: null,
+              }
+            : {}),
+        };
+        const assistantMsg: ThreadMessage = {
+          id: `msg-${now}-eva`,
+          threadId,
+          role: "assistant",
+          content: result.answer ?? "",
+          createdAt: now + 1,
+          webCitations: result.webCitations?.length ? result.webCitations : null,
+        };
+        await dbSaveThreadMessage(userMsg);
+        await dbSaveThreadMessage(assistantMsg);
+
+        await evalCompleteRun({
+          id: runId,
+          manifestId: result.completedManifest?.id ?? null,
+          status: "completed",
+          answerText: result.answer ?? "",
+          errorMessage: null,
+        });
+      } catch (e) {
+        await evalCompleteRun({
+          id: runId,
+          manifestId: null,
+          status: "error",
+          answerText: null,
+          errorMessage: e instanceof Error ? e.message : String(e),
+        });
+        throw e;
+      }
+    },
+    [
+      bookDoc,
+      bookStructureType,
+      bookSummary,
+      currentBookId,
+      currentCfi,
+      currentTocHref,
+      getSectionTextByHref,
+      scanStatus,
+      sectionSummaries,
+    ]
+  );
 
   const handleToggleBookmark = () => {
     if (!currentBookId || !currentCfi) return;
@@ -2610,6 +2780,35 @@ function App() {
                   </div>
                   {threadChatError && (
                     <div className="thread-chat-error">{threadChatError}</div>
+                  )}
+                </div>
+              )}
+              {panelTab === "threads" && bookDoc && currentBookId && (
+                <div style={{ padding: "0 12px" }}>
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      fontSize: 12,
+                      cursor: "pointer",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={evalModeEnabled}
+                      onChange={(e) => setEvalModeEnabled(e.target.checked)}
+                    />
+                    Evaluation mode (benchmark runs + export)
+                  </label>
+                  {evalModeEnabled && (
+                    <EvaluationPanel
+                      bookId={currentBookId}
+                      bookTitle={toDisplayString(bookDoc.metadata?.title, "Book")}
+                      scanStatus={scanStatus}
+                      onRunCondition={handleEvalRunCondition}
+                    />
                   )}
                 </div>
               )}

@@ -247,6 +247,112 @@ struct ContextManifest {
     final_answer_chars: Option<i64>,
 }
 
+// Hybrid evaluation mode (benchmark sets / runs / export)
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EvalSetRow {
+    id: String,
+    name: String,
+    description: Option<String>,
+    created_at: i64,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct EvalQuestionRow {
+    id: String,
+    set_id: String,
+    book_id: String,
+    sort_order: i64,
+    prompt: String,
+    category: Option<String>,
+    expected_min_context: Option<String>,
+    spoiler_label: Option<String>,
+    anchor_cfi: Option<String>,
+    anchor_text: Option<String>,
+    chapter_label: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EvalQuestionImportRow {
+    prompt: String,
+    #[serde(default)]
+    category: Option<String>,
+    #[serde(default)]
+    expected_min_context: Option<String>,
+    #[serde(default)]
+    spoiler_label: Option<String>,
+    #[serde(default)]
+    anchor_cfi: Option<String>,
+    #[serde(default)]
+    anchor_text: Option<String>,
+    #[serde(default)]
+    chapter_label: Option<String>,
+    #[serde(default)]
+    sort_order: Option<i64>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EvalCreateRunInput {
+    id: String,
+    question_id: String,
+    condition: String,
+    thread_id: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EvalCompleteRunInput {
+    id: String,
+    manifest_id: Option<String>,
+    status: String,
+    error_message: Option<String>,
+    answer_text: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EvalCreateSetPayload {
+    name: String,
+    description: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EvalAddQuestionsPayload {
+    set_id: String,
+    book_id: String,
+    json: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EvalSetIdPayload {
+    set_id: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EvalQuestionIdPayload {
+    question_id: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EvalExportFilterPayload {
+    #[serde(default)]
+    book_id: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EvalSaveExportPayload {
+    path: String,
+    contents: String,
+}
+
 // Phase 30: structured memory items + anchors
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -480,6 +586,47 @@ fn init_db(db_path: &Path) -> Result<(), String> {
         );
         CREATE INDEX IF NOT EXISTS idx_context_manifests_thread_created
           ON context_manifests(thread_id, created_at DESC);
+
+        CREATE TABLE IF NOT EXISTS eval_sets (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          description TEXT,
+          created_at INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS eval_questions (
+          id TEXT PRIMARY KEY,
+          set_id TEXT NOT NULL,
+          book_id TEXT NOT NULL,
+          sort_order INTEGER NOT NULL DEFAULT 0,
+          prompt TEXT NOT NULL,
+          category TEXT,
+          expected_min_context TEXT,
+          spoiler_label TEXT,
+          anchor_cfi TEXT,
+          anchor_text TEXT,
+          chapter_label TEXT,
+          FOREIGN KEY (set_id) REFERENCES eval_sets(id) ON DELETE CASCADE,
+          FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
+        );
+        CREATE INDEX IF NOT EXISTS idx_eval_questions_set_order
+          ON eval_questions(set_id, sort_order);
+
+        CREATE TABLE IF NOT EXISTS eval_runs (
+          id TEXT PRIMARY KEY,
+          question_id TEXT NOT NULL,
+          condition TEXT NOT NULL,
+          thread_id TEXT NOT NULL,
+          manifest_id TEXT,
+          status TEXT NOT NULL DEFAULT 'pending',
+          error_message TEXT,
+          answer_text TEXT,
+          created_at INTEGER NOT NULL,
+          completed_at INTEGER,
+          FOREIGN KEY (question_id) REFERENCES eval_questions(id) ON DELETE CASCADE,
+          FOREIGN KEY (thread_id) REFERENCES threads(id) ON DELETE CASCADE
+        );
+        CREATE INDEX IF NOT EXISTS idx_eval_runs_question ON eval_runs(question_id);
         "#,
     )
     .map_err(|e| e.to_string())?;
@@ -1174,6 +1321,521 @@ fn db_get_latest_manifest_for_thread(
         .optional()
         .map_err(|e| e.to_string())?;
     Ok(opt)
+}
+
+fn eval_generate_id(prefix: &str) -> String {
+    let n = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0);
+    format!("{prefix}-{n}")
+}
+
+#[tauri::command]
+fn eval_create_set(state: State<DbState>, payload: EvalCreateSetPayload) -> Result<EvalSetRow, String> {
+    let conn = open_db(&state)?;
+    let id = eval_generate_id("evalset");
+    let created_at = chrono_like_now();
+    conn.execute(
+        "INSERT INTO eval_sets (id, name, description, created_at) VALUES (?1, ?2, ?3, ?4)",
+        params![id, payload.name, payload.description, created_at],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(EvalSetRow {
+        id,
+        name: payload.name,
+        description: payload.description,
+        created_at,
+    })
+}
+
+#[tauri::command]
+fn eval_list_sets(state: State<DbState>) -> Result<Vec<EvalSetRow>, String> {
+    let conn = open_db(&state)?;
+    let mut stmt = conn
+        .prepare("SELECT id, name, description, created_at FROM eval_sets ORDER BY created_at DESC")
+        .map_err(|e| e.to_string())?;
+    let rows = stmt
+        .query_map([], |row| {
+            Ok(EvalSetRow {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                description: row.get(2)?,
+                created_at: row.get(3)?,
+            })
+        })
+        .map_err(|e| e.to_string())?;
+    rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn eval_delete_set(state: State<DbState>, id: String) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    conn.execute("DELETE FROM eval_sets WHERE id = ?1", params![id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn eval_add_questions_json(
+    state: State<DbState>,
+    payload: EvalAddQuestionsPayload,
+) -> Result<i64, String> {
+    let rows: Vec<EvalQuestionImportRow> =
+        serde_json::from_str(&payload.json).map_err(|e| format!("Invalid questions JSON: {e}"))?;
+    let conn = open_db(&state)?;
+    let mut count: i64 = 0;
+    let base_order: i64 = conn
+        .query_row(
+            "SELECT COALESCE(MAX(sort_order), -1) + 1 FROM eval_questions WHERE set_id = ?1",
+            params![payload.set_id],
+            |row| row.get(0),
+        )
+        .unwrap_or(0);
+    for (i, q) in rows.into_iter().enumerate() {
+        let qid = eval_generate_id("evalq");
+        let ord = q.sort_order.unwrap_or(base_order + i as i64);
+        conn.execute(
+            r#"INSERT INTO eval_questions (
+              id, set_id, book_id, sort_order, prompt, category, expected_min_context,
+              spoiler_label, anchor_cfi, anchor_text, chapter_label
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)"#,
+            params![
+                qid,
+                payload.set_id,
+                payload.book_id,
+                ord,
+                q.prompt,
+                q.category,
+                q.expected_min_context,
+                q.spoiler_label,
+                q.anchor_cfi,
+                q.anchor_text,
+                q.chapter_label,
+            ],
+        )
+        .map_err(|e| e.to_string())?;
+        count += 1;
+    }
+    Ok(count)
+}
+
+#[tauri::command]
+fn eval_list_questions(
+    state: State<DbState>,
+    payload: EvalSetIdPayload,
+) -> Result<Vec<EvalQuestionRow>, String> {
+    let conn = open_db(&state)?;
+    let mut stmt = conn
+        .prepare(
+            r#"SELECT id, set_id, book_id, sort_order, prompt, category, expected_min_context,
+               spoiler_label, anchor_cfi, anchor_text, chapter_label
+               FROM eval_questions WHERE set_id = ?1 ORDER BY sort_order ASC, id ASC"#,
+        )
+        .map_err(|e| e.to_string())?;
+    let rows = stmt
+        .query_map(params![payload.set_id], |row| {
+            Ok(EvalQuestionRow {
+                id: row.get(0)?,
+                set_id: row.get(1)?,
+                book_id: row.get(2)?,
+                sort_order: row.get(3)?,
+                prompt: row.get(4)?,
+                category: row.get(5)?,
+                expected_min_context: row.get(6)?,
+                spoiler_label: row.get(7)?,
+                anchor_cfi: row.get(8)?,
+                anchor_text: row.get(9)?,
+                chapter_label: row.get(10)?,
+            })
+        })
+        .map_err(|e| e.to_string())?;
+    rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn eval_create_run(state: State<DbState>, input: EvalCreateRunInput) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    let created_at = chrono_like_now();
+    conn.execute(
+        r#"INSERT INTO eval_runs (id, question_id, condition, thread_id, manifest_id, status, error_message, answer_text, created_at, completed_at)
+           VALUES (?1, ?2, ?3, ?4, NULL, 'pending', NULL, NULL, ?5, NULL)"#,
+        params![
+            input.id,
+            input.question_id,
+            input.condition,
+            input.thread_id,
+            created_at,
+        ],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn eval_complete_run(state: State<DbState>, input: EvalCompleteRunInput) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    let completed_at = chrono_like_now();
+    conn.execute(
+        r#"UPDATE eval_runs SET manifest_id = ?1, status = ?2, error_message = ?3, answer_text = ?4, completed_at = ?5
+           WHERE id = ?6"#,
+        params![
+            input.manifest_id,
+            input.status,
+            input.error_message,
+            input.answer_text,
+            completed_at,
+            input.id,
+        ],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn eval_list_runs_for_question(
+    state: State<DbState>,
+    payload: EvalQuestionIdPayload,
+) -> Result<Vec<serde_json::Value>, String> {
+    let conn = open_db(&state)?;
+    let mut stmt = conn
+        .prepare(
+            r#"SELECT id, question_id, condition, thread_id, manifest_id, status, error_message, answer_text, created_at, completed_at
+               FROM eval_runs WHERE question_id = ?1 ORDER BY created_at DESC"#,
+        )
+        .map_err(|e| e.to_string())?;
+    let rows = stmt
+        .query_map(params![payload.question_id], |row| {
+            Ok(serde_json::json!({
+                "id": row.get::<_, String>(0)?,
+                "questionId": row.get::<_, String>(1)?,
+                "condition": row.get::<_, String>(2)?,
+                "threadId": row.get::<_, String>(3)?,
+                "manifestId": row.get::<_, Option<String>>(4)?,
+                "status": row.get::<_, String>(5)?,
+                "errorMessage": row.get::<_, Option<String>>(6)?,
+                "answerText": row.get::<_, Option<String>>(7)?,
+                "createdAt": row.get::<_, i64>(8)?,
+                "completedAt": row.get::<_, Option<i64>>(9)?,
+            }))
+        })
+        .map_err(|e| e.to_string())?;
+    let mut out = Vec::new();
+    for r in rows {
+        out.push(r.map_err(|e| e.to_string())?);
+    }
+    Ok(out)
+}
+
+fn latest_assistant_message(conn: &Connection, thread_id: &str) -> Result<(Option<String>, Option<String>), String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT content, web_citations FROM thread_messages WHERE thread_id = ?1 AND role = 'assistant' ORDER BY created_at DESC LIMIT 1",
+        )
+        .map_err(|e| e.to_string())?;
+    let mut rows = stmt
+        .query_map(params![thread_id], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, Option<String>>(1)?))
+        })
+        .map_err(|e| e.to_string())?;
+    if let Some(r) = rows.next() {
+        let (c, w) = r.map_err(|e| e.to_string())?;
+        return Ok((Some(c), w));
+    }
+    Ok((None, None))
+}
+
+#[tauri::command]
+fn eval_export_jsonl(
+    state: State<DbState>,
+    filter: EvalExportFilterPayload,
+) -> Result<String, String> {
+    let conn = open_db(&state)?;
+    let mut stmt = conn
+        .prepare(
+            r#"SELECT
+                 r.id, r.question_id, r.condition, r.thread_id, r.manifest_id, r.status, r.error_message,
+                 r.answer_text, r.created_at, r.completed_at,
+                 q.set_id, q.book_id, q.prompt, q.category, q.expected_min_context, q.spoiler_label,
+                 q.anchor_cfi, q.anchor_text, q.chapter_label,
+                 s.name,
+                 m.tools_available, m.tool_calls_made, m.smart_scan_status, m.final_answer_chars
+               FROM eval_runs r
+               JOIN eval_questions q ON q.id = r.question_id
+               JOIN eval_sets s ON s.id = q.set_id
+               LEFT JOIN context_manifests m ON m.id = r.manifest_id
+               WHERE (?1 IS NULL OR q.book_id = ?1)
+               ORDER BY r.created_at ASC"#,
+        )
+        .map_err(|e| e.to_string())?;
+    let bid = filter.book_id.as_deref();
+    let base_rows: Vec<(String, String, String, String, Option<String>, String, Option<String>, Option<String>, i64, Option<i64>, String, String, String, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>, Option<String>, String, Option<String>, Option<String>, Option<String>, Option<i64>)> = stmt
+        .query_map(params![bid], |row| {
+            Ok((
+                row.get(0)?,
+                row.get(1)?,
+                row.get(2)?,
+                row.get(3)?,
+                row.get(4)?,
+                row.get(5)?,
+                row.get(6)?,
+                row.get(7)?,
+                row.get(8)?,
+                row.get(9)?,
+                row.get(10)?,
+                row.get(11)?,
+                row.get(12)?,
+                row.get(13)?,
+                row.get(14)?,
+                row.get(15)?,
+                row.get(16)?,
+                row.get(17)?,
+                row.get(18)?,
+                row.get(19)?,
+                row.get(20)?,
+                row.get(21)?,
+                row.get(22)?,
+                row.get(23)?,
+            ))
+        })
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+
+    let mut lines: Vec<String> = Vec::new();
+    for (
+        run_id,
+        question_id,
+        condition,
+        thread_id,
+        manifest_id,
+        status,
+        error_message,
+        answer_text,
+        created_at,
+        completed_at,
+        set_id,
+        book_id_val,
+        prompt,
+        category,
+        expected_min_context,
+        spoiler_label,
+        anchor_cfi,
+        anchor_text,
+        chapter_label,
+        set_name,
+        tools_available,
+        tool_calls_made,
+        smart_scan_status,
+        final_answer_chars,
+    ) in base_rows
+    {
+        let (assistant_content, assistant_web_citations) =
+            latest_assistant_message(&conn, &thread_id).unwrap_or((None, None));
+        let v = serde_json::json!({
+            "runId": run_id,
+            "questionId": question_id,
+            "condition": condition,
+            "threadId": thread_id,
+            "manifestId": manifest_id,
+            "status": status,
+            "errorMessage": error_message,
+            "answerTextStored": answer_text,
+            "runCreatedAt": created_at,
+            "runCompletedAt": completed_at,
+            "setId": set_id,
+            "bookId": book_id_val,
+            "prompt": prompt,
+            "category": category,
+            "expectedMinContext": expected_min_context,
+            "spoilerLabel": spoiler_label,
+            "anchorCfi": anchor_cfi,
+            "anchorText": anchor_text,
+            "chapterLabel": chapter_label,
+            "setName": set_name,
+            "manifestToolsAvailable": tools_available,
+            "manifestToolCallsMade": tool_calls_made,
+            "manifestSmartScanStatus": smart_scan_status,
+            "manifestFinalAnswerChars": final_answer_chars,
+            "assistantMessageContent": assistant_content,
+            "assistantWebCitations": assistant_web_citations,
+        });
+        lines.push(serde_json::to_string(&v).map_err(|e| e.to_string())?);
+    }
+    Ok(lines.join("\n"))
+}
+
+fn csv_escape(s: &str) -> String {
+    if s.contains('"') || s.contains(',') || s.contains('\n') || s.contains('\r') {
+        let t = s.replace('"', "\"\"");
+        format!("\"{t}\"")
+    } else {
+        s.to_string()
+    }
+}
+
+#[tauri::command]
+fn eval_export_csv(state: State<DbState>, filter: EvalExportFilterPayload) -> Result<String, String> {
+    let conn = open_db(&state)?;
+    let headers = [
+        "runId",
+        "questionId",
+        "condition",
+        "status",
+        "setName",
+        "bookId",
+        "category",
+        "expectedMinContext",
+        "spoilerLabel",
+        "prompt",
+        "anchorCfi",
+        "threadId",
+        "manifestId",
+        "manifestToolsAvailable",
+        "manifestToolCallsMade",
+        "manifestSmartScanStatus",
+        "manifestFinalAnswerChars",
+        "errorMessage",
+        "answerTextStored",
+        "assistantMessageContent",
+        "assistantWebCitations",
+        "runCreatedAt",
+        "runCompletedAt",
+    ];
+    let mut out = headers.join(",") + "\n";
+    let mut stmt = conn
+        .prepare(
+            r#"SELECT
+                 r.id, r.question_id, r.condition, r.status,
+                 s.name, q.book_id, q.category, q.expected_min_context, q.spoiler_label,
+                 q.prompt, q.anchor_cfi, r.thread_id, r.manifest_id,
+                 m.tools_available, m.tool_calls_made, m.smart_scan_status, m.final_answer_chars,
+                 r.error_message, r.answer_text, r.created_at, r.completed_at
+               FROM eval_runs r
+               JOIN eval_questions q ON q.id = r.question_id
+               JOIN eval_sets s ON s.id = q.set_id
+               LEFT JOIN context_manifests m ON m.id = r.manifest_id
+               WHERE (?1 IS NULL OR q.book_id = ?1)
+               ORDER BY r.created_at ASC"#,
+        )
+        .map_err(|e| e.to_string())?;
+    let bid = filter.book_id.as_deref();
+    type CsvRow = (
+        String,
+        String,
+        String,
+        String,
+        String,
+        String,
+        Option<String>,
+        Option<String>,
+        Option<String>,
+        String,
+        Option<String>,
+        String,
+        Option<String>,
+        Option<String>,
+        Option<String>,
+        Option<String>,
+        Option<i64>,
+        Option<String>,
+        Option<String>,
+        i64,
+        Option<i64>,
+    );
+    let base: Vec<CsvRow> = stmt
+        .query_map(params![bid], |row| {
+            Ok((
+                row.get(0)?,
+                row.get(1)?,
+                row.get(2)?,
+                row.get(3)?,
+                row.get(4)?,
+                row.get(5)?,
+                row.get(6)?,
+                row.get(7)?,
+                row.get(8)?,
+                row.get(9)?,
+                row.get(10)?,
+                row.get(11)?,
+                row.get(12)?,
+                row.get(13)?,
+                row.get(14)?,
+                row.get(15)?,
+                row.get(16)?,
+                row.get(17)?,
+                row.get(18)?,
+                row.get(19)?,
+                row.get(20)?,
+            ))
+        })
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+
+    for (
+        run_id,
+        qid,
+        cond,
+        status,
+        set_name,
+        bid_val,
+        cat,
+        emc,
+        spoil,
+        prompt,
+        anchor,
+        thread_id,
+        mid,
+        tools_av,
+        tools_made,
+        scan,
+        fac,
+        err,
+        ans,
+        created,
+        completed,
+    ) in base
+    {
+        let (asst, asst_web) = latest_assistant_message(&conn, &thread_id).unwrap_or((None, None));
+        let row = vec![
+            csv_escape(&run_id),
+            csv_escape(&qid),
+            csv_escape(&cond),
+            csv_escape(&status),
+            csv_escape(&set_name),
+            csv_escape(&bid_val),
+            csv_escape(&cat.unwrap_or_default()),
+            csv_escape(&emc.unwrap_or_default()),
+            csv_escape(&spoil.unwrap_or_default()),
+            csv_escape(&prompt),
+            csv_escape(&anchor.unwrap_or_default()),
+            csv_escape(&thread_id),
+            csv_escape(&mid.unwrap_or_default()),
+            csv_escape(&tools_av.unwrap_or_default()),
+            csv_escape(&tools_made.unwrap_or_default()),
+            csv_escape(&scan.unwrap_or_default()),
+            fac.map(|n| n.to_string()).unwrap_or_default(),
+            csv_escape(&err.unwrap_or_default()),
+            csv_escape(&ans.unwrap_or_default()),
+            csv_escape(&asst.unwrap_or_default()),
+            csv_escape(&asst_web.unwrap_or_default()),
+            created.to_string(),
+            completed.map(|n| n.to_string()).unwrap_or_default(),
+        ];
+        out.push_str(&row.join(","));
+        out.push('\n');
+    }
+    Ok(out)
+}
+
+/// Write eval export bytes (avoids configuring fs plugin scopes for arbitrary save paths).
+#[tauri::command]
+fn eval_save_export_file(payload: EvalSaveExportPayload) -> Result<(), String> {
+    if payload.path.trim().is_empty() {
+        return Err("Empty path".to_string());
+    }
+    std::fs::write(payload.path, payload.contents).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -2533,6 +3195,17 @@ pub fn run() {
             db_save_manifest,
             db_get_manifests_for_thread,
             db_get_latest_manifest_for_thread,
+            eval_create_set,
+            eval_list_sets,
+            eval_delete_set,
+            eval_add_questions_json,
+            eval_list_questions,
+            eval_create_run,
+            eval_complete_run,
+            eval_list_runs_for_question,
+            eval_export_jsonl,
+            eval_export_csv,
+            eval_save_export_file,
             db_attach_highlight_to_thread,
             db_get_highlights_for_thread,
             db_get_standalone_highlights,

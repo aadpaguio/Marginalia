@@ -20,7 +20,16 @@ import { useInstantAnnotation } from "../hooks/useInstantAnnotation";
 import Annotator from "./annotator/Annotator";
 import type { CitationPayload, Highlight } from "@/types/book";
 import type { GetContextDirection, GetContextResult } from "@/services/claude";
-import { BookOpen, ChevronDown, ChevronLeft, ChevronRight, Plus, Redo2, Undo2 } from "lucide-react";
+import {
+  BookOpen,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  Plus,
+  Redo2,
+  Undo2,
+} from "lucide-react";
 import readerChromeStyles from "../ReaderChrome.module.css";
 import WiktionaryPopup from "./annotator/WiktionaryPopup";
 import type { WiktionaryLayout } from "./annotator/WiktionaryPopup";
@@ -393,6 +402,8 @@ export default function FoliateViewer({
     canGoForward: false,
   });
   const [pendingSelection, setPendingSelection] = useState<ToolbarSelection | null>(null);
+  /** Brief feedback after "Copy for eval" (clipboard). */
+  const [evalCopyHint, setEvalCopyHint] = useState<string | null>(null);
   const [addToThreadDropdownOpen, setAddToThreadDropdownOpen] = useState(false);
   const [hoveredNote, setHoveredNote] = useState<ToolbarSelection | null>(null);
   const [dictionaryOpen, setDictionaryOpen] = useState(false);
@@ -596,6 +607,29 @@ export default function FoliateViewer({
     },
     [dismissSelectionUi, onOpenAiPanel, selectionPayload]
   );
+
+  /** Clipboard: one JSON object (paste several into a single `[ … ]` for Import). */
+  const handleCopyForEval = useCallback(async () => {
+    if (!selectionPayload?.cfi?.trim() || !selectionPayload.selectedText?.trim()) return;
+    const row: Record<string, string | undefined> = {
+      prompt: "Explain this passage in context.",
+      category: "passage-local",
+      anchorCfi: selectionPayload.cfi.trim(),
+      anchorText: selectionPayload.selectedText.trim(),
+    };
+    if (selectionPayload.chapterLabel?.trim()) {
+      row.chapterLabel = selectionPayload.chapterLabel.trim();
+    }
+    const json = JSON.stringify(row, null, 2);
+    try {
+      await navigator.clipboard.writeText(json);
+      setEvalCopyHint("Copied object — comma-separate inside [ ]");
+      window.setTimeout(() => setEvalCopyHint(null), 2500);
+    } catch {
+      setEvalCopyHint("Copy failed (browser blocked clipboard)");
+      window.setTimeout(() => setEvalCopyHint(null), 3000);
+    }
+  }, [selectionPayload]);
 
   const handleQuickHighlight = useCallback(
     async (color: string) => {
@@ -1867,6 +1901,41 @@ export default function FoliateViewer({
                 <Plus size={16} />
               </button>
             </div>
+            <div className={`${readerChromeStyles.toolbarDivider} ${theme === "dark" ? readerChromeStyles.toolbarDividerDark : ""}`} />
+            <button
+              type="button"
+              aria-label="Copy selection as one eval question JSON object"
+              title="Copy for eval — one JSON object; wrap many in [ ] with commas for Import"
+              onClick={(e) => {
+                e.stopPropagation();
+                void handleCopyForEval();
+              }}
+              disabled={!selectionPayload?.cfi?.trim() || !selectionPayload?.selectedText?.trim()}
+              className={readerChromeStyles.newThreadButton}
+              style={{
+                opacity:
+                  selectionPayload?.cfi?.trim() && selectionPayload?.selectedText?.trim() ? 1 : 0.4,
+              }}
+            >
+              <ClipboardList size={16} />
+            </button>
+            {evalCopyHint && (
+              <span
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  top: "100%",
+                  marginTop: 6,
+                  fontSize: 11,
+                  whiteSpace: "normal",
+                  maxWidth: 280,
+                  color: "var(--ink-secondary, #555)",
+                  pointerEvents: "none",
+                }}
+              >
+                {evalCopyHint}
+              </span>
+            )}
           </div>
           )}
         </>
