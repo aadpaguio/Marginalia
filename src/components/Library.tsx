@@ -1,6 +1,6 @@
 import type { MouseEvent } from "react";
 import { Menu, MenuItem } from "@tauri-apps/api/menu";
-import { Plus, Settings } from "lucide-react";
+import { Loader2, Plus, Settings } from "lucide-react";
 import type { StoredBook } from "@/services/db";
 import styles from "./Library.module.css";
 
@@ -44,11 +44,19 @@ export default function Library({
     await menu.popup();
   };
 
+  const anyScanInProgress = books.some((b) => b.smartScanStatus === "in_progress");
+
   const topBar = (
     <header className={styles.topBar}>
       <div className={styles.brand}>
         <h1 className={styles.appName}>Marginalia</h1>
         <p className={styles.subtitle}>Your library</p>
+        {anyScanInProgress && (
+          <p className={styles.homeScanHint} role="status" aria-live="polite">
+            <Loader2 className={styles.homeScanHintIcon} size={12} strokeWidth={2.25} aria-hidden />
+            <span>Smart Scan running in the background</span>
+          </p>
+        )}
       </div>
       <div className={styles.actions}>
         <button
@@ -100,6 +108,8 @@ export default function Library({
             const progress = Math.max(0, Math.min(1, book.progressFraction || 0));
             const isOpening = openingBookId === book.id;
             const isDisabled = book.isMissingFile || isOpening;
+            const scanDone = book.smartScanStatus === "done";
+            const scanInProgress = book.smartScanStatus === "in_progress";
             return (
               <div
                 key={book.id}
@@ -111,10 +121,14 @@ export default function Library({
                   className={styles.cardButton}
                   disabled={isDisabled}
                   onClick={() => onSelectBook(book)}
+                  aria-busy={scanInProgress || undefined}
+                  aria-label={scanInProgress ? `${book.title || "Book"}, Smart Scan in progress` : undefined}
                 >
                   <div
-                    className={`${styles.coverWrap} ${book.smartScanStatus === "done" ? styles.scanned : ""}`}
-                    title={book.smartScanStatus === "done" ? "Smart-Scanned" : undefined}
+                    className={`${styles.coverWrap} ${scanDone ? styles.scanned : ""} ${scanInProgress ? styles.scanning : ""}`}
+                    title={
+                      scanDone ? "Smart-Scanned" : scanInProgress ? "Smart Scan in progress — continues in the background" : undefined
+                    }
                   >
                     {book.coverDataUrl ? (
                       <img
@@ -125,6 +139,12 @@ export default function Library({
                     ) : (
                       <div className={styles.coverPlaceholder}>
                         <span className={styles.coverPlaceholderText}>{book.title || "No title"}</span>
+                      </div>
+                    )}
+                    {scanInProgress && (
+                      <div className={styles.scanChip} aria-hidden>
+                        <Loader2 className={styles.scanChipIcon} size={13} strokeWidth={2.25} />
+                        <span>Smart Scan</span>
                       </div>
                     )}
                   </div>
