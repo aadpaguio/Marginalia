@@ -46,6 +46,15 @@ describe("Phase 27 — assembleThreadContext (blind model posture)", () => {
     const result = assembleThreadContext(baseParams);
     const text = result.systemBlocks[0].text;
     expect(text).toContain("Two normal turn types");
+    expect(text).toContain("--- RETRIEVAL PATTERNS ---");
+    expect(text).toContain("Close reading:");
+    expect(text).toContain("Local expansion:");
+    expect(text).toContain("Orient then decide:");
+    expect(text).toContain(
+      "Do not call get_section_text without consulting a section summary first for that spine_href unless the reader explicitly asks"
+    );
+    expect(text).toContain("Cross-section:");
+    expect(text).toContain("Start with the lightest strategy that fits the question. Escalate only when needed.");
     expect(text).toContain("When a passage is attached to the message");
     expect(text).toContain("freeform thread question");
     expect(text).toContain("no passage is attached");
@@ -55,6 +64,21 @@ describe("Phase 27 — assembleThreadContext (blind model posture)", () => {
     expect(text).toContain("atSectionStart");
     expect(text).toContain("Broader scope:");
     expect(text).toContain("ask before fetching or summarising");
+  });
+
+  it("evaluation tools preset adds only close-reading and local-expansion retrieval guidance", () => {
+    const result = assembleThreadContext({
+      ...baseParams,
+      evaluationToolPreset: "tools",
+    });
+    const text = result.systemBlocks[0].text;
+    expect(text).toContain("--- RETRIEVAL PATTERNS ---");
+    expect(text).toContain("Close reading:");
+    expect(text).toContain("Local expansion:");
+    expect(text).toContain("Treat these as heuristics, not rigid pipelines.");
+    expect(text).toContain("Start with the lightest strategy that fits the question. Escalate only when needed.");
+    expect(text).not.toContain("Orient then decide:");
+    expect(text).not.toContain("Cross-section:");
   });
 
   it("TOOLS & CONTEXT: attribution must not be answered by inference or guess; must fetch if not explicit", () => {

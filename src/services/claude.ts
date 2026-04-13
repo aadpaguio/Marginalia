@@ -378,6 +378,24 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
   const evalPreset = params.evaluationToolPreset;
   const evalHidesScanAndOverview =
     evalPreset === "passage_only" || evalPreset === "tools";
+  const passageOnlyRetrievalPatterns =
+    "--- RETRIEVAL PATTERNS ---\n" +
+    "- Close reading: answer from the attached passage and, when present, CURRENT TURN LEAD-UP CONTEXT. No retrieval tools.\n" +
+    "- Spoiler boundary: do not assume the reader has read beyond the excerpt.";
+  const toolsOnlyRetrievalPatterns =
+    "--- RETRIEVAL PATTERNS ---\n" +
+    "- Close reading: answer from the passage when it already contains the answer. No tool needed.\n" +
+    "- Local expansion: use get_context for neighboring text (before / after / around / from_section_start) when the question needs immediate surroundings.\n" +
+    "- Spoiler boundary: do not assume the reader has read past the excerpt.\n" +
+    "Treat these as heuristics, not rigid pipelines. Start with the lightest strategy that fits the question. Escalate only when needed.";
+  const fullRetrievalPatterns =
+    "--- RETRIEVAL PATTERNS ---\n" +
+    "- Close reading: answer from the passage when it already contains the answer. No tool needed.\n" +
+    "- Local expansion: use get_context for neighboring text (before / after / around / from_section_start).\n" +
+    "- Orient then decide: call get_section_summary on the current section or a candidate section and read that summary before loading full section text. Do not call get_section_text without consulting a section summary first for that spine_href unless the reader explicitly asks for a specific passage or names an identified section. Prefer get_context when you only need anchor-adjacent wording instead of the whole section.\n" +
+    "- Cross-section: use the section index to pick 1-2 candidate sections, check summaries first, then fetch full text only for the best match.\n" +
+    "- Spoiler boundary: if answering would require content ahead of the reader's current position, say so and ask before fetching.\n" +
+    "Treat these as heuristics, not rigid pipelines. Start with the lightest strategy that fits the question. Escalate only when needed.";
 
   const systemParts: string[] = [];
   // --- IDENTITY ---
@@ -440,7 +458,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
         `Use spine_href (first column) with get_section_summary or get_section_text. Summaries are not inlined; call the tool when needed.\n` +
         `Reader's current position maps to spine index ${currentSpineIndex}; sections with [ahead] are past the reader.\n\n` +
         sectionIndexLines.join("\n") +
-        `\n\nFor get_context: use direction (before / after / around / from_section_start) and max_chars (snippet ~2000, section ~8000, full ~20000). Only use [ahead] sections if the reader asks about content ahead; flag spoilers.`
+        `\n\nTreat [ahead] sections as spoiler-sensitive. Only use them if the reader asks about content ahead or gives permission to look forward.`
     );
   }
   // --- TOOLS & CONTEXT ---
@@ -452,7 +470,8 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
         "(text immediately before the anchor on this turn only; not carried to later turns). " +
         "Use that lead-up only to ground attribution, identification, or continuity the excerpt alone does not spell out; do not infer beyond what those two sources state. " +
         "Do not rely on book-wide structure, section index, or book overview — those are withheld for this condition.\n" +
-        "Spoilers: Do not assume the reader has read past the excerpt."
+        "Spoilers: Do not assume the reader has read past the excerpt.\n" +
+        passageOnlyRetrievalPatterns
     );
   } else if (evalPreset === "tools") {
     systemParts.push(
@@ -460,13 +479,16 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
         "The reader only ever sees your final message. They do not see tool calls, tool output, or any text you fetched.\n" +
         "You have exactly one retrieval tool: get_context (CFI + direction + max_chars). There is no section index or get_section_summary / get_section_text in this condition.\n" +
         "When to use get_context: when the question needs text around the reader's passage anchor. Pass the EPUB CFI from the passage or ACTIVE THREAD PASSAGE block, direction (before / after / around / from_section_start), and max_chars (snippet ~2000, section ~8000, full ~20000).\n" +
-        "Spoilers: Do not assume the reader has read past the excerpt."
+        "Spoilers: Do not assume the reader has read past the excerpt.\n" +
+        toolsOnlyRetrievalPatterns
     );
   } else {
     systemParts.push(
       "--- TOOLS & CONTEXT ---\n" +
         "The reader only ever sees your final message. They do not see tool calls, tool output, or any text you fetched. So: never imply they can see it. Do not say 'as you can see from the context', 'what I retrieved shows', 'the passage I pulled', 'in the text I fetched', or similar. Answer as if the relevant content were already in front of you — quote or paraphrase it in your reply; that is the only way the reader gets the information.\n" +
         "Two normal turn types: (1) When a passage is attached to the message, you have that passage and the reader's question — use it as your default evidence base. (2) When no passage is attached but an ACTIVE THREAD PASSAGE (inherited) block is present below, this turn inherits the most recent thread passage — use it as the default anchor and its CFI for get_context when needed. (3) When no passage is attached and there is no active thread passage, this is a freeform thread question: you have only the reader's question. Only ask the user to point to the text again when there is no active anchor (no passage on this message and no ACTIVE THREAD PASSAGE block). Do not assume the reader has read beyond what is in front of them.\n" +
+        fullRetrievalPatterns +
+        "\n" +
         "When to use tools:\n" +
         "- get_context (CFI + direction + max_chars): Use when the question needs text around the reader's current passage. Pass the EPUB CFI and direction: use 'from_section_start' when you need what led up to the anchor from the start of the chapter/section; 'before' for immediate lead-up; 'after' for what follows; 'around' for local context. Use max_chars (snippet ~2000, section ~8000, full ~20000). The tool returns atSectionStart, atSectionEnd, charsBefore, charsAfter so you can reason about position (e.g. 'there may not be much prior context yet'). Use it in this turn if you need it; no need to ask first.\n" +
         "Attribution and source-identification: Do not answer attribution questions (e.g. 'what essay is this from?', 'who is speaking?', 'which chapter/section?') by inference or prior knowledge. You may only state a source, speaker, or title if it is explicitly stated in the attached passage or in the CURRENT TURN LEAD-UP CONTEXT block. If the attached passage and CURRENT TURN LEAD-UP CONTEXT together do not explicitly name the source, speaker, or essay, you must call get_context before answering — do not guess. For source-attribution in quoted or critical prose, when the lead-up (before) context does not resolve the attribution, call get_context with direction 'around' or 'after' to look for the title or speaker; then answer only from what the fetched text explicitly states.\n" +
@@ -686,7 +708,7 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
 const GET_CONTEXT_TOOL = {
   name: "get_context",
   description:
-    "Retrieve text from the book around the reader's passage anchor. Pass the EPUB CFI from the user's message or ACTIVE THREAD PASSAGE (inherited), plus direction and max_chars. Use 'from_section_start' when you need what led up to the anchor from the start of the chapter/section; 'before' for immediate lead-up; 'after' for what follows; 'around' for local context on both sides. The tool returns sectionLabel, charsBefore, charsAfter, atSectionStart, atSectionEnd, and text — use these to reason about position (e.g. 'this is early in the chapter'). Do NOT pass a spine href: for another section use get_section_summary or get_section_text.",
+    "Retrieve neighboring text around the reader's passage anchor. If the passage already answers the question, no tool is needed. Pass the EPUB CFI from the user's message or ACTIVE THREAD PASSAGE (inherited), plus direction and max_chars. Use 'from_section_start' when you need what led up to the anchor from the start of the chapter/section; 'before' for immediate lead-up; 'after' for what follows; 'around' for local context on both sides. The tool returns sectionLabel, charsBefore, charsAfter, atSectionStart, atSectionEnd, and text — use these to reason about position (e.g. 'this is early in the chapter'). Do NOT pass a spine href: for another section use get_section_summary or get_section_text.",
   input_schema: {
     type: "object",
     properties: {
@@ -714,7 +736,7 @@ const GET_CONTEXT_TOOL = {
 const GET_SECTION_SUMMARY_TOOL = {
   name: "get_section_summary",
   description:
-    "Retrieve the AI-generated summary for a specific section (by spine_href). Returns the summary only. Use for thematic questions or to decide which section to fetch full text from with get_section_text.",
+    "Retrieve the AI-generated summary for a specific section (by spine_href). Returns the summary only. Use this to orient within one or two candidate sections before deciding whether you need get_context or get_section_text.",
   input_schema: {
     type: "object",
     properties: {
@@ -731,7 +753,7 @@ const GET_SECTION_SUMMARY_TOOL = {
 const GET_SECTION_TEXT_TOOL = {
   name: "get_section_text",
   description:
-    "Retrieve the full text of a section by spine_href. Use this when the reader asks for pertinent lines, exact quotes, or specific passages from a section they have not reached — call with the spine_href from the section index. Returns the raw text of that section so you can quote and discuss specific lines.",
+    "Retrieve the full text of a section by spine_href. Default: call get_section_summary for that spine_href first and read it before fetching full text, unless the reader explicitly asks for lines from a named or clearly identified section. Use this when you need quotes or line-level evidence after orienting — pass the spine_href from the section index. Returns the raw text of that section so you can quote and discuss specific lines.",
   input_schema: {
     type: "object",
     properties: {
