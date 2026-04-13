@@ -1645,6 +1645,27 @@ function App() {
     ]
   );
 
+  const handleResolveEvalAnchor = useCallback(
+    async ({
+      anchorText,
+      chapterLabel,
+    }: {
+      anchorText: string;
+      chapterLabel?: string | null;
+    }): Promise<string | null> => {
+      const quote = anchorText.trim();
+      if (!quote) return null;
+      const resolver = resolveCitationRef.current;
+      if (!resolver) return null;
+      return resolver({
+        quote,
+        anchorBefore: quote,
+        spineHint: chapterLabel ?? null,
+      });
+    },
+    []
+  );
+
   const handleToggleBookmark = () => {
     if (!currentBookId || !currentCfi) return;
     const existing = bookmarks.find((bookmark) => bookmark.cfi === currentCfi);
@@ -2821,6 +2842,7 @@ function App() {
                       bookTitle={toDisplayString(bookDoc.metadata?.title, "Book")}
                       scanStatus={scanStatus}
                       onRunCondition={handleEvalRunCondition}
+                      onResolveAnchor={handleResolveEvalAnchor}
                     />
                   )}
                 </div>
