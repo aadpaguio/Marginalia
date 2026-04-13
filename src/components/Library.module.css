@@ -39,6 +39,23 @@
   margin-top: 2px;
 }
 
+.homeScanHint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-secondary);
+}
+
+.homeScanHintIcon {
+  flex-shrink: 0;
+  color: var(--accent);
+  animation: libraryScanSpin 0.85s linear infinite;
+}
+
 .actions {
   display: flex;
   align-items: center;
@@ -166,6 +183,46 @@
   aspect-ratio: 2 / 3;
   overflow: hidden;
   position: relative;
+}
+
+.coverWrap.scanning {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.scanChip {
+  position: absolute;
+  left: var(--space-2);
+  right: var(--space-2);
+  bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 5px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--ink-primary);
+  background: color-mix(in srgb, var(--surface-page) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border-moderate));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 12;
+  pointer-events: none;
+}
+
+.scanChipIcon {
+  flex-shrink: 0;
+  color: var(--accent);
+  animation: libraryScanSpin 0.85s linear infinite;
+}
+
+@keyframes libraryScanSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .coverWrap.scanned::before {

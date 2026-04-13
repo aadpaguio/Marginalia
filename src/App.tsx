@@ -538,6 +538,8 @@ function App() {
   }, [evalModeEnabled]);
   /** When true, open the next book and immediately trigger a Smart Scan. */
   const pendingScanAfterOpenRef = useRef(false);
+  /** Book id whose Smart Scan promise is still running in this session (avoids treating that row as stale on reopen). */
+  const activeSmartScanBookIdRef = useRef<string | null>(null);
   const getSectionTextRef = useRef<((tocHref?: string) => string) | null>(null);
   const getContextAroundCfiRef = useRef<
     ((cfi: string, direction: import("@/services/claude").GetContextDirection, maxChars: number, anchorText?: string) => GetContextResult) | null
@@ -816,8 +818,8 @@ function App() {
       // Load Smart Scan data
       const bookData = await dbGetBook(bookId);
       let storedScanStatus = (bookData?.smartScanStatus ?? "none") as "none" | "in_progress" | "done";
-      // Stale "in_progress" (e.g. app crashed or was closed during scan) — reset so the button is clickable again
-      if (storedScanStatus === "in_progress") {
+      // Stale "in_progress" in DB (crash / quit mid-scan). Do not clear while runSmartScan is still in flight for this book.
+      if (storedScanStatus === "in_progress" && activeSmartScanBookIdRef.current !== bookId) {
         await dbSetBookScanStatus(bookId, "none");
         storedScanStatus = "none";
       }
@@ -828,6 +830,10 @@ function App() {
       setBookStructureType(storedBookStructureType);
       const storedSummaries = await dbGetSectionSummaries(bookId);
       setSectionSummaries([...storedSummaries].sort((a, b) => a.spineIndex - b.spineIndex));
+      if (storedScanStatus === "in_progress" && activeSmartScanBookIdRef.current === bookId) {
+        const spineLen = (book.sections ?? []).filter((s) => s.linear !== "no").length;
+        setScanProgress({ done: storedSummaries.length, total: Math.max(1, spineLen) });
+      }
 
       setBookDoc(book);
       console.log("[OpenBook] Done");
@@ -838,6 +844,7 @@ function App() {
         pendingScanAfterOpenRef.current = false;
         const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
         if (apiKey) {
+          activeSmartScanBookIdRef.current = bookId;
           void runSmartScan({
             bookId,
             bookDoc: book,
@@ -855,6 +862,8 @@ function App() {
               }),
             onBookSummarySet: setBookSummary,
             onBookStructureTypeSet: setBookStructureType,
+          }).finally(() => {
+            if (activeSmartScanBookIdRef.current === bookId) activeSmartScanBookIdRef.current = null;
           });
         }
       }
@@ -1680,8 +1689,10 @@ function App() {
     }
     setScanProgress(null);
     setScanRetryInSeconds(null);
+    const scanBookId = currentBookId;
+    activeSmartScanBookIdRef.current = scanBookId;
     void runSmartScan({
-      bookId: currentBookId,
+      bookId: scanBookId,
       bookDoc,
       apiKey,
       onProgress: (done, total) => {
@@ -1705,6 +1716,8 @@ function App() {
         }),
       onBookSummarySet: setBookSummary,
       onBookStructureTypeSet: setBookStructureType,
+    }).finally(() => {
+      if (activeSmartScanBookIdRef.current === scanBookId) activeSmartScanBookIdRef.current = null;
     });
   };
 
