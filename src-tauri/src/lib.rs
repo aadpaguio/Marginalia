@@ -216,6 +216,16 @@ struct ContextManifestToolCallRow {
     tool: String,
     round: i64,
     input_summary: String,
+    #[serde(default)]
+    tool_use_id: Option<String>,
+    #[serde(default)]
+    input: Option<serde_json::Value>,
+    #[serde(default)]
+    output: Option<serde_json::Value>,
+    #[serde(default)]
+    error: Option<String>,
+    #[serde(default)]
+    duration_ms: Option<i64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -19,6 +19,21 @@ type EvaluationPanelProps = {
   scanStatus: "none" | "in_progress" | "done";
   /** Run one eval condition; creates thread + run rows + persists messages (implemented in App). */
   onRunCondition: (question: EvalQuestionRow, condition: EvalCondition) => Promise<void>;
+  /** Resolve anchor passage text to EPUB CFI using the active reader. */
+  onResolveAnchor: (input: { anchorText: string; chapterLabel?: string | null }) => Promise<string | null>;
+};
+
+type DraftQuestion = {
+  id: string;
+  sortOrder: number;
+  prompt: string;
+  category: string | null;
+  expectedMinContext: string | null;
+  chapterLabel: string | null;
+  anchorText: string | null;
+  anchorCfi: string | null;
+  status: "parsed" | "resolved" | "unresolved";
+  error: string | null;
 };
 
 const CONDITIONS: { id: EvalCondition; label: string; hint: string }[] = [
@@ -35,12 +50,20 @@ const CONDITIONS: { id: EvalCondition; label: string; hint: string }[] = [
   },
 ];
 
-export function EvaluationPanel({ bookId, bookTitle, scanStatus, onRunCondition }: EvaluationPanelProps) {
+export function EvaluationPanel({
+  bookId,
+  bookTitle,
+  scanStatus,
+  onRunCondition,
+  onResolveAnchor,
+}: EvaluationPanelProps) {
   const [sets, setSets] = useState<EvalSetRow[]>([]);
   const [activeSetId, setActiveSetId] = useState<string | null>(null);
   const [questions, setQuestions] = useState<EvalQuestionRow[]>([]);
   const [newSetName, setNewSetName] = useState("");
   const [importJson, setImportJson] = useState("");
+  const [rawQuestionsText, setRawQuestionsText] = useState("");
+  const [draftRows, setDraftRows] = useState<DraftQuestion[]>([]);
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
   const [selectedCondition, setSelectedCondition] = useState<EvalCondition>("passage_only");
   const [busy, setBusy] = useState(false);
@@ -116,6 +139,143 @@ export function EvaluationPanel({ bookId, bookTitle, scanStatus, onRunCondition 
     }
   };
 
+  const parseRawQuestions = (raw: string): DraftQuestion[] => {
+    const blocks = raw
+      .split(/\n\s*---\s*\n/g)
+      .map((block) => block.trim())
+      .filter((block) => block.length > 0);
+
+    const rows: DraftQuestion[] = [];
+    for (const block of blocks) {
+      const qMatch = block.match(/^##\s*Q(\d+)/im);
+      if (!qMatch) continue;
+      const sortOrder = Number.parseInt(qMatch[1], 10);
+      const lineValue = (label: string): string | null => {
+        const m = block.match(new RegExp(`^${label}:\\s*(.+)$`, "im"));
+        return m?.[1]?.trim() || null;
+      };
+      const anchorMatch = block.match(/Anchor passage:\s*([\s\S]*?)(?:\nNotes:|$)/i);
+      const anchorText = anchorMatch?.[1]?.trim() || null;
+      const prompt = lineValue("Prompt") ?? "";
+
+      rows.push({
+        id: `draft-${sortOrder}-${Math.random().toString(36).slice(2, 8)}`,
+        sortOrder: Number.isFinite(sortOrder) ? sortOrder : rows.length + 1,
+        prompt,
+        category: lineValue("Category"),
+        expectedMinContext: lineValue("Expected tools"),
+        chapterLabel: lineValue("Chapter/Section"),
+        anchorText,
+        anchorCfi: null,
+        status: "parsed",
+        error: anchorText ? null : "Missing Anchor passage",
+      });
+    }
+
+    return rows.sort((a, b) => a.sortOrder - b.sortOrder);
+  };
+
+  const handleParseRawQuestions = () => {
+    const raw = rawQuestionsText.trim();
+    if (!raw) {
+      setMessage("Paste the raw eval .txt questions first.");
+      return;
+    }
+    const parsed = parseRawQuestions(raw);
+    setDraftRows(parsed);
+    if (parsed.length === 0) {
+      setMessage("No questions parsed. Expected sections like \"## Q1\" with Prompt and Anchor passage.");
+      return;
+    }
+    setMessage(`Parsed ${parsed.length} question(s).`);
+  };
+
+  const handleResolveAnchors = async () => {
+    if (draftRows.length === 0) {
+      setMessage("Parse questions first.");
+      return;
+    }
+    setBusy(true);
+    setMessage("Resolving anchors...");
+    const nextRows = [...draftRows];
+    let resolved = 0;
+    let unresolved = 0;
+    try {
+      for (let i = 0; i < nextRows.length; i++) {
+        const row = nextRows[i];
+        const anchorText = row.anchorText?.trim() ?? "";
+        if (!anchorText) {
+          nextRows[i] = {
+            ...row,
+            status: "unresolved",
+            anchorCfi: null,
+            error: "Missing Anchor passage",
+          };
+          unresolved += 1;
+          continue;
+        }
+        const cfi = await onResolveAnchor({ anchorText, chapterLabel: row.chapterLabel });
+        if (cfi?.trim()) {
+          nextRows[i] = {
+            ...row,
+            status: "resolved",
+            anchorCfi: cfi.trim(),
+            error: null,
+          };
+          resolved += 1;
+        } else {
+          nextRows[i] = {
+            ...row,
+            status: "unresolved",
+            anchorCfi: null,
+            error: "No match found in current book",
+          };
+          unresolved += 1;
+        }
+        setDraftRows([...nextRows]);
+      }
+      setMessage(`Resolved ${resolved}; unresolved ${unresolved}.`);
+    } catch (e) {
+      setDraftRows(nextRows);
+      setMessage(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleImportResolved = async () => {
+    if (!activeSetId) {
+      setMessage("Select or create a set first.");
+      return;
+    }
+    const resolvedRows = draftRows.filter(
+      (row) => !!row.prompt.trim() && !!row.anchorText?.trim() && !!row.anchorCfi?.trim()
+    );
+    if (resolvedRows.length === 0) {
+      setMessage("No resolved rows to import yet.");
+      return;
+    }
+    const payload = resolvedRows.map((row) => ({
+      prompt: row.prompt.trim(),
+      category: row.category ?? null,
+      expectedMinContext: row.expectedMinContext ?? null,
+      anchorCfi: row.anchorCfi!.trim(),
+      anchorText: row.anchorText!.trim(),
+      chapterLabel: row.chapterLabel ?? null,
+    }));
+    setBusy(true);
+    setMessage(null);
+    try {
+      const n = await evalAddQuestionsJson(activeSetId, bookId, JSON.stringify(payload, null, 2));
+      setQuestions(await evalListQuestions(activeSetId));
+      setMessage(`Imported ${n} resolved question(s).`);
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleDeleteSet = async () => {
     if (!activeSetId) return;
     if (!window.confirm("Delete this eval set and all its questions/runs?")) return;
@@ -182,14 +342,99 @@ export function EvaluationPanel({ bookId, bookTitle, scanStatus, onRunCondition 
     }
   };
 
+  const handleRunAllQuestionsSelectedCondition = async () => {
+    if (questions.length === 0) {
+      setMessage("No questions in this set.");
+      return;
+    }
+    if (selectedCondition === "smart_scan_tools" && scanStatus !== "done") {
+      setMessage("Smart Scan must be completed for this book before running smart_scan_tools.");
+      return;
+    }
+    setBusy(true);
+    setMessage(null);
+    try {
+      let completed = 0;
+      for (const q of questions) {
+        await onRunCondition(q, selectedCondition);
+        completed += 1;
+        setMessage(
+          `Running ${selectedCondition} for all questions: ${completed}/${questions.length} completed.`
+        );
+      }
+      setMessage(
+        `Finished ${selectedCondition} for all ${questions.length} question(s).`
+      );
+      if (selectedQuestionId) {
+        setRunsPreview(await evalListRunsForQuestion(selectedQuestionId));
+      }
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleRunAllQuestionsAllConditions = async () => {
+    if (questions.length === 0) {
+      setMessage("No questions in this set.");
+      return;
+    }
+    const runnableConditions = CONDITIONS.filter(
+      (c) => c.id !== "smart_scan_tools" || scanStatus === "done"
+    );
+    if (runnableConditions.length === 0) {
+      setMessage("No runnable conditions available.");
+      return;
+    }
+    setBusy(true);
+    setMessage(null);
+    try {
+      const total = questions.length * runnableConditions.length;
+      let completed = 0;
+      for (const q of questions) {
+        for (const c of runnableConditions) {
+          await onRunCondition(q, c.id);
+          completed += 1;
+          setMessage(`Running all questions × conditions: ${completed}/${total} completed.`);
+        }
+      }
+      const skipped =
+        scanStatus === "done" ? "" : " (smart_scan_tools skipped; Smart Scan not done)";
+      setMessage(
+        `Finished ${completed} run(s) across ${questions.length} question(s).${skipped}`
+      );
+      if (selectedQuestionId) {
+        setRunsPreview(await evalListRunsForQuestion(selectedQuestionId));
+      }
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleExport = async (format: "jsonl" | "csv") => {
     setBusy(true);
     setMessage(null);
     try {
       const text =
         format === "jsonl" ? await evalExportJsonl(bookId) : await evalExportCsv(bookId);
+      const sanitizeForFilename = (value: string) =>
+        value.replace(/[^\w\-]+/g, "_").replace(/_+/g, "_").replace(/^_+|_+$/g, "");
+      const activeSetName = sets.find((s) => s.id === activeSetId)?.name ?? "set";
+      const now = new Date();
+      const timestamp = [
+        now.getFullYear().toString(),
+        String(now.getMonth() + 1).padStart(2, "0"),
+        String(now.getDate()).padStart(2, "0"),
+        "-",
+        String(now.getHours()).padStart(2, "0"),
+        String(now.getMinutes()).padStart(2, "0"),
+        String(now.getSeconds()).padStart(2, "0"),
+      ].join("");
       const path = await save({
-        defaultPath: `marginalia-eval-${bookTitle.replace(/[^\w\-]+/g, "_").slice(0, 40)}.${format === "jsonl" ? "jsonl" : "csv"}`,
+        defaultPath: `marginalia-eval-${sanitizeForFilename(activeSetName).slice(0, 40)}-${sanitizeForFilename(bookTitle).slice(0, 40)}-${timestamp}.${format === "jsonl" ? "jsonl" : "csv"}`,
         filters:
           format === "jsonl"
             ? [{ name: "JSON Lines", extensions: ["jsonl"] }]
@@ -218,6 +463,8 @@ export function EvaluationPanel({ bookId, bookTitle, scanStatus, onRunCondition 
         borderRadius: 8,
         background: "var(--surface-elevated, #f7f6f4)",
         fontSize: 13,
+        maxHeight: "70vh",
+        overflowY: "auto",
       }}
     >
       <div style={{ fontWeight: 700, marginBottom: 8 }}>Evaluation mode</div>
@@ -258,6 +505,63 @@ export function EvaluationPanel({ bookId, bookTitle, scanStatus, onRunCondition 
           New set
         </button>
       </div>
+
+      <label style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 8 }}>
+        <span>Raw questions (.txt)</span>
+        <textarea
+          value={rawQuestionsText}
+          onChange={(e) => setRawQuestionsText(e.target.value)}
+          rows={8}
+          placeholder={`Paste the eval question text file here.\n\nExpected format:\n## Q1\nCategory: ...\nExpected tools: ...\nChapter/Section: ...\nPrompt: ...\nAnchor passage: ...`}
+          style={{ width: "100%", fontFamily: "monospace", fontSize: 11 }}
+        />
+      </label>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
+        <button type="button" disabled={busy} onClick={handleParseRawQuestions}>
+          Parse
+        </button>
+        <button type="button" disabled={busy || draftRows.length === 0} onClick={() => void handleResolveAnchors()}>
+          Resolve anchors
+        </button>
+        <button type="button" disabled={busy || draftRows.length === 0 || !activeSetId} onClick={() => void handleImportResolved()}>
+          Import resolved
+        </button>
+      </div>
+
+      {draftRows.length > 0 && (
+        <div style={{ marginBottom: 10, overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: "left", borderBottom: "1px solid var(--border-subtle, #ddd)" }}>Q</th>
+                <th style={{ textAlign: "left", borderBottom: "1px solid var(--border-subtle, #ddd)" }}>Status</th>
+                <th style={{ textAlign: "left", borderBottom: "1px solid var(--border-subtle, #ddd)" }}>Prompt</th>
+                <th style={{ textAlign: "left", borderBottom: "1px solid var(--border-subtle, #ddd)" }}>Chapter</th>
+                <th style={{ textAlign: "left", borderBottom: "1px solid var(--border-subtle, #ddd)" }}>anchorCfi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {draftRows.map((row) => (
+                <tr key={row.id}>
+                  <td style={{ verticalAlign: "top", padding: "4px 6px" }}>{row.sortOrder}</td>
+                  <td style={{ verticalAlign: "top", padding: "4px 6px" }}>
+                    {row.status}
+                    {row.error ? ` (${row.error})` : ""}
+                  </td>
+                  <td style={{ verticalAlign: "top", padding: "4px 6px" }}>
+                    {row.prompt.slice(0, 80)}
+                    {row.prompt.length > 80 ? "…" : ""}
+                  </td>
+                  <td style={{ verticalAlign: "top", padding: "4px 6px" }}>{row.chapterLabel ?? "—"}</td>
+                  <td style={{ verticalAlign: "top", padding: "4px 6px", fontFamily: "monospace" }}>
+                    {row.anchorCfi ?? "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <label style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 8 }}>
         <span>Import questions (JSON array)</span>
@@ -314,6 +618,20 @@ export function EvaluationPanel({ bookId, bookTitle, scanStatus, onRunCondition 
         </button>
         <button type="button" disabled={busy} onClick={() => void handleRunAllConditions()}>
           Run all conditions
+        </button>
+        <button
+          type="button"
+          disabled={busy || questions.length === 0}
+          onClick={() => void handleRunAllQuestionsSelectedCondition()}
+        >
+          Run all questions (selected condition)
+        </button>
+        <button
+          type="button"
+          disabled={busy || questions.length === 0}
+          onClick={() => void handleRunAllQuestionsAllConditions()}
+        >
+          Run all questions (all conditions)
         </button>
         <button type="button" disabled={busy} onClick={() => void handleExport("jsonl")}>
           Export JSONL
