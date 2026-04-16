@@ -1016,7 +1016,16 @@ export async function askClaudeThread(
   });
   const model = chooseModelAndMaxTokens(params.userMessage).model;
   let messages: AssembledThreadRequest["messages"] = assembled.messages;
-  const toolCallLog: Array<{ tool: string; round: number; inputSummary: string }> = [];
+  const toolCallLog: Array<{
+    tool: string;
+    round: number;
+    inputSummary: string;
+    toolUseId: string;
+    input: Record<string, unknown>;
+    output?: unknown;
+    error?: string;
+    durationMs?: number;
+  }> = [];
 
   /**
    * Force tool use on round 0 only when the user's message explicitly asks for
@@ -1168,23 +1177,50 @@ export async function askClaudeThread(
             : call.name === "suggest_smart_scan"
               ? "(no input)"
               : "(unknown)";
-      toolCallLog.push({ tool: call.name, round, inputSummary: summary });
+      toolCallLog.push({
+        tool: call.name,
+        round,
+        inputSummary: summary,
+        toolUseId: call.id,
+        input: { ...(call.input ?? {}) },
+      });
     }
 
     const toolResults = await Promise.all(
       data.toolCalls!.map(async (call) => {
+        const startedAt = Date.now();
+        const logIndex = toolCallLog.findIndex((entry) => entry.toolUseId === call.id);
+        const completeLog = (result: { tool_use_id: string; content: string }) => {
+          if (logIndex >= 0) {
+            toolCallLog[logIndex].output = result.content;
+            toolCallLog[logIndex].durationMs = Date.now() - startedAt;
+          }
+          return result;
+        };
+        const failLog = (error: unknown) => {
+          if (logIndex >= 0) {
+            toolCallLog[logIndex].error = error instanceof Error ? error.message : String(error);
+            toolCallLog[logIndex].durationMs = Date.now() - startedAt;
+          }
+        };
         if (call.name === "get_context") {
           const { cfi, direction, max_chars } = call.input as {
-            cfi: string;
+            cfi?: string;
             direction?: string;
             max_chars?: number;
           };
+          if (!cfi || !cfi.trim()) {
+            return completeLog({
+              tool_use_id: call.id,
+              content: "(get_context requires a non-empty EPUB CFI.)",
+            });
+          }
           const isEpubCfi =
             typeof cfi === "string" && cfi.trim().toLowerCase().startsWith("epubcfi(");
           if (!isEpubCfi) {
             const content =
               "(get_context requires an EPUB CFI from the user's passage, e.g. epubcfi(/6/4!/4/2/1:0). You passed a spine href or path — get_context cannot fetch by section. For another section use get_section_summary or get_section_text.)";
-            return { tool_use_id: call.id, content };
+            return completeLog({ tool_use_id: call.id, content });
           }
           const dir =
             direction === "before" ||
@@ -1198,10 +1234,18 @@ export async function askClaudeThread(
             params.pendingExcerpt?.text?.trim() ||
             getInheritedThreadPassage(params.messages)?.excerptText?.trim() ||
             undefined;
-          const result = params.getContextAroundCfi(cfi, dir, maxChars, anchorText);
-          const content = JSON.stringify(result);
-          if (result.text?.trim()) params.onContextFetched?.(result.text);
-          return { tool_use_id: call.id, content };
+          try {
+            const result = params.getContextAroundCfi(cfi, dir, maxChars, anchorText);
+            const content = JSON.stringify(result);
+            if (result.text?.trim()) params.onContextFetched?.(result.text);
+            return completeLog({ tool_use_id: call.id, content });
+          } catch (error) {
+            failLog(error);
+            return completeLog({
+              tool_use_id: call.id,
+              content: `(get_context failed: ${error instanceof Error ? error.message : String(error)})`,
+            });
+          }
         }
         if (call.name === "get_section_summary") {
           const { spine_href } = call.input as { spine_href: string };
@@ -1215,38 +1259,54 @@ export async function askClaudeThread(
           const content = found
             ? found.summary
             : `(No summary found for section "${spine_href}")`;
-          return { tool_use_id: call.id, content };
+          return completeLog({ tool_use_id: call.id, content });
         }
         if (call.name === "get_section_text") {
           const { spine_href } = call.input as { spine_href: string };
-          const text =
-            params.getSectionTextByHref != null
-              ? await params.getSectionTextByHref(spine_href)
-              : "";
-          const content =
-            text?.trim() || `(Could not load full text for section "${spine_href}". Section may not exist or failed to load.)`;
-          return { tool_use_id: call.id, content };
+          try {
+            const text =
+              params.getSectionTextByHref != null
+                ? await params.getSectionTextByHref(spine_href)
+                : "";
+            const content =
+              text?.trim() || `(Could not load full text for section "${spine_href}". Section may not exist or failed to load.)`;
+            return completeLog({ tool_use_id: call.id, content });
+          } catch (error) {
+            failLog(error);
+            return completeLog({
+              tool_use_id: call.id,
+              content: `(get_section_text failed for "${spine_href}": ${error instanceof Error ? error.message : String(error)})`,
+            });
+          }
         }
         if (call.name === "get_past_thread") {
           const { thread_id } = call.input as { thread_id?: string };
           const id = (thread_id ?? "").trim();
           if (!id) {
-            return { tool_use_id: call.id, content: "(thread_id is required)" };
+            return completeLog({ tool_use_id: call.id, content: "(thread_id is required)" });
           }
-          const content = params.getPastThreadMessages
-            ? (await params.getPastThreadMessages(id)).trim() || `(No archived exchange found for thread "${id}".)`
-            : "(get_past_thread unavailable in this session)";
-          return { tool_use_id: call.id, content };
+          try {
+            const content = params.getPastThreadMessages
+              ? (await params.getPastThreadMessages(id)).trim() || `(No archived exchange found for thread "${id}".)`
+              : "(get_past_thread unavailable in this session)";
+            return completeLog({ tool_use_id: call.id, content });
+          } catch (error) {
+            failLog(error);
+            return completeLog({
+              tool_use_id: call.id,
+              content: `(get_past_thread failed for "${id}": ${error instanceof Error ? error.message : String(error)})`,
+            });
+          }
         }
         if (call.name === "suggest_smart_scan") {
           suggestSmartScanUsed = true;
           params.onSuggestSmartScan?.();
-          return {
+          return completeLog({
             tool_use_id: call.id,
             content: "(Smart Scan suggestion surfaced to user)",
-          };
+          });
         }
-        return { tool_use_id: call.id, content: "(Unknown tool)" };
+        return completeLog({ tool_use_id: call.id, content: "(Unknown tool)" });
       })
     );
 

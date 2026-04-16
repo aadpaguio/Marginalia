@@ -8,6 +8,11 @@ export interface ContextManifestToolCall {
   tool: string;
   round: number;
   inputSummary: string;
+  toolUseId?: string;
+  input?: unknown;
+  output?: unknown;
+  error?: string;
+  durationMs?: number;
 }
 
 export interface ContextManifest {
