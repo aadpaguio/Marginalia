@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { Highlight, MemoryItem, ThreadMessage, WebCitation } from "@/types/book";
+import type { Highlight, MemoryItem, ThreadMessage, ThreadToolEvent, WebCitation } from "@/types/book";
 import type {
   ContextManifest,
   ContextAnchorSource,
@@ -37,6 +37,8 @@ export interface ClaudeResponse {
   completedManifest?: ContextManifest;
   /** Web citations attached to assistant messages. */
   webCitations?: WebCitation[];
+  /** Compact sequential tool/system events for this assistant turn. */
+  toolEvents?: ThreadToolEvent[];
 }
 
 /** Hybrid evaluation ablations (see EVALUATION_PLAN.md). */
@@ -812,6 +814,22 @@ const WEB_SEARCH_TOOL = {
   max_uses: 3,
 } as const;
 
+const REQUEST_WEB_SEARCH_TOOL = {
+  name: "request_web_search",
+  description:
+    "Ask user permission before searching the web. Call this first with the exact query you want to run. Wait for tool_result before any web search.",
+  input_schema: {
+    type: "object",
+    properties: {
+      query: {
+        type: "string",
+        description: "Exact web search query to ask user approval for.",
+      },
+    },
+    required: ["query"],
+  },
+} as const;
+
 export type AskClaudeThreadParams = ThreadContextParams & {
   getContextAroundCfi: (
     cfi: string,
@@ -823,14 +841,16 @@ export type AskClaudeThreadParams = ThreadContextParams & {
   getSectionTextByHref?: (spineHref: string) => Promise<string>;
   /** Returns a cleaned archived thread exchange by thread id. */
   getPastThreadMessages?: (threadId: string) => Promise<string>;
-  /** Called when the model invokes a tool (e.g. get_context) so the UI can show a fetch indicator. */
-  onToolCall?: (toolName: string) => void;
+  /** Called when the model emits a sequential tool/system event for timeline rendering. */
+  onToolEvent?: (event: ThreadToolEvent) => void;
   /** Called when get_context returns; App uses this to update session-only working context (ref) for the next turn. */
   onContextFetched?: (text: string) => void;
-  /** When true, includes Anthropic's server-side web_search tool so Claude can look up external information. */
-  webSearchEnabled?: boolean;
-  /** Called when the response contains web search activity (server_tool_use for web_search). */
-  onWebSearch?: () => void;
+  /** Per-thread permission scope for web search (reset on new threads). */
+  webSearchPermissionScope?: "ask" | "allow_thread";
+  /** Called when Claude requests a web search query and UI must ask for permission. */
+  requestWebSearchPermission?: (
+    query: string
+  ) => Promise<"allow_once" | "allow_thread" | "deny">;
 };
 
 const MAX_TOOL_ROUNDS = 3;
@@ -931,10 +951,44 @@ function extractWebCitations(rawContent: unknown[]): WebCitation[] {
   return citations;
 }
 
+function extractWebSearchQueries(rawContent: unknown[]): string[] {
+  const queries: string[] = [];
+  for (const block of rawContent ?? []) {
+    const b = block as { type?: string; name?: string; input?: { query?: unknown } };
+    if (b.type !== "server_tool_use" || b.name !== "web_search") continue;
+    const query = typeof b.input?.query === "string" ? b.input.query.trim() : "";
+    if (!query) continue;
+    queries.push(query);
+  }
+  return queries;
+}
+
+function extractWebSearchResultLabels(rawContent: unknown[]): string[] {
+  const labels: string[] = [];
+  for (const block of rawContent ?? []) {
+    const b = block as {
+      type?: string;
+      content?: unknown;
+    };
+    if (b.type !== "web_search_tool_result") continue;
+    if (!Array.isArray(b.content)) {
+      const err = (b.content as { type?: string; error_code?: string }) ?? {};
+      if (err.type === "web_search_tool_result_error") {
+        labels.push(`Web search error: ${err.error_code ?? "unknown_error"}.`);
+      }
+      continue;
+    }
+    labels.push(`Web search returned ${b.content.length} result${b.content.length === 1 ? "" : "s"}.`);
+  }
+  return labels;
+}
+
 /** Anthropic tool list for one round (evaluation presets vs production). */
 function buildThreadToolList(
   params: AskClaudeThreadParams,
-  suggestSmartScanUsed: boolean
+  suggestSmartScanUsed: boolean,
+  webSearchMode: "request_only" | "enabled",
+  webSearchMaxUses?: number
 ): unknown[] {
   const preset = params.evaluationToolPreset;
   if (preset === "passage_only") {
@@ -957,8 +1011,10 @@ function buildThreadToolList(
     if (params.scanStatus === "none" && !suggestSmartScanUsed) {
       tools.push(SUGGEST_SMART_SCAN_TOOL);
     }
-    if (params.webSearchEnabled) {
-      tools.push(WEB_SEARCH_TOOL);
+    if (webSearchMode === "enabled") {
+      tools.push({ ...WEB_SEARCH_TOOL, max_uses: webSearchMaxUses ?? WEB_SEARCH_TOOL.max_uses });
+    } else {
+      tools.push(REQUEST_WEB_SEARCH_TOOL);
     }
     return tools;
   }
@@ -975,8 +1031,10 @@ function buildThreadToolList(
   if (params.scanStatus === "none" && !suggestSmartScanUsed) {
     tools.push(SUGGEST_SMART_SCAN_TOOL);
   }
-  if (params.webSearchEnabled) {
-    tools.push(WEB_SEARCH_TOOL);
+  if (webSearchMode === "enabled") {
+    tools.push({ ...WEB_SEARCH_TOOL, max_uses: webSearchMaxUses ?? WEB_SEARCH_TOOL.max_uses });
+  } else {
+    tools.push(REQUEST_WEB_SEARCH_TOOL);
   }
   return tools;
 }
@@ -1014,6 +1072,11 @@ export async function askClaudeThread(
   });
   const model = chooseModelAndMaxTokens(params.userMessage).model;
   let messages: AssembledThreadRequest["messages"] = assembled.messages;
+  const turnToolEvents: ThreadToolEvent[] = [];
+  const emitToolEvent = (event: ThreadToolEvent) => {
+    turnToolEvents.push(event);
+    params.onToolEvent?.(event);
+  };
   const toolCallLog: Array<{
     tool: string;
     round: number;
@@ -1035,15 +1098,26 @@ export async function askClaudeThread(
     !params.evaluationToolPreset && isContextSeekingQuery(params.userMessage);
   let suggestSmartScanUsed = false;
   let totalWebSearchRequests = 0;
+  let webSearchPermissionScope = params.webSearchPermissionScope ?? "ask";
+  let allowSingleWebSearch = false;
 
   // Round-0 tool list for manifest (what options the model had when it started)
-  const toolsAvailable = buildThreadToolList(params, false).map(
+  const toolsAvailable = buildThreadToolList(
+    params,
+    false,
+    webSearchPermissionScope === "allow_thread" ? "enabled" : "request_only"
+  ).map(
     (t) => (t as { name: string }).name
   );
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     // Build dynamic tools for this round
-    const tools = buildThreadToolList(params, suggestSmartScanUsed);
+    const tools = buildThreadToolList(
+      params,
+      suggestSmartScanUsed,
+      webSearchPermissionScope === "allow_thread" || allowSingleWebSearch ? "enabled" : "request_only",
+      allowSingleWebSearch ? 1 : undefined
+    );
 
     let pauseTurnSteps = 0;
     let data: ClaudeThreadProxyRoundData;
@@ -1073,14 +1147,12 @@ export async function askClaudeThread(
         totalWebSearchRequests += data.webSearchRequests;
       }
 
-      const hasWebSearchActivity = (data.rawContent ?? []).some(
-        (b: unknown) => {
-          const block = b as { type?: string; name?: string };
-          return block.type === "server_tool_use" && block.name === "web_search";
-        }
-      );
-      if (hasWebSearchActivity) {
-        params.onWebSearch?.();
+      const webSearchQueries = extractWebSearchQueries(data.rawContent ?? []);
+      for (const query of webSearchQueries) {
+        emitToolEvent({ type: "web_search_call", query });
+      }
+      for (const label of extractWebSearchResultLabels(data.rawContent ?? [])) {
+        emitToolEvent({ type: "web_search_result", label });
       }
 
       const hasToolCallsHere = (data.toolCalls?.length ?? 0) > 0;
@@ -1116,6 +1188,9 @@ export async function askClaudeThread(
         { role: "assistant" as const, content: data.rawContent },
         { role: "user" as const, content: "Continue." },
       ];
+      if (allowSingleWebSearch && (data.webSearchRequests ?? 0) > 0) {
+        allowSingleWebSearch = false;
+      }
     }
 
     const hasToolCalls = (data.toolCalls?.length ?? 0) > 0;
@@ -1138,6 +1213,7 @@ export async function askClaudeThread(
         usage: data.usage,
         completedManifest,
         webCitations: webCitations.length > 0 ? webCitations : undefined,
+        toolEvents: turnToolEvents.length > 0 ? turnToolEvents : undefined,
       };
     }
 
@@ -1158,13 +1234,26 @@ export async function askClaudeThread(
         usage: data.usage,
         completedManifest,
         webCitations: webCitations.length > 0 ? webCitations : undefined,
+        toolEvents: turnToolEvents.length > 0 ? turnToolEvents : undefined,
       };
     }
 
     for (const call of data.toolCalls!) {
-      if (call.name !== "suggest_smart_scan") {
-        params.onToolCall?.(call.name);
-      }
+      const callLabel =
+        call.name === "get_context"
+          ? "Reading nearby text…"
+          : call.name === "get_section_summary"
+            ? "Fetching section summary…"
+            : call.name === "get_section_text"
+              ? "Loading section text…"
+              : call.name === "get_past_thread"
+                ? "Opening archived thread…"
+                : call.name === "suggest_smart_scan"
+                  ? "Suggesting Smart Scan…"
+                  : call.name === "request_web_search"
+                    ? "Waiting for web search approval…"
+                  : `Running ${call.name}…`;
+      emitToolEvent({ type: "tool_call", label: callLabel });
       const summary =
         call.name === "get_context"
           ? `cfi=${(String((call.input as { cfi?: string }).cfi ?? "")).slice(0, 40)}… dir=${(call.input as { direction?: string }).direction ?? "?"} max=${(call.input as { max_chars?: number }).max_chars ?? "?"}`
@@ -1174,6 +1263,8 @@ export async function askClaudeThread(
               ? `thread_id=${String((call.input as { thread_id?: string }).thread_id ?? "")}`
             : call.name === "suggest_smart_scan"
               ? "(no input)"
+              : call.name === "request_web_search"
+                ? `query=${String((call.input as { query?: string }).query ?? "")}`
               : "(unknown)";
       toolCallLog.push({
         tool: call.name,
@@ -1236,9 +1327,11 @@ export async function askClaudeThread(
             const result = params.getContextAroundCfi(cfi, dir, maxChars, anchorText);
             const content = JSON.stringify(result);
             if (result.text?.trim()) params.onContextFetched?.(result.text);
+            emitToolEvent({ type: "tool_result", label: "Loaded nearby text." });
             return completeLog({ tool_use_id: call.id, content });
           } catch (error) {
             failLog(error);
+            emitToolEvent({ type: "tool_result", label: "Context fetch failed." });
             return completeLog({
               tool_use_id: call.id,
               content: `(get_context failed: ${error instanceof Error ? error.message : String(error)})`,
@@ -1257,6 +1350,7 @@ export async function askClaudeThread(
           const content = found
             ? found.summary
             : `(No summary found for section "${spine_href}")`;
+          emitToolEvent({ type: "tool_result", label: "Loaded section summary." });
           return completeLog({ tool_use_id: call.id, content });
         }
         if (call.name === "get_section_text") {
@@ -1268,9 +1362,11 @@ export async function askClaudeThread(
                 : "";
             const content =
               text?.trim() || `(Could not load full text for section "${spine_href}". Section may not exist or failed to load.)`;
+            emitToolEvent({ type: "tool_result", label: "Loaded section text." });
             return completeLog({ tool_use_id: call.id, content });
           } catch (error) {
             failLog(error);
+            emitToolEvent({ type: "tool_result", label: "Section text fetch failed." });
             return completeLog({
               tool_use_id: call.id,
               content: `(get_section_text failed for "${spine_href}": ${error instanceof Error ? error.message : String(error)})`,
@@ -1287,9 +1383,11 @@ export async function askClaudeThread(
             const content = params.getPastThreadMessages
               ? (await params.getPastThreadMessages(id)).trim() || `(No archived exchange found for thread "${id}".)`
               : "(get_past_thread unavailable in this session)";
+            emitToolEvent({ type: "tool_result", label: "Loaded archived thread." });
             return completeLog({ tool_use_id: call.id, content });
           } catch (error) {
             failLog(error);
+            emitToolEvent({ type: "tool_result", label: "Archived thread fetch failed." });
             return completeLog({
               tool_use_id: call.id,
               content: `(get_past_thread failed for "${id}": ${error instanceof Error ? error.message : String(error)})`,
@@ -1299,11 +1397,48 @@ export async function askClaudeThread(
         if (call.name === "suggest_smart_scan") {
           suggestSmartScanUsed = true;
           params.onSuggestSmartScan?.();
+          emitToolEvent({ type: "tool_result", label: "Suggested Smart Scan." });
           return completeLog({
             tool_use_id: call.id,
             content: "(Smart Scan suggestion surfaced to user)",
           });
         }
+        if (call.name === "request_web_search") {
+          const rawQuery = String((call.input as { query?: string }).query ?? "").trim();
+          if (!rawQuery) {
+            emitToolEvent({ type: "web_search_decision", label: "Web search denied." });
+            return completeLog({
+              tool_use_id: call.id,
+              content: "(web_search permission denied: missing query)",
+            });
+          }
+          emitToolEvent({ type: "web_search_call", query: rawQuery });
+          const decision = params.requestWebSearchPermission
+            ? await params.requestWebSearchPermission(rawQuery)
+            : "deny";
+          if (decision === "allow_thread") {
+            webSearchPermissionScope = "allow_thread";
+            emitToolEvent({ type: "web_search_decision", label: "Web search allowed for this thread." });
+            return completeLog({
+              tool_use_id: call.id,
+              content: `(web_search approved for this thread: "${rawQuery}")`,
+            });
+          }
+          if (decision === "allow_once") {
+            allowSingleWebSearch = true;
+            emitToolEvent({ type: "web_search_decision", label: "Web search allowed once." });
+            return completeLog({
+              tool_use_id: call.id,
+              content: `(web_search approved once: "${rawQuery}")`,
+            });
+          }
+          emitToolEvent({ type: "web_search_decision", label: "Web search denied." });
+          return completeLog({
+            tool_use_id: call.id,
+            content: `(web_search denied by user for "${rawQuery}")`,
+          });
+        }
+        emitToolEvent({ type: "tool_result", label: `Unknown tool: ${call.name}.` });
         return completeLog({ tool_use_id: call.id, content: "(Unknown tool)" });
       })
     );
@@ -1362,5 +1497,6 @@ export async function askClaudeThread(
     usage: finalData.usage,
     completedManifest,
     webCitations: webCitations.length > 0 ? webCitations : undefined,
+    toolEvents: turnToolEvents.length > 0 ? turnToolEvents : undefined,
   };
 }

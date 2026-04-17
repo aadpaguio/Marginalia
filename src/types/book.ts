@@ -66,6 +66,13 @@ export interface WebCitation {
   citedText?: string;
 }
 
+export type ThreadToolEvent =
+  | { type: "tool_call"; label: string }
+  | { type: "tool_result"; label: string }
+  | { type: "web_search_call"; query: string }
+  | { type: "web_search_result"; label: string }
+  | { type: "web_search_decision"; label: string };
+
 export interface ThreadMessage {
   id: string;
   threadId: string;
@@ -80,6 +87,8 @@ export interface ThreadMessage {
   excerptPage?: string | null;
   /** Web search citations attached to assistant messages. */
   webCitations?: WebCitation[] | null;
+  /** Compact sequential tool/system events rendered before assistant content. */
+  toolEvents?: ThreadToolEvent[] | null;
 }
 
 export interface ThreadWithMessages extends Thread {
