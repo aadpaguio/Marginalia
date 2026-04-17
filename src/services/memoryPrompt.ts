@@ -203,7 +203,8 @@ export function shouldIncludeMemoryItemForQuery(
 
   if (scope === "book" || scope === "passage") {
     const anchorBookIds = item.anchors?.map((a) => a.bookId).filter(Boolean) as string[];
-    if (anchorBookIds.length === 0) return true;
+    // Orphan book/passage rows (no book anchor) must not leak into other books' prompts.
+    if (anchorBookIds.length === 0) return false;
     return anchorBookIds.includes(currentBookId);
   }
 
@@ -211,6 +212,20 @@ export function shouldIncludeMemoryItemForQuery(
   if (GLOBAL_GUIDANCE_TYPES.has(item.type)) return true;
   if (item.type === "book_insight" || item.type === "book_question" || item.type === "book_reaction") {
     return item.anchors?.some((a) => a.bookId === currentBookId) ?? false;
+  }
+  return true;
+}
+
+/**
+ * Items safe to show in Memory Transparency for a given open book: this book's anchored memories,
+ * plus truly global items (not mis-tagged book/passage without a matching anchor).
+ */
+export function isMemoryItemVisibleForBookTransparency(item: MemoryItem, bookId: string): boolean {
+  if (item.scope === "book" || item.scope === "passage") {
+    return item.anchors?.some((a) => (a.bookId ?? "").trim() === bookId) ?? false;
+  }
+  if (item.type === "book_insight" || item.type === "book_question" || item.type === "book_reaction") {
+    return item.anchors?.some((a) => (a.bookId ?? "").trim() === bookId) ?? false;
   }
   return true;
 }

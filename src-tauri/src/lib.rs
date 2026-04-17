@@ -2454,6 +2454,7 @@ fn memory_get_items_global(state: State<DbState>) -> Result<Vec<MemoryItemWithAn
         .prepare(
             "SELECT id FROM memory_items
              WHERE id NOT IN (SELECT memory_id FROM memory_anchors WHERE book_id IS NOT NULL AND book_id != '')
+               AND LOWER(COALESCE(NULLIF(TRIM(scope), ''), 'global')) = 'global'
              ORDER BY confidence DESC, observation_count DESC",
         )
         .map_err(|e| e.to_string())?;
@@ -2489,6 +2490,7 @@ fn memory_get_items_global_for_query(
                 .prepare(
                     "SELECT id FROM memory_items
                      WHERE id NOT IN (SELECT memory_id FROM memory_anchors WHERE book_id IS NOT NULL AND book_id != '')
+                       AND LOWER(COALESCE(NULLIF(TRIM(scope), ''), 'global')) = 'global'
                      ORDER BY last_reinforced_at DESC, confidence DESC
                      LIMIT ?1",
                 )
@@ -2518,6 +2520,7 @@ fn memory_get_items_global_for_query(
             WHERE mi.id NOT IN (
               SELECT memory_id FROM memory_anchors WHERE book_id IS NOT NULL AND book_id != ''
             )
+              AND LOWER(COALESCE(NULLIF(TRIM(mi.scope), ''), 'global')) = 'global'
             "#,
         )
         .map_err(|e| e.to_string())?;
@@ -2548,6 +2551,7 @@ fn memory_get_items_global_for_query(
             .prepare(
                 "SELECT id FROM memory_items
                  WHERE id NOT IN (SELECT memory_id FROM memory_anchors WHERE book_id IS NOT NULL AND book_id != '')
+                   AND LOWER(COALESCE(NULLIF(TRIM(scope), ''), 'global')) = 'global'
                  ORDER BY last_reinforced_at DESC, confidence DESC
                  LIMIT ?1",
             )

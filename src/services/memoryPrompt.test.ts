@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { MemoryItem } from "@/types/book";
 import {
   formatMemoryItemsSystemBlock,
+  isMemoryItemVisibleForBookTransparency,
   promptReadyMemoryItem,
   sanitizeMemoryContentForPrompt,
   shouldIncludeMemoryItemForQuery,
@@ -68,5 +69,35 @@ describe("memoryPrompt", () => {
     expect(
       shouldIncludeMemoryItemForQuery(item, "How does this relate to Joyce and fragmentation?", "b1")
     ).toBe(true);
+  });
+
+  it("shouldIncludeMemoryItemForQuery excludes book/passage memories with no book anchor (no cross-book leak)", () => {
+    const orphan = mi({
+      id: "orphan",
+      content: "About Pilgrim at Tinker Creek and seasonal structure.",
+      type: "book_insight",
+      scope: "book",
+      anchors: [{ id: "a", memoryId: "orphan", threadId: "t-old" }],
+    });
+    expect(shouldIncludeMemoryItemForQuery(orphan, "Explain this passage", "new-book")).toBe(false);
+  });
+
+  it("isMemoryItemVisibleForBookTransparency hides orphan book insights for a different book", () => {
+    const orphan = mi({
+      id: "o1",
+      content: "Old book insight",
+      type: "book_insight",
+      scope: "book",
+      anchors: [],
+    });
+    expect(isMemoryItemVisibleForBookTransparency(orphan, "b-new")).toBe(false);
+    const anchored = mi({
+      id: "o2",
+      content: "This book",
+      type: "book_insight",
+      scope: "book",
+      anchors: [{ id: "a", memoryId: "o2", bookId: "b-new" }],
+    });
+    expect(isMemoryItemVisibleForBookTransparency(anchored, "b-new")).toBe(true);
   });
 });
