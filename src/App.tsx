@@ -60,6 +60,7 @@ import {
   type AskClaudeThreadParams,
   type GetContextResult,
 } from "@/services/claude";
+import { isMemoryItemVisibleForBookTransparency } from "@/services/memoryPrompt";
 import { evalCompleteRun, evalCreateRun, type EvalCondition, type EvalQuestionRow } from "@/services/eval";
 import { EvaluationPanel } from "@/components/EvaluationPanel";
 import { getFirstTurnMemoryPlan, hasUserHistory, shouldAcceptPreloadResult } from "@/services/threadMemory";
@@ -474,7 +475,7 @@ function App() {
   const [theme, setTheme] = useState<ReaderTheme>("light");
   const [error, setError] = useState<string | null>(null);
   const [threadChatInput, setThreadChatInput] = useState("");
-  const [threadChatAsking, setThreadChatAsking] = useState(false);
+  const [threadChatAskingThreadId, setThreadChatAskingThreadId] = useState<string | null>(null);
   const [threadChatError, setThreadChatError] = useState<string | null>(null);
   const [isMemoryTransparencyOpen, setIsMemoryTransparencyOpen] = useState(false);
   const [memoryTransparencyItems, setMemoryTransparencyItems] = useState<MemoryItem[]>([]);
@@ -1023,6 +1024,70 @@ function App() {
     () => !!currentCfi && bookmarks.some((bookmark) => bookmark.cfi === currentCfi),
     [bookmarks, currentCfi]
   );
+  const activeThread = useMemo(
+    () => (activeThreadId ? threads.find((t) => t.id === activeThreadId) ?? null : null),
+    [activeThreadId, threads]
+  );
+  const excerptLocationByCfi = useMemo(() => {
+    const map = new Map<string, { section: string | null; page: string | null }>();
+    const add = (cfi: string | null | undefined, section: string | null | undefined, page: string | null | undefined) => {
+      const key = (cfi ?? "").trim();
+      if (!key) return;
+      const existing = map.get(key);
+      const normalizedSection = (section ?? "").trim() || null;
+      const normalizedPage = (page ?? "").trim() || null;
+      if (!existing) {
+        map.set(key, { section: normalizedSection, page: normalizedPage });
+        return;
+      }
+      map.set(key, {
+        section: existing.section ?? normalizedSection,
+        page: existing.page ?? normalizedPage,
+      });
+    };
+    for (const msg of activeThreadMessages) {
+      add(msg.excerptCfi, msg.excerptChapter, msg.excerptPage);
+    }
+    for (const h of activeThreadHighlights) {
+      add(h.cfi, h.chapterLabel ?? null, null);
+    }
+    for (const h of highlights) {
+      add(h.cfi, h.chapterLabel ?? null, null);
+    }
+    return map;
+  }, [activeThreadMessages, activeThreadHighlights, highlights]);
+  const formatExcerptLocation = useCallback(
+    (section: string | null | undefined, page: string | null | undefined, cfi?: string | null): string | null => {
+      const cfiFallback = cfi ? excerptLocationByCfi.get(cfi.trim()) : undefined;
+      const sectionText = (section ?? cfiFallback?.section ?? "").trim();
+      const pageText = (page ?? cfiFallback?.page ?? "").trim();
+      if (sectionText && pageText) return `${sectionText} · ${pageText}`;
+      if (sectionText) return sectionText;
+      if (pageText) return pageText;
+      return null;
+    },
+    [excerptLocationByCfi]
+  );
+  const activeThreadFirstPassageLocation = useMemo(() => {
+    if (!activeThreadId) return null;
+    const firstPassageMessage = activeThreadMessages.find((m) => m.role === "user" && !!m.excerptCfi);
+    if (!firstPassageMessage) return null;
+    const formatted = formatExcerptLocation(
+      firstPassageMessage.excerptChapter,
+      firstPassageMessage.excerptPage,
+      firstPassageMessage.excerptCfi
+    );
+    return formatted ? formatted.replace(" · ", ", ") : null;
+  }, [activeThreadId, activeThreadMessages, formatExcerptLocation]);
+  const activeThreadHeaderSubtitle = useMemo(() => {
+    if (!activeThreadId) return null;
+    const messageCount = activeThreadMessages.length;
+    const messageLabel = `${messageCount} ${messageCount === 1 ? "message" : "messages"}`;
+    return activeThreadFirstPassageLocation
+      ? `${messageLabel} · ${activeThreadFirstPassageLocation}`
+      : messageLabel;
+  }, [activeThreadFirstPassageLocation, activeThreadId, activeThreadMessages.length]);
+  const isActiveThreadAsking = !!activeThreadId && threadChatAskingThreadId === activeThreadId;
 
   const RELOCATE_DEBOUNCE_MS = 200;
 
@@ -1360,14 +1425,15 @@ function App() {
 
   const handleThreadChatSend = async () => {
     const userMessage = threadChatInput.trim() || "What can you tell me about the passages I've highlighted?";
-    if (!activeThreadId || !currentBookId || !bookDoc || threadChatAsking) return;
+    if (!activeThreadId || !currentBookId || !bookDoc || isActiveThreadAsking) return;
+    const requestThreadId = activeThreadId;
     activeThreadIdRef.current = activeThreadId;
     const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
     if (!apiKey) {
       setThreadChatError("Add VITE_ANTHROPIC_API_KEY to .env and restart.");
       return;
     }
-    setThreadChatAsking(true);
+    setThreadChatAskingThreadId(requestThreadId);
     setThreadChatError(null);
     setThreadChatInput("");
     setPendingUserMessage(userMessage);
@@ -1480,7 +1546,7 @@ function App() {
           setPendingUserMessage(null);
           setPendingAssistantContent("");
           setPendingToolMessage(null);
-          setThreadChatAsking(false);
+          setThreadChatAskingThreadId((prev) => (prev === requestThreadId ? null : prev));
           threadChatInputRef.current?.focus();
         }
       }, REVEAL_MS);
@@ -1489,7 +1555,7 @@ function App() {
       setPendingUserMessage(null);
       setPendingAssistantContent("");
       setPendingToolMessage(null);
-      setThreadChatAsking(false);
+      setThreadChatAskingThreadId((prev) => (prev === requestThreadId ? null : prev));
       threadChatInputRef.current?.focus();
     }
   };
@@ -1758,6 +1824,7 @@ function App() {
           seen.add(item.id);
           return true;
         })
+        .filter((item) => isMemoryItemVisibleForBookTransparency(item, currentBookId))
         .sort((a, b) => b.lastReinforcedAt - a.lastReinforcedAt);
       setMemoryTransparencyItems(merged);
     } finally {
@@ -2199,73 +2266,78 @@ function App() {
                 >
                   {activeThreadId ? (
                     <>
-                      <button
-                        type="button"
-                        className="thread-header-back-btn"
-                        onClick={() => setActiveThreadId(null)}
-                        aria-label="Back to threads"
-                      >
-                        ← Back
-                      </button>
-                      <span
-                        className="thread-chat-title"
-                        style={{
-                          flex: 1,
-                          fontWeight: 600,
-                          fontSize: 13,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                        title={threads.find((t) => t.id === activeThreadId)?.title ?? "New thread"}
-                      >
-                        {threads.find((t) => t.id === activeThreadId)?.title ?? "New thread"}
-                      </span>
-                      {flushPulsingThreadId === activeThreadId && (
-                        <span
-                          className="flush-pulse"
-                          style={{
-                            width: "var(--space-2)",
-                            height: "var(--space-2)",
-                            borderRadius: "var(--radius-pill)",
-                            background: "var(--accent)",
-                            flexShrink: 0,
-                          }}
-                          aria-hidden
-                        />
-                      )}
-                      <div ref={threadMenuRef} style={{ position: "relative" }}>
-                        <button
-                          type="button"
-                          className="thread-header-menu-trigger"
-                          onClick={() => setThreadMenuOpenId((id) => (id === activeThreadId ? null : activeThreadId))}
-                          disabled={!!archivingThreadId}
-                          aria-label="Thread options"
-                          aria-expanded={threadMenuOpenId === activeThreadId}
-                        >
-                          <MoreVertical size={16} />
-                        </button>
-                        {threadMenuOpenId === activeThreadId && (
-                          <div className="thread-header-menu" role="menu">
-                            <button
-                              type="button"
-                              role="menuitem"
-                              className="thread-header-menu-item"
-                              onClick={() => activeThreadId && void handleArchiveThread(activeThreadId)}
-                              disabled={archivingThreadId === activeThreadId}
+                      <div className="thread-chat-header-meta">
+                        <div className="thread-chat-header-row">
+                          <button
+                            type="button"
+                            className="thread-header-back-btn"
+                            onClick={() => setActiveThreadId(null)}
+                            aria-label="Back to threads"
+                          >
+                            ← Back
+                          </button>
+                          <div className="thread-chat-header-middle">
+                            <span
+                              className="thread-chat-title thread-chat-title--clamped"
+                              title={activeThread?.title ?? "New thread"}
                             >
-                              {archivingThreadId === activeThreadId ? "Archiving…" : "Archive"}
-                            </button>
-                            <button
-                              type="button"
-                              role="menuitem"
-                              className="thread-header-menu-item thread-header-menu-item-danger"
-                              onClick={() => activeThreadId && void handleDeleteThread(activeThreadId)}
-                            >
-                              Delete
-                            </button>
+                              {activeThread?.title ?? "New thread"}
+                            </span>
+                            {activeThreadHeaderSubtitle && (
+                              <div className="thread-chat-subtitle">
+                                {activeThreadHeaderSubtitle}
+                              </div>
+                            )}
                           </div>
-                        )}
+                          <div className="thread-chat-header-actions">
+                            {flushPulsingThreadId === activeThreadId && (
+                              <span
+                                className="flush-pulse"
+                                style={{
+                                  width: "var(--space-2)",
+                                  height: "var(--space-2)",
+                                  borderRadius: "var(--radius-pill)",
+                                  background: "var(--accent)",
+                                  flexShrink: 0,
+                                }}
+                                aria-hidden
+                              />
+                            )}
+                            <div ref={threadMenuRef} style={{ position: "relative" }}>
+                              <button
+                                type="button"
+                                className="thread-header-menu-trigger"
+                                onClick={() => setThreadMenuOpenId((id) => (id === activeThreadId ? null : activeThreadId))}
+                                disabled={!!archivingThreadId}
+                                aria-label="Thread options"
+                                aria-expanded={threadMenuOpenId === activeThreadId}
+                              >
+                                <MoreVertical size={16} />
+                              </button>
+                              {threadMenuOpenId === activeThreadId && (
+                                <div className="thread-header-menu" role="menu">
+                                  <button
+                                    type="button"
+                                    role="menuitem"
+                                    className="thread-header-menu-item"
+                                    onClick={() => activeThreadId && void handleArchiveThread(activeThreadId)}
+                                    disabled={archivingThreadId === activeThreadId}
+                                  >
+                                    {archivingThreadId === activeThreadId ? "Archiving…" : "Archive"}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    role="menuitem"
+                                    className="thread-header-menu-item thread-header-menu-item-danger"
+                                    onClick={() => activeThreadId && void handleDeleteThread(activeThreadId)}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </>
                   ) : (
@@ -2355,13 +2427,14 @@ function App() {
                             })();
                           const excerptExpanded = excerptExpandedIds.has(m.id);
                           const excerptDisplayText = m.excerptText && (excerptExpanded ? m.excerptText : excerptPreview);
+                          const excerptLocation = formatExcerptLocation(m.excerptChapter, m.excerptPage, m.excerptCfi);
                           return (
                             <div
                               key={m.id}
                               className={`thread-msg-row ${isUser ? "thread-msg-row--user" : "thread-msg-row--assistant"}`}
                               style={{ maxWidth: "95%" }}
                             >
-                              <div className="thread-msg-sender">{isUser ? "You" : "Marginalia"}</div>
+                              <div className="thread-msg-sender">{isUser ? "You" : null}</div>
                               <div className="thread-msg-bubble">
                                 {isUser && excerptDisplayText && excerptHex && (
                                   <div
@@ -2389,13 +2462,13 @@ function App() {
                                       }
                                     }}
                                   >
-                                    <div className="thread-excerpt-label">Passage</div>
+                                    <div className="thread-excerpt-topline">
+                                      <div className="thread-excerpt-label">Passage</div>
+                                      {excerptLocation && (
+                                        <div className="thread-excerpt-location">{excerptLocation}</div>
+                                      )}
+                                    </div>
                                     <div style={{ fontStyle: "italic", whiteSpace: "pre-wrap" }}>"{excerptDisplayText}"</div>
-                                    {(m.excerptChapter || m.excerptPage) && (
-                                      <div className="thread-excerpt-meta">
-                                        {[m.excerptChapter, m.excerptPage].filter(Boolean).join(" · ")}
-                                      </div>
-                                    )}
                                     <div className="thread-excerpt-expand-hint">
                                       {excerptExpanded ? "Click to collapse" : "Click to expand"}
                                     </div>
@@ -2799,17 +2872,17 @@ function App() {
                         }
                       }}
                       placeholder="Ask about this passage…"
-                      disabled={threadChatAsking}
+                      disabled={isActiveThreadAsking}
                       style={{ flex: 1 }}
                     />
                     <button
                       type="button"
                       className="thread-chat-send-btn"
                       onClick={() => void handleThreadChatSend()}
-                      disabled={threadChatAsking}
+                      disabled={isActiveThreadAsking}
                       aria-label="Send"
                     >
-                      {threadChatAsking ? "…" : <ArrowUp size={16} />}
+                      {isActiveThreadAsking ? "…" : <ArrowUp size={16} />}
                     </button>
                   </div>
                   {threadChatError && (

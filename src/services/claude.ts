@@ -35,7 +35,7 @@ export interface ClaudeResponse {
   };
   /** Phase 33: context manifest for the completed turn (set when persist is triggered). */
   completedManifest?: ContextManifest;
-  /** Web search citations from Anthropic's server-side web_search tool. */
+  /** Web citations attached to assistant messages. */
   webCitations?: WebCitation[];
 }
 
@@ -834,8 +834,6 @@ export type AskClaudeThreadParams = ThreadContextParams & {
 };
 
 const MAX_TOOL_ROUNDS = 3;
-/** Server-side web search can yield multiple `pause_turn` responses; do not consume client tool rounds. */
-const MAX_PAUSE_TURN_CONTINUES = 10;
 
 type ClaudeThreadProxyRoundData = {
   answer: string;
@@ -1107,8 +1105,8 @@ export async function askClaudeThread(
 
       if (hasToolCallsHere || !isPauseTurn) break;
 
-      if (pauseTurnSteps >= MAX_PAUSE_TURN_CONTINUES) {
-        console.warn("[Claude thread] pause_turn exceeded max continues (%d)", MAX_PAUSE_TURN_CONTINUES);
+      if (pauseTurnSteps >= 10) {
+        console.warn("[Claude thread] pause_turn exceeded max continues (10)");
         break;
       }
       pauseTurnSteps++;
