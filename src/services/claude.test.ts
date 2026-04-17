@@ -1350,5 +1350,134 @@ describe("Phase 27 — askClaudeThread agentic loop", () => {
       );
       expect(hasLeadUp).toBe(false);
     });
+
+    it("web search permission flow: deny continues gracefully", async () => {
+      const requestWebSearchPermission = vi.fn().mockResolvedValue("deny");
+      vi.mocked(invoke)
+        .mockResolvedValueOnce({
+          answer: "",
+          toolCalls: [
+            {
+              name: "request_web_search",
+              id: "toolu_req_1",
+              input: { query: "latest review of test book" },
+            },
+          ],
+          rawContent: [
+            {
+              type: "tool_use",
+              id: "toolu_req_1",
+              name: "request_web_search",
+              input: { query: "latest review of test book" },
+            },
+          ],
+          model: "claude-haiku-4-5-20251001",
+        })
+        .mockResolvedValueOnce({
+          answer: "I can continue without searching the web.",
+          toolCalls: [],
+          rawContent: [{ type: "text", text: "I can continue without searching the web." }],
+          model: "claude-haiku-4-5-20251001",
+        })
+        .mockResolvedValueOnce(undefined);
+
+      const result = await askClaudeThread(
+        {
+          threadId: "t1",
+          messages: [],
+          attachedHighlights: [],
+          userMessage: "What do critics think of this?",
+          bookTitle: "Book",
+          author: "Author",
+          bookId: "b1",
+          getContextAroundCfi: () =>
+            ({
+              sectionLabel: null,
+              charsBefore: 0,
+              charsAfter: 0,
+              atSectionStart: false,
+              atSectionEnd: false,
+              text: "",
+            }) satisfies GetContextResult,
+          requestWebSearchPermission,
+        },
+        "test-api-key"
+      );
+
+      expect(requestWebSearchPermission).toHaveBeenCalledWith("latest review of test book");
+      expect(result.answer).toContain("without searching the web");
+      expect(result.toolEvents?.some((e) => e.type === "web_search_decision" && e.label.includes("denied"))).toBe(true);
+    });
+
+    it("web search permission flow: allow for thread prompts once", async () => {
+      const requestWebSearchPermission = vi.fn().mockResolvedValue("allow_thread");
+      vi.mocked(invoke)
+        .mockResolvedValueOnce({
+          answer: "",
+          toolCalls: [
+            {
+              name: "request_web_search",
+              id: "toolu_req_1",
+              input: { query: "query one" },
+            },
+          ],
+          rawContent: [
+            {
+              type: "tool_use",
+              id: "toolu_req_1",
+              name: "request_web_search",
+              input: { query: "query one" },
+            },
+          ],
+          model: "claude-haiku-4-5-20251001",
+        })
+        .mockResolvedValueOnce({
+          answer: "",
+          toolCalls: [],
+          rawContent: [
+            {
+              type: "server_tool_use",
+              id: "srvtoolu_2",
+              name: "web_search",
+              input: { query: "query two" },
+            },
+          ],
+          stopReason: "pause_turn",
+          model: "claude-haiku-4-5-20251001",
+        })
+        .mockResolvedValueOnce({
+          answer: "done",
+          toolCalls: [],
+          rawContent: [{ type: "text", text: "done" }],
+          model: "claude-haiku-4-5-20251001",
+        })
+        .mockResolvedValueOnce(undefined);
+
+      await askClaudeThread(
+        {
+          threadId: "t1",
+          messages: [],
+          attachedHighlights: [],
+          userMessage: "Search twice",
+          bookTitle: "Book",
+          author: "Author",
+          bookId: "b1",
+          getContextAroundCfi: () =>
+            ({
+              sectionLabel: null,
+              charsBefore: 0,
+              charsAfter: 0,
+              atSectionStart: false,
+              atSectionEnd: false,
+              text: "",
+            }) satisfies GetContextResult,
+          requestWebSearchPermission,
+        },
+        "test-api-key"
+      );
+
+      expect(requestWebSearchPermission).toHaveBeenCalledTimes(1);
+      expect(requestWebSearchPermission).toHaveBeenCalledWith("query one");
+    });
   });
 });

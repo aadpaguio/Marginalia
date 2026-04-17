@@ -1336,6 +1336,85 @@
   opacity: 0.75;
 }
 
+.thread-tool-event {
+  font-size: 11px;
+  color: var(--fg-muted, var(--muted));
+  opacity: 0.9;
+  border-left: 2px solid var(--border-subtle);
+  padding: 2px 0 2px 8px;
+  margin: 0 0 5px;
+  line-height: 1.35;
+}
+
+.thread-tool-event--prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 2px;
+  padding: 5px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--accent-border);
+  background: var(--surface-sunken);
+}
+
+.thread-tool-event-prompt-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-secondary);
+}
+
+.thread-tool-event-tag {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  padding: 1px 6px;
+  color: var(--fg-muted, var(--muted));
+  flex-shrink: 0;
+}
+
+.thread-tool-event-query {
+  color: var(--ink-primary);
+}
+
+.thread-tool-event-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.thread-tool-event-btn {
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-raised);
+  color: var(--ink-secondary);
+  border-radius: var(--radius-sm);
+  padding: 2px 7px;
+  font-size: 10.5px;
+  cursor: pointer;
+  line-height: 1.2;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.thread-tool-event-btn:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.thread-tool-event-btn--danger {
+  border-color: rgba(200, 40, 40, 0.38);
+  color: #a84a4a;
+}
+
+.thread-tool-event-btn--danger:hover {
+  border-color: rgba(200, 40, 40, 0.52);
+  color: #9c3030;
+  background: rgba(200, 40, 40, 0.08);
+}
+
 /* Web search source chips — compact favicon + domain (Claude-style) */
 @keyframes webSourceChipsFadeInUp {
   from {

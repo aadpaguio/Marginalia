@@ -5,7 +5,15 @@ import { invoke } from "@tauri-apps/api/core";
 import { exists } from "@tauri-apps/plugin-fs";
 import { DocumentLoader } from "@/libs/document";
 import type { BookDoc, TOCItem } from "@/libs/document";
-import type { CitationPayload, Highlight, MemoryItem, Thread, ThreadMessage, WebCitation } from "@/types/book";
+import type {
+  CitationPayload,
+  Highlight,
+  MemoryItem,
+  Thread,
+  ThreadMessage,
+  ThreadToolEvent,
+  WebCitation,
+} from "@/types/book";
 import type { ContextManifest } from "@/types/contextManifest";
 import type { ReaderTheme } from "@/app/reader/utils/readerStyles";
 import FoliateViewer from "@/app/reader/components/FoliateViewer";
@@ -480,16 +488,15 @@ function App() {
   const [isMemoryTransparencyOpen, setIsMemoryTransparencyOpen] = useState(false);
   const [memoryTransparencyItems, setMemoryTransparencyItems] = useState<MemoryItem[]>([]);
   const [memoryTransparencyLoading, setMemoryTransparencyLoading] = useState(false);
-  /** When the model is running a tool, show this message in chat; null when thinking or done. */
-  const [pendingToolMessage, setPendingToolMessage] = useState<string | null>(null);
-  const TOOL_CHAT_LABELS: Record<string, string> = {
-    get_context: "Reading nearby text…",
-    get_section_summary: "Fetching section summary…",
-    get_section_text: "Loading section text…",
-    get_past_thread: "Opening archived thread…",
-    suggest_smart_scan: "Suggesting Smart Scan…",
-  };
-  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  const [pendingAssistantToolEvents, setPendingAssistantToolEvents] = useState<ThreadToolEvent[]>([]);
+  const [pendingWebSearchPrompt, setPendingWebSearchPrompt] = useState<{
+    threadId: string;
+    query: string;
+  } | null>(null);
+  const pendingWebSearchResolverRef = useRef<((value: "allow_once" | "allow_thread" | "deny") => void) | null>(null);
+  const [threadWebSearchPermission, setThreadWebSearchPermission] = useState<
+    Record<string, "ask" | "allow_thread">
+  >({});
   /** Shown under the streaming assistant bubble; state (not ref) so React re-renders when citations arrive. */
   const threadChatInputRef = useRef<HTMLInputElement | null>(null);
   const threadChatMessagesScrollRef = useRef<HTMLDivElement | null>(null);
@@ -905,7 +912,7 @@ function App() {
   useEffect(() => {
     const el = threadChatMessagesScrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [activeThreadMessages, pendingUserMessage, pendingAssistantContent]);
+  }, [activeThreadMessages, pendingUserMessage, pendingAssistantContent, pendingAssistantToolEvents, pendingWebSearchPrompt]);
 
   useEffect(() => {
     return () => {
@@ -1210,7 +1217,8 @@ function App() {
     userContent: string,
     assistantContent: string,
     excerpt?: { text: string; cfi: string | null; chapter: string | null; color: string; page: string | null },
-    webCitations?: WebCitation[]
+    webCitations?: WebCitation[],
+    toolEvents?: ThreadToolEvent[]
   ) => {
     const threadId = activeThreadId;
     if (!threadId) return;
@@ -1238,6 +1246,7 @@ function App() {
       content: assistantContent,
       createdAt: now,
       webCitations: webCitations?.length ? webCitations : null,
+      toolEvents: toolEvents?.length ? toolEvents : null,
     };
     void dbSaveThreadMessage(userMsg).then(() =>
       dbSaveThreadMessage(assistantMsg).then(async () => {
@@ -1438,7 +1447,8 @@ function App() {
     setThreadChatInput("");
     setPendingUserMessage(userMessage);
     setPendingAssistantContent("");
-    setPendingToolMessage(null);
+    setPendingAssistantToolEvents([]);
+    setPendingWebSearchPrompt(null);
     if (revealIntervalRef.current != null) {
       window.clearInterval(revealIntervalRef.current);
       revealIntervalRef.current = null;
@@ -1499,20 +1509,31 @@ function App() {
             })),
           getSectionTextByHref,
           getPastThreadMessages: (threadId: string) => memoryGetThreadMessages(threadId),
-          onToolCall: (toolName) =>
-            setPendingToolMessage(TOOL_CHAT_LABELS[toolName] ?? "Working…"),
+          onToolEvent: (event) =>
+            setPendingAssistantToolEvents((prev) => [...prev, event]),
           onContextFetched: (text: string) => {
             const arr = workingContextRef.current;
             arr.push(text);
             if (arr.length > 2) arr.shift();
           },
-          webSearchEnabled,
-          onWebSearch: () => setPendingToolMessage("Searching the web…"),
+          webSearchPermissionScope: threadWebSearchPermission[requestThreadId] ?? "ask",
+          requestWebSearchPermission: (query) =>
+            new Promise<"allow_once" | "allow_thread" | "deny">((resolve) => {
+              pendingWebSearchResolverRef.current = (decision) => {
+                if (decision === "allow_thread") {
+                  setThreadWebSearchPermission((prev) => ({ ...prev, [requestThreadId]: "allow_thread" }));
+                }
+                setPendingWebSearchPrompt(null);
+                resolve(decision);
+              };
+              setPendingWebSearchPrompt({ threadId: requestThreadId, query });
+            }),
         },
         apiKey
       );
       const fullAnswer = result.answer ?? "";
       const webCitationsForTurn = result.webCitations?.length ? result.webCitations : undefined;
+      const toolEventsForTurn = result.toolEvents?.length ? result.toolEvents : undefined;
       /* Sources render on the persisted message only — not during character reveal (avoids flashing below partial text). */
       if (result.completedManifest) {
         setLatestCompletedManifest(result.completedManifest);
@@ -1542,10 +1563,12 @@ function App() {
             window.clearInterval(revealIntervalRef.current);
             revealIntervalRef.current = null;
           }
-          handleMessagePair(userMessage, fullAnswer, excerpt, webCitationsForTurn);
+          handleMessagePair(userMessage, fullAnswer, excerpt, webCitationsForTurn, toolEventsForTurn);
           setPendingUserMessage(null);
           setPendingAssistantContent("");
-          setPendingToolMessage(null);
+          setPendingAssistantToolEvents([]);
+          setPendingWebSearchPrompt(null);
+          pendingWebSearchResolverRef.current = null;
           setThreadChatAskingThreadId((prev) => (prev === requestThreadId ? null : prev));
           threadChatInputRef.current?.focus();
         }
@@ -1554,7 +1577,9 @@ function App() {
       setThreadChatError(e instanceof Error ? e.message : String(e));
       setPendingUserMessage(null);
       setPendingAssistantContent("");
-      setPendingToolMessage(null);
+      setPendingAssistantToolEvents([]);
+      setPendingWebSearchPrompt(null);
+      pendingWebSearchResolverRef.current = null;
       setThreadChatAskingThreadId((prev) => (prev === requestThreadId ? null : prev));
       threadChatInputRef.current?.focus();
     }
@@ -1647,7 +1672,6 @@ function App() {
         onSuggestSmartScan: () => {},
         getContextAroundCfi: getContextAroundCfiRef.current ?? (() => emptyContext()),
         onContextFetched: () => {},
-        webSearchEnabled: false,
         ...branch,
       };
 
@@ -1676,6 +1700,7 @@ function App() {
           content: result.answer ?? "",
           createdAt: now + 1,
           webCitations: result.webCitations?.length ? result.webCitations : null,
+          toolEvents: result.toolEvents?.length ? result.toolEvents : null,
         };
         await dbSaveThreadMessage(userMsg);
         await dbSaveThreadMessage(assistantMsg);
@@ -2387,6 +2412,7 @@ function App() {
                           role: "assistant",
                           content: pendingAssistantContent,
                           createdAt: Date.now(),
+                          toolEvents: pendingAssistantToolEvents,
                         });
                       }
                       return displayMessages.length === 0 ? (
@@ -2415,7 +2441,10 @@ function App() {
                         {displayMessages.map((m) => {
                           const isUser = m.role === "user";
                           const isPendingAssistant = m.id === "pending-assistant";
-                          const showTypingDots = isPendingAssistant && m.content === "";
+                          const hasPendingWebSearchPrompt =
+                            !!pendingWebSearchPrompt && pendingWebSearchPrompt.threadId === activeThreadId;
+                          const showTypingDots = isPendingAssistant && m.content === "" && !hasPendingWebSearchPrompt;
+                          const toolEvents = m.role === "assistant" ? (m.toolEvents ?? []) : [];
                           const excerptColorKey = (m.excerptColor === "blue" || m.excerptColor === "green" || m.excerptColor === "pink" ? m.excerptColor : "yellow") as keyof typeof HIGHLIGHT_COLOR_HEX;
                           const excerptHex = m.excerptText ? HIGHLIGHT_COLOR_HEX[excerptColorKey] ?? HIGHLIGHT_COLOR_HEX.yellow : null;
                           const excerptPreview =
@@ -2495,12 +2524,56 @@ function App() {
                                 ) : showTypingDots ? (
                                   <div className="thread-context-fetch">
                                     <span className="thread-context-fetch__dot" /><span className="thread-context-fetch__dot" /><span className="thread-context-fetch__dot" />
-                                    <span className="thread-context-fetch__label">
-                                      {pendingToolMessage ?? "Thinking…"}
-                                    </span>
+                                    <span className="thread-context-fetch__label">Thinking…</span>
                                   </div>
                                 ) : isPendingAssistant ? (
                                   <div className="thread-msg-content">
+                                    {toolEvents.map((event, eventIdx) => (
+                                      <div key={`${m.id}-event-${eventIdx}`} className="thread-tool-event">
+                                        {event.type === "web_search_call"
+                                          ? `Marginalia wants to search the web for "${event.query}"`
+                                          : event.type === "tool_call" ||
+                                              event.type === "tool_result" ||
+                                              event.type === "web_search_result" ||
+                                              event.type === "web_search_decision"
+                                            ? event.label
+                                            : ""}
+                                      </div>
+                                    ))}
+                                    {hasPendingWebSearchPrompt && (
+                                      <div className="thread-tool-event thread-tool-event--prompt">
+                                        <span className="thread-tool-event-prompt-text">
+                                          <span className="thread-tool-event-tag">Permission</span>
+                                          <span>
+                                            Marginalia wants to search the web for{" "}
+                                            <span className="thread-tool-event-query">"{pendingWebSearchPrompt.query}"</span>
+                                          </span>
+                                        </span>
+                                        <div className="thread-tool-event-actions">
+                                          <button
+                                            type="button"
+                                            className="thread-tool-event-btn"
+                                            onClick={() => pendingWebSearchResolverRef.current?.("allow_once")}
+                                          >
+                                            Allow once
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="thread-tool-event-btn"
+                                            onClick={() => pendingWebSearchResolverRef.current?.("allow_thread")}
+                                          >
+                                            Allow for this thread
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="thread-tool-event-btn thread-tool-event-btn--danger"
+                                            onClick={() => pendingWebSearchResolverRef.current?.("deny")}
+                                          >
+                                            Deny
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
                                     {parseCitationSegments(m.content).map((seg, segIdx) => (
                                       <div key={segIdx}>
                                         {seg.text && (
@@ -2524,6 +2597,18 @@ function App() {
                                   </div>
                                 ) : (
                                   <div className="thread-msg-content">
+                                    {toolEvents.map((event, eventIdx) => (
+                                      <div key={`${m.id}-event-${eventIdx}`} className="thread-tool-event">
+                                        {event.type === "web_search_call"
+                                          ? `Marginalia wants to search the web for "${event.query}"`
+                                          : event.type === "tool_call" ||
+                                              event.type === "tool_result" ||
+                                              event.type === "web_search_result" ||
+                                              event.type === "web_search_decision"
+                                            ? event.label
+                                            : ""}
+                                      </div>
+                                    ))}
                                     {parseCitationSegments(m.content).map((seg, segIdx) => (
                                       <div key={segIdx}>
                                         {seg.text && (
@@ -2838,27 +2923,6 @@ function App() {
                     </div>
                   )}
                   <div className="thread-chat-input-row">
-                    <button
-                      type="button"
-                      className="thread-web-search-toggle"
-                      onClick={() => setWebSearchEnabled((v) => !v)}
-                      aria-label={webSearchEnabled ? "Disable web search" : "Enable web search"}
-                      title={webSearchEnabled ? "Web search enabled" : "Enable web search"}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        padding: "4px",
-                        borderRadius: "var(--radius-1)",
-                        display: "flex",
-                        alignItems: "center",
-                        opacity: webSearchEnabled ? 1 : 0.4,
-                        color: webSearchEnabled ? "var(--accent)" : "var(--text-secondary)",
-                        transition: "opacity 0.15s, color 0.15s",
-                      }}
-                    >
-                      <Globe size={16} />
-                    </button>
                     <input
                       ref={threadChatInputRef}
                       type="text"

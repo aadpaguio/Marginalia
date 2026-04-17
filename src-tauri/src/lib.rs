@@ -190,6 +190,8 @@ struct DbThreadMessageInput {
     excerpt_page: Option<String>,
     /// JSON-serialized array of web search citations (optional).
     web_citations: Option<String>,
+    /// JSON-serialized array of compact tool timeline events (optional).
+    tool_events: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -207,6 +209,8 @@ struct DbThreadMessage {
     excerpt_page: Option<String>,
     /// JSON-serialized array of web search citations (nullable).
     web_citations: Option<String>,
+    /// JSON-serialized array of compact tool timeline events (nullable).
+    tool_events: Option<String>,
 }
 
 // Phase 33: context manifest (one per completed thread turn)
@@ -653,6 +657,7 @@ fn init_db(db_path: &Path) -> Result<(), String> {
     let _ = conn.execute("ALTER TABLE thread_messages ADD COLUMN excerpt_color TEXT", ());
     let _ = conn.execute("ALTER TABLE thread_messages ADD COLUMN excerpt_page TEXT", ());
     let _ = conn.execute("ALTER TABLE thread_messages ADD COLUMN web_citations TEXT", ());
+    let _ = conn.execute("ALTER TABLE thread_messages ADD COLUMN tool_events TEXT", ());
 
     // Migration: add Smart Scan columns to books (ignore if already present)
     let _ = conn.execute("ALTER TABLE books ADD COLUMN smart_scan_status TEXT NOT NULL DEFAULT 'none'", ());
@@ -1098,7 +1103,7 @@ fn db_get_thread_messages(
     let conn = open_db(&state)?;
     let mut stmt = conn
         .prepare(
-            "SELECT id, thread_id, role, content, created_at, excerpt_text, excerpt_cfi, excerpt_chapter, excerpt_color, excerpt_page, web_citations
+            "SELECT id, thread_id, role, content, created_at, excerpt_text, excerpt_cfi, excerpt_chapter, excerpt_color, excerpt_page, web_citations, tool_events
              FROM thread_messages WHERE thread_id = ?1 ORDER BY created_at ASC",
         )
         .map_err(|e| e.to_string())?;
@@ -1116,6 +1121,7 @@ fn db_get_thread_messages(
                 excerpt_color: row.get(8)?,
                 excerpt_page: row.get(9)?,
                 web_citations: row.get(10)?,
+                tool_events: row.get(11)?,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -1130,8 +1136,8 @@ fn db_save_thread_message(
     let conn = open_db(&state)?;
     conn.execute(
         r#"
-        INSERT INTO thread_messages (id, thread_id, role, content, created_at, excerpt_text, excerpt_cfi, excerpt_chapter, excerpt_color, excerpt_page, web_citations)
-        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
+        INSERT INTO thread_messages (id, thread_id, role, content, created_at, excerpt_text, excerpt_cfi, excerpt_chapter, excerpt_color, excerpt_page, web_citations, tool_events)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)
         "#,
         params![
             message.id,
@@ -1145,6 +1151,7 @@ fn db_save_thread_message(
             message.excerpt_color,
             message.excerpt_page,
             message.web_citations,
+            message.tool_events,
         ],
     )
     .map_err(|e| e.to_string())?;

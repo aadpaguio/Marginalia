@@ -178,12 +178,15 @@ export async function dbDeleteThread(threadId: string): Promise<void> {
 }
 
 export async function dbGetThreadMessages(threadId: string): Promise<ThreadMessage[]> {
-  const raw = await invoke<Array<ThreadMessage & { webCitations?: string | null }>>(
+  const raw = await invoke<
+    Array<ThreadMessage & { webCitations?: string | null; toolEvents?: string | null }>
+  >(
     "db_get_thread_messages",
     { threadId }
   );
   return raw.map((m) => {
     let webCitations: ThreadMessage["webCitations"] = m.webCitations ?? null;
+    let toolEvents: ThreadMessage["toolEvents"] = m.toolEvents ?? null;
     if (typeof m.webCitations === "string") {
       try {
         webCitations = JSON.parse(m.webCitations) as ThreadMessage["webCitations"];
@@ -191,7 +194,14 @@ export async function dbGetThreadMessages(threadId: string): Promise<ThreadMessa
         webCitations = null;
       }
     }
-    return { ...m, webCitations };
+    if (typeof m.toolEvents === "string") {
+      try {
+        toolEvents = JSON.parse(m.toolEvents) as ThreadMessage["toolEvents"];
+      } catch {
+        toolEvents = null;
+      }
+    }
+    return { ...m, webCitations, toolEvents };
   });
 }
 
@@ -209,6 +219,7 @@ export async function dbSaveThreadMessage(message: ThreadMessage): Promise<void>
       excerptColor: message.excerptColor ?? null,
       excerptPage: message.excerptPage ?? null,
       webCitations: message.webCitations ? JSON.stringify(message.webCitations) : null,
+      toolEvents: message.toolEvents ? JSON.stringify(message.toolEvents) : null,
     },
   });
 }
