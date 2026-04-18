@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "bookId": "frankenstein",
+  "sourceQuestions": "eval/questions/frankenstein.txt",
+  "entries": [
+    {
+      "stableKey": "frankenstein_q01",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "frankenstein_q02",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "frankenstein_q03",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "frankenstein_q04",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "frankenstein_q05",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "frankenstein_q06",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "frankenstein_q07",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "frankenstein_q08",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "frankenstein_q09",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "frankenstein_q10",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "frankenstein_q11",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "frankenstein_q12",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "frankenstein_q13",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "frankenstein_q14",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "frankenstein_q15",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    }
+  ]
+}

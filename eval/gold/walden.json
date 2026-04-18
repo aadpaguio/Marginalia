@@ -1,0 +1,327 @@
+{
+  "schemaVersion": 1,
+  "bookId": "walden",
+  "sourceQuestions": "eval/questions/walden.txt",
+  "entries": [
+    {
+      "stableKey": "walden_q01",
+      "status": "ready",
+      "answerInAnchor": true,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [
+        "The doubled negation escalates the claim from 'not necessary' to actively harmful.",
+        "The syntax slows the reader, then pivots to a stronger moral verdict (hindrances to elevation)."
+      ],
+      "negativeConstraints": [
+        "Do not invent biographical claims about Thoreau outside the anchor unless later phases add retrieved evidence."
+      ]
+    },
+    {
+      "stableKey": "walden_q02",
+      "status": "ready",
+      "answerInAnchor": true,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [
+        "Stacks animal/natural images (birds' nests, mole burrow) against human 'shelter within a shelter'.",
+        "The complaining 'poor man' is the figure introduced as complaining 'this is a cold world' (in the anchor excerpt)."
+      ],
+      "negativeConstraints": []
+    },
+    {
+      "stableKey": "walden_q03",
+      "status": "ready",
+      "answerInAnchor": true,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [
+        "Sets up antithesis: 'professors' vs living 'philosophers'.",
+        "Defines a philosopher by life-practice (simplicity, independence, magnanimity, trust) not credentials."
+      ],
+      "negativeConstraints": []
+    },
+    {
+      "stableKey": "walden_q04",
+      "status": "ready",
+      "answerInAnchor": true,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [
+        "Contrasts two vegetal destinies: upward growth toward fruit/light vs root-bound biennials kept for the root.",
+        "Uses the plant figure to distinguish ways of living (elevation vs stunted cultivation)."
+      ],
+      "negativeConstraints": []
+    },
+    {
+      "stableKey": "walden_q05",
+      "status": "ready",
+      "answerInAnchor": true,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [
+        "The two long-dash groups are (1) 'strong and valiant natures' and (2) those who cherish the present condition 'with the fondness ... of lovers' (including himself to some extent)."
+      ],
+      "negativeConstraints": []
+    },
+    {
+      "stableKey": "walden_q06",
+      "status": "ready",
+      "answerInAnchor": true,
+      "questionDesignNotes": [
+        "Validator warning: categorized as nearby-context, but the refusal list is already present in the anchor; consider rewriting the anchor to end before the list if you want to test retrieval."
+      ],
+      "requiredEvidence": [
+        {
+          "kind": "nearby_text",
+          "direction": "after",
+          "maxChars": 800,
+          "mustContain": [
+            "more and richer food",
+            "larger and more splendid houses",
+            "finer and more abundant clothing",
+            "more numerous incessant and hotter fires",
+            "and the like"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "The refused 'more warmth' items are the enumerated list following 'Surely not more warmth of the same kind, as …'."
+      ],
+      "negativeConstraints": []
+    },
+    {
+      "stableKey": "walden_q07",
+      "status": "ready",
+      "answerInAnchor": true,
+      "questionDesignNotes": [
+        "The implements/studious items are already in the anchor; this is effectively passage-local unless the anchor is shortened."
+      ],
+      "requiredEvidence": [
+        {
+          "kind": "nearby_text",
+          "direction": "before",
+          "maxChars": 1200,
+          "mustContain": [
+            "knife",
+            "axe",
+            "spade",
+            "wheelbarrow",
+            "lamplight",
+            "stationery",
+            "access to a few books"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Lists concrete implements (knife, axe, spade, wheelbarrow, etc.) and studious extras (lamplight, stationery, a few books) ranked just after necessaries."
+      ],
+      "negativeConstraints": []
+    },
+    {
+      "stableKey": "walden_q08",
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "nearby_text",
+          "direction": "before",
+          "maxChars": 2500,
+          "mustMentionAny": [
+            "cold world",
+            "vital heat",
+            "animal heat",
+            "grand necessity"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Identifies the contrast immediately preceding the 'fuel is unnecessary' claim (typically cold/necessity vs summer/Elysian ease in this stretch of Economy)."
+      ],
+      "negativeConstraints": []
+    },
+    {
+      "stableKey": "walden_q09",
+      "status": "ready",
+      "answerInAnchor": false,
+      "questionDesignNotes": [
+        "Validator warning: the anchor already includes the summer/Elysian sentence; if you want a real transition-target question, move the anchor to end before that sentence."
+      ],
+      "requiredEvidence": [
+        {
+          "kind": "nearby_text",
+          "direction": "before",
+          "maxChars": 1200,
+          "mustContain": [
+            "The summer, in some climates"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Names the pivot into summer/Elysian life (in this edition: the sentence beginning 'The summer, in some climates…')."
+      ],
+      "negativeConstraints": []
+    },
+    {
+      "stableKey": "walden_q10",
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": [
+            "Economy"
+          ],
+          "mustMentionAny": [
+            "Boards",
+            "borrowed",
+            "axe",
+            "$",
+            "28"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Points to the later itemized accounting of house-building costs (boards, nails/shingles as applicable, totals), not just a vague 'later in the book'.",
+        "Mentions penny-level specificity (cents / fractions) as the prompt requests."
+      ],
+      "negativeConstraints": [
+        "Do not substitute a different book's cost table; stay anchored to Walden's Economy accounting passage."
+      ]
+    },
+    {
+      "stableKey": "walden_q11",
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": [
+            "Where I Lived, and What I Lived For",
+            "Where I Lived"
+          ],
+          "mustMentionAny": [
+            "Walden Pond",
+            "pond",
+            "woods",
+            "house",
+            "July",
+            "April"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Identifies a later chapter/section where the pond experiment becomes concrete and seasonal (class answer: 'Where I Lived…' and nearby pond-life narration)."
+      ],
+      "negativeConstraints": []
+    },
+    {
+      "stableKey": "walden_q12",
+      "status": "needs_review",
+      "answerInAnchor": false,
+      "questionDesignNotes": [
+        "Ice/water/bathing imagery appears in multiple later places (pond winter, bathing, ice cutting); gold should be tightened once you pick the canonical target passage(s) for your class rubric."
+      ],
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": [
+            "The Pond in Winter",
+            "Baker Farm",
+            "Brute Neighbors"
+          ],
+          "mustMentionAny": [
+            "bath",
+            "bathe",
+            "water",
+            "ice",
+            "pond"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Names at least one later locus where cold water / ice / bathing becomes a deliberate practice rather than mere insulation by clothes/shelter."
+      ],
+      "negativeConstraints": []
+    },
+    {
+      "stableKey": "walden_q13",
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": [
+            "Sounds",
+            "The Village",
+            "Economy"
+          ],
+          "mustMentionAny": [
+            "railroad",
+            "train",
+            "whistle",
+            "commerce",
+            "trade",
+            "ice"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Explains irony: Walden as 'business' site ties the pond experiment to the wider commercial world (railroad/ice trade) he elsewhere treats as hurry/noise.",
+        "Cites at least one non-anchor locale where hurry/commerce/railroad imagery appears (acceptable answers vary by edition; judge should allow multiple sections if evidenced)."
+      ],
+      "negativeConstraints": []
+    },
+    {
+      "stableKey": "walden_q14",
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": [
+            "Baker Farm",
+            "Economy"
+          ],
+          "mustMentionAny": [
+            "poor",
+            "poverty",
+            "Irish",
+            "Field",
+            "labor",
+            "shant"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Contrasts voluntary poverty (chosen vantage) with involuntary want (trapped necessity).",
+        "References at least one portrait of real poverty elsewhere in the book (e.g., laboring poor / John Field–type material)."
+      ],
+      "negativeConstraints": []
+    },
+    {
+      "stableKey": "walden_q15",
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": [
+            "Economy",
+            "The Bean-Field",
+            "Walking",
+            "Spring"
+          ],
+          "mustMentionAny": [
+            "beans",
+            "wild",
+            "path",
+            "road",
+            "luxury",
+            "degenerate"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Connects luxury/enervation in Economy to later images of renewal: wildness, cultivated beans as practice, and leaving the beaten path.",
+        "Makes the link as synthesis (multiple sections), not a single 'correct' sentence."
+      ],
+      "negativeConstraints": []
+    }
+  ]
+}

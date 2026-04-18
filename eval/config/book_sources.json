@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "repoRootRelativeToThisFile": "../..",
+  "books": [
+    {
+      "id": "walden",
+      "questionStem": "walden",
+      "canonicalTextPath": "books/walden.txt",
+      "duplicateTextPaths": ["books/walden_thoreau.txt"]
+    },
+    {
+      "id": "frankenstein",
+      "questionStem": "frankenstein",
+      "canonicalTextPath": "books/frankenstein.txt",
+      "duplicateTextPaths": []
+    },
+    {
+      "id": "meditations",
+      "questionStem": "meditations",
+      "canonicalTextPath": "books/meditations.txt",
+      "duplicateTextPaths": []
+    },
+    {
+      "id": "pride_and_prejudice",
+      "questionStem": "pride_and_prejudice",
+      "canonicalTextPath": "books/pride_and_prejudice.txt",
+      "duplicateTextPaths": []
+    },
+    {
+      "id": "souls_of_black_folk",
+      "questionStem": "souls_of_black_folk",
+      "canonicalTextPath": "books/souls_of_black_folk.txt",
+      "duplicateTextPaths": ["books/the_souls_of_black_folk.txt"]
+    },
+    {
+      "id": "the_republic",
+      "questionStem": "the_republic",
+      "canonicalTextPath": "books/the_republic.txt",
+      "duplicateTextPaths": []
+    }
+  ]
+}

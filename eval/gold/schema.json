@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marginalia://eval/gold/schema.json",
+  "title": "Marginalia eval gold file",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "bookId", "sourceQuestions", "entries"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "minimum": 1 },
+    "bookId": { "type": "string", "minLength": 1 },
+    "sourceQuestions": { "type": "string", "minLength": 1 },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/goldEntry" }
+    }
+  },
+  "$defs": {
+    "evidenceItem": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["nearby_text", "book_section", "exact_quote", "regex", "tool_trace"]
+        }
+      }
+    },
+    "goldEntry": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["stableKey", "status"],
+      "properties": {
+        "stableKey": { "type": "string", "minLength": 1 },
+        "status": {
+          "type": "string",
+          "enum": ["skeleton", "needs_review", "ready"]
+        },
+        "answerInAnchor": { "type": ["boolean", "null"] },
+        "questionDesignNotes": { "type": "array", "items": { "type": "string" } },
+        "requiredEvidence": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/evidenceItem" }
+        },
+        "expectedAnswerPoints": { "type": "array", "items": { "type": "string" } },
+        "negativeConstraints": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

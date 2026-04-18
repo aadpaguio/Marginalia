@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "bookId": "the_republic",
+  "sourceQuestions": "eval/questions/the_republic.txt",
+  "entries": [
+    {
+      "stableKey": "the_republic_q01",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "the_republic_q02",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "the_republic_q03",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "the_republic_q04",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "the_republic_q05",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "the_republic_q06",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "the_republic_q07",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "the_republic_q08",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "the_republic_q09",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "the_republic_q10",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "the_republic_q11",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "the_republic_q12",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "the_republic_q13",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "the_republic_q14",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "the_republic_q15",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    }
+  ]
+}

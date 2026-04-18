@@ -37,5 +37,11 @@ npm-debug.log*
 *.md
 !README.md
 !**/README.md
+!eval/HANDOFF.md
 
 *.mdc
+
+# Eval: local CSV exports, score/judge JSON, and generated reports (regenerate from pipeline)
+eval/results/
+
+eval/scripts/__pycache__/

@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "bookId": "pride_and_prejudice",
+  "sourceQuestions": "eval/questions/pride_and_prejudice.txt",
+  "entries": [
+    {
+      "stableKey": "pride_and_prejudice_q01",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "pride_and_prejudice_q02",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "pride_and_prejudice_q03",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "pride_and_prejudice_q04",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "pride_and_prejudice_q05",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "pride_and_prejudice_q06",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "pride_and_prejudice_q07",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "pride_and_prejudice_q08",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "pride_and_prejudice_q09",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "pride_and_prejudice_q10",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "pride_and_prejudice_q11",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "pride_and_prejudice_q12",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "pride_and_prejudice_q13",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "pride_and_prejudice_q14",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "pride_and_prejudice_q15",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    }
+  ]
+}
