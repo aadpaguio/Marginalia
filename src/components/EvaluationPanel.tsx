@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
+import { Loader2 } from "lucide-react";
 import type { EvalCondition, EvalQuestionRow, EvalSetRow } from "@/services/eval";
 import {
   evalAddQuestionsJson,
@@ -67,6 +68,14 @@ export function EvaluationPanel({
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
   const [selectedCondition, setSelectedCondition] = useState<EvalCondition>("passage_only");
   const [busy, setBusy] = useState(false);
+  /** Set only while resolving anchors so the bar can show fraction complete. */
+  const [resolveProgress, setResolveProgress] = useState<{ current: number; total: number } | null>(null);
+  /** Set while eval runs are in flight (single or batch). */
+  const [evalRunProgress, setEvalRunProgress] = useState<{
+    done: number;
+    total: number;
+    label: string;
+  } | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [runsPreview, setRunsPreview] = useState<unknown[]>([]);
 
@@ -190,11 +199,14 @@ export function EvaluationPanel({
     setMessage(`Parsed ${parsed.length} question(s).`);
   };
 
+  const conditionLabel = (id: EvalCondition) => CONDITIONS.find((c) => c.id === id)?.label ?? id;
+
   const handleResolveAnchors = async () => {
     if (draftRows.length === 0) {
       setMessage("Parse questions first.");
       return;
     }
+    setEvalRunProgress(null);
     setBusy(true);
     setMessage("Resolving anchors...");
     const nextRows = [...draftRows];
@@ -202,6 +214,7 @@ export function EvaluationPanel({
     let unresolved = 0;
     try {
       for (let i = 0; i < nextRows.length; i++) {
+        setResolveProgress({ current: i + 1, total: nextRows.length });
         const row = nextRows[i];
         const anchorText = row.anchorText?.trim() ?? "";
         if (!anchorText) {
@@ -239,6 +252,7 @@ export function EvaluationPanel({
       setDraftRows(nextRows);
       setMessage(e instanceof Error ? e.message : String(e));
     } finally {
+      setResolveProgress(null);
       setBusy(false);
     }
   };
@@ -252,7 +266,12 @@ export function EvaluationPanel({
       (row) => !!row.prompt.trim() && !!row.anchorText?.trim() && !!row.anchorCfi?.trim()
     );
     if (resolvedRows.length === 0) {
-      setMessage("No resolved rows to import yet.");
+      const resolvedCount = draftRows.filter((r) => r.status === "resolved").length;
+      setMessage(
+        resolvedCount === 0
+          ? "No resolved rows to import yet. Each row needs a non-empty prompt, anchor passage, and resolved CFI. If the table looks empty, parse again or turn off Evaluation mode (that unmounts this panel and clears the draft)."
+          : "No rows ready to import: check that every resolved row still has prompt and anchor text (not just CFI)."
+      );
       return;
     }
     const payload = resolvedRows.map((row) => ({
@@ -301,10 +320,13 @@ export function EvaluationPanel({
       setMessage("Smart Scan must be completed for this book before running smart_scan_tools.");
       return;
     }
+    const label = `${conditionLabel(selectedCondition)} · Q${selectedQuestion.sortOrder}`;
     setBusy(true);
     setMessage(null);
+    setEvalRunProgress({ done: 0, total: 1, label });
     try {
       await onRunCondition(selectedQuestion, selectedCondition);
+      setEvalRunProgress({ done: 1, total: 1, label });
       setMessage("Run completed. Check export or thread DB for this eval thread.");
       if (selectedQuestionId) {
         setRunsPreview(await evalListRunsForQuestion(selectedQuestionId));
@@ -312,6 +334,7 @@ export function EvaluationPanel({
     } catch (e) {
       setMessage(e instanceof Error ? e.message : String(e));
     } finally {
+      setEvalRunProgress(null);
       setBusy(false);
     }
   };
@@ -324,12 +347,20 @@ export function EvaluationPanel({
     if (scanStatus !== "done") {
       setMessage("For “Run all 3”, Smart Scan should be done (smart_scan_tools will fail otherwise).");
     }
+    const runnable = CONDITIONS.filter(
+      (c) => c.id !== "smart_scan_tools" || scanStatus === "done"
+    );
+    const batchLabel = `All conditions · Q${selectedQuestion.sortOrder}`;
     setBusy(true);
     setMessage(null);
+    setEvalRunProgress({ done: 0, total: runnable.length, label: batchLabel });
     try {
-      for (const c of CONDITIONS) {
-        if (c.id === "smart_scan_tools" && scanStatus !== "done") continue;
+      let done = 0;
+      for (const c of runnable) {
         await onRunCondition(selectedQuestion, c.id);
+        done += 1;
+        setEvalRunProgress({ done, total: runnable.length, label: batchLabel });
+        setMessage(`Running all conditions: ${done}/${runnable.length} completed.`);
       }
       setMessage("Finished running available conditions.");
       if (selectedQuestionId) {
@@ -338,6 +369,7 @@ export function EvaluationPanel({
     } catch (e) {
       setMessage(e instanceof Error ? e.message : String(e));
     } finally {
+      setEvalRunProgress(null);
       setBusy(false);
     }
   };
@@ -351,13 +383,16 @@ export function EvaluationPanel({
       setMessage("Smart Scan must be completed for this book before running smart_scan_tools.");
       return;
     }
+    const batchLabel = `${conditionLabel(selectedCondition)} · all ${questions.length} question(s)`;
     setBusy(true);
     setMessage(null);
+    setEvalRunProgress({ done: 0, total: questions.length, label: batchLabel });
     try {
       let completed = 0;
       for (const q of questions) {
         await onRunCondition(q, selectedCondition);
         completed += 1;
+        setEvalRunProgress({ done: completed, total: questions.length, label: batchLabel });
         setMessage(
           `Running ${selectedCondition} for all questions: ${completed}/${questions.length} completed.`
         );
@@ -371,6 +406,7 @@ export function EvaluationPanel({
     } catch (e) {
       setMessage(e instanceof Error ? e.message : String(e));
     } finally {
+      setEvalRunProgress(null);
       setBusy(false);
     }
   };
@@ -387,15 +423,18 @@ export function EvaluationPanel({
       setMessage("No runnable conditions available.");
       return;
     }
+    const total = questions.length * runnableConditions.length;
+    const batchLabel = `All questions × ${runnableConditions.length} condition(s)`;
     setBusy(true);
     setMessage(null);
+    setEvalRunProgress({ done: 0, total, label: batchLabel });
     try {
-      const total = questions.length * runnableConditions.length;
       let completed = 0;
       for (const q of questions) {
         for (const c of runnableConditions) {
           await onRunCondition(q, c.id);
           completed += 1;
+          setEvalRunProgress({ done: completed, total, label: batchLabel });
           setMessage(`Running all questions × conditions: ${completed}/${total} completed.`);
         }
       }
@@ -410,6 +449,7 @@ export function EvaluationPanel({
     } catch (e) {
       setMessage(e instanceof Error ? e.message : String(e));
     } finally {
+      setEvalRunProgress(null);
       setBusy(false);
     }
   };
@@ -523,10 +563,120 @@ export function EvaluationPanel({
         <button type="button" disabled={busy || draftRows.length === 0} onClick={() => void handleResolveAnchors()}>
           Resolve anchors
         </button>
-        <button type="button" disabled={busy || draftRows.length === 0 || !activeSetId} onClick={() => void handleImportResolved()}>
+        <button
+          type="button"
+          disabled={busy || draftRows.length === 0 || !activeSetId}
+          title={
+            busy
+              ? "Please wait…"
+              : draftRows.length === 0
+                ? "Parse questions first, then resolve anchors."
+                : !activeSetId
+                  ? "Choose or create an eval set above."
+                  : "Import resolved rows into the selected set."
+          }
+          onClick={() => void handleImportResolved()}
+        >
           Import resolved
         </button>
       </div>
+
+      {busy && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            marginBottom: 10,
+            padding: "8px 10px",
+            borderRadius: 6,
+            border: "1px solid var(--border-subtle, #ddd)",
+            background: "var(--surface-elevated, #f7f6f4)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+            <Loader2
+              size={16}
+              aria-hidden
+              style={{
+                flexShrink: 0,
+                marginTop: 1,
+                color: "var(--text-secondary, #555)",
+                animation: "spin 0.9s linear infinite",
+              }}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, color: "var(--ink-primary)", lineHeight: 1.35 }}>
+                {resolveProgress
+                  ? `Resolving anchors · ${resolveProgress.current} / ${resolveProgress.total}`
+                  : evalRunProgress
+                    ? `${evalRunProgress.label} · ${evalRunProgress.done} / ${evalRunProgress.total} finished`
+                    : "Working…"}
+              </div>
+              {evalRunProgress && evalRunProgress.done < evalRunProgress.total && (
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "var(--text-secondary, #555)",
+                    marginTop: 4,
+                  }}
+                >
+                  Now running {evalRunProgress.done + 1} of {evalRunProgress.total}…
+                </div>
+              )}
+              {resolveProgress && (
+                <div
+                  role="progressbar"
+                  aria-valuenow={resolveProgress.current}
+                  aria-valuemin={1}
+                  aria-valuemax={resolveProgress.total}
+                  style={{
+                    marginTop: 6,
+                    height: 4,
+                    borderRadius: 2,
+                    background: "var(--border-subtle, #ddd)",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      height: "100%",
+                      width: `${(resolveProgress.current / resolveProgress.total) * 100}%`,
+                      borderRadius: 2,
+                      background: "var(--accent, #3d6bb0)",
+                      transition: "width 0.15s ease-out",
+                    }}
+                  />
+                </div>
+              )}
+              {evalRunProgress && !resolveProgress && evalRunProgress.total > 0 && (
+                <div
+                  role="progressbar"
+                  aria-valuenow={evalRunProgress.done}
+                  aria-valuemin={0}
+                  aria-valuemax={evalRunProgress.total}
+                  style={{
+                    marginTop: 6,
+                    height: 4,
+                    borderRadius: 2,
+                    background: "var(--border-subtle, #ddd)",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      height: "100%",
+                      width: `${(evalRunProgress.done / evalRunProgress.total) * 100}%`,
+                      borderRadius: 2,
+                      background: "var(--accent, #3d6bb0)",
+                      transition: "width 0.15s ease-out",
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {draftRows.length > 0 && (
         <div style={{ marginBottom: 10, overflowX: "auto" }}>
