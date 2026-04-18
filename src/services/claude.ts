@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { withAnthropicRateLimitRetry } from "@/services/anthropicRateLimit";
 import type { Highlight, MemoryItem, ThreadMessage, ThreadToolEvent, WebCitation } from "@/types/book";
 import type {
   ContextManifest,
@@ -390,6 +391,13 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     "- Local expansion: use get_context for neighboring text (before / after / around / from_section_start) when the question needs immediate surroundings.\n" +
     "- Spoiler boundary: do not assume the reader has read past the excerpt.\n" +
     "Treat these as heuristics, not rigid pipelines. Start with the lightest strategy that fits the question. Escalate only when needed.";
+  /** Stricter than production: eval runs comparing tool conditions should actually exercise get_context. */
+  const toolsEvalRetrievalPatterns =
+    "--- RETRIEVAL PATTERNS (BENCHMARK) ---\n" +
+    "- This run measures get_context against a passage-only baseline. If the question is fully and unambiguously settled by the attached excerpt (and any CURRENT TURN LEAD-UP CONTEXT), answer from that alone.\n" +
+    "- Otherwise you must call get_context at least once before your final answer, using the passage CFI and a fitting direction and max_chars.\n" +
+    "- When surrounding text could tighten attribution, continuity, or evidence versus the excerpt alone, retrieve it — do not skip the tool merely because a quick guess is possible.\n" +
+    "- Spoiler boundary: do not assume the reader has read past the excerpt; still retrieve locally around the anchor when appropriate.\n";
   const fullRetrievalPatterns =
     "--- RETRIEVAL PATTERNS ---\n" +
     "- Close reading: answer from the passage when it already contains the answer. No tool needed.\n" +
@@ -478,13 +486,23 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
   } else if (evalPreset === "tools") {
     systemParts.push(
       "--- TOOLS & CONTEXT (EVALUATION RUN) ---\n" +
+        "--- EVALUATION (TOOL BENCHMARK) ---\n" +
+        "This turn benchmarks get_context–assisted retrieval against a passage-only baseline. Follow RETRIEVAL PATTERNS (BENCHMARK) below: prefer at least one substantive get_context call whenever the excerpt alone is not sufficient.\n\n" +
         "The reader only ever sees your final message. They do not see tool calls, tool output, or any text you fetched.\n" +
         "You have exactly one retrieval tool: get_context (CFI + direction + max_chars). There is no section index or get_section_summary / get_section_text in this condition.\n" +
         "When to use get_context: when the question needs text around the reader's passage anchor. Pass the EPUB CFI from the passage or ACTIVE THREAD PASSAGE block, direction (before / after / around / from_section_start), and max_chars (snippet ~2000, section ~8000, full ~20000).\n" +
         "Spoilers: Do not assume the reader has read past the excerpt.\n" +
-        toolsOnlyRetrievalPatterns
+        toolsEvalRetrievalPatterns
     );
   } else {
+    if (evalPreset === "smart_scan_tools") {
+      systemParts.push(
+        "--- EVALUATION (TOOL BENCHMARK) ---\n" +
+          "This turn benchmarks Smart Scan–backed retrieval (section index, summaries, section text, get_context) against passage-only and get_context-only baselines. " +
+          "When any tool you have could materially improve grounding, attribution, or evidence compared with the excerpt alone, use it — including get_section_summary before get_section_text when cross-section retrieval applies. " +
+          "Do not skip tools merely because a quick answer seems possible from the excerpt; if tools would reduce uncertainty or strengthen the answer, use them."
+      );
+    }
     systemParts.push(
       "--- TOOLS & CONTEXT ---\n" +
         "The reader only ever sees your final message. They do not see tool calls, tool output, or any text you fetched. So: never imply they can see it. Do not say 'as you can see from the context', 'what I retrieved shows', 'the passage I pulled', 'in the text I fetched', or similar. Answer as if the relevant content were already in front of you — quote or paraphrase it in your reply; that is the only way the reader gets the information.\n" +
@@ -851,6 +869,8 @@ export type AskClaudeThreadParams = ThreadContextParams & {
   requestWebSearchPermission?: (
     query: string
   ) => Promise<"allow_once" | "allow_thread" | "deny">;
+  /** Each second while backing off after a 429 from the thread proxy (optional UI hook). */
+  onAnthropicRateLimitWait?: (secondsLeft: number) => void;
 };
 
 const MAX_TOOL_ROUNDS = 3;
@@ -1139,9 +1159,13 @@ export async function askClaudeThread(
         console.log("[Claude thread] full prompt (round %d):\n%s", round, fullPromptRound);
       }
 
-      data = await invoke<ClaudeThreadProxyRoundData>("ask_claude_thread_proxy", {
-        request: roundRequest,
-      });
+      data = await withAnthropicRateLimitRetry(
+        () =>
+          invoke<ClaudeThreadProxyRoundData>("ask_claude_thread_proxy", {
+            request: roundRequest,
+          }),
+        { onRateLimitWait: params.onAnthropicRateLimitWait }
+      );
 
       if (data.webSearchRequests) {
         totalWebSearchRequests += data.webSearchRequests;
@@ -1469,15 +1493,19 @@ export async function askClaudeThread(
   const fullPromptFinal = formatThreadPromptForLog(finalRequest.systemBlocks, messages);
   console.log("[Claude thread] full prompt (final, after tool rounds):\n%s", fullPromptFinal);
 
-  const finalData = await invoke<{
-    answer: string;
-    rawContent: unknown[];
-    model: string;
-    usage?: ClaudeResponse["usage"];
-    webSearchRequests?: number;
-  }>("ask_claude_thread_proxy", {
-    request: finalRequest,
-  });
+  const finalData = await withAnthropicRateLimitRetry(
+    () =>
+      invoke<{
+        answer: string;
+        rawContent: unknown[];
+        model: string;
+        usage?: ClaudeResponse["usage"];
+        webSearchRequests?: number;
+      }>("ask_claude_thread_proxy", {
+        request: finalRequest,
+      }),
+    { onRateLimitWait: params.onAnthropicRateLimitWait }
+  );
   if (finalData.webSearchRequests) {
     totalWebSearchRequests += finalData.webSearchRequests;
   }

@@ -537,6 +537,7 @@ function App() {
   const [evalModeEnabled, setEvalModeEnabled] = useState(
     () => typeof localStorage !== "undefined" && localStorage.getItem("marginalia_eval_mode") === "1"
   );
+  const [isEvalPanelOpen, setIsEvalPanelOpen] = useState(false);
   useEffect(() => {
     try {
       localStorage.setItem("marginalia_eval_mode", evalModeEnabled ? "1" : "0");
@@ -2969,18 +2970,30 @@ function App() {
                     <input
                       type="checkbox"
                       checked={evalModeEnabled}
-                      onChange={(e) => setEvalModeEnabled(e.target.checked)}
+                      onChange={(e) => {
+                        const next = e.target.checked;
+                        setEvalModeEnabled(next);
+                        if (!next) setIsEvalPanelOpen(false);
+                      }}
                     />
                     Evaluation mode (benchmark runs + export)
                   </label>
                   {evalModeEnabled && (
-                    <EvaluationPanel
-                      bookId={currentBookId}
-                      bookTitle={toDisplayString(bookDoc.metadata?.title, "Book")}
-                      scanStatus={scanStatus}
-                      onRunCondition={handleEvalRunCondition}
-                      onResolveAnchor={handleResolveEvalAnchor}
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setIsEvalPanelOpen(true)}
+                      style={{
+                        fontSize: 12,
+                        padding: "6px 10px",
+                        borderRadius: 6,
+                        border: `1px solid ${chrome.panelBorder}`,
+                        background: chrome.controlBg,
+                        color: chrome.appFg,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Open Evaluation Panel
+                    </button>
                   )}
                 </div>
               )}
@@ -3049,6 +3062,62 @@ function App() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+        {bookDoc && currentBookId && evalModeEnabled && (
+          <div
+            aria-hidden={!isEvalPanelOpen}
+            style={{
+              position: "absolute",
+              inset: 0,
+              /* Above Notes panel backdrop (z-index 199) so eval controls receive clicks */
+              zIndex: 260,
+              background: "rgba(0, 0, 0, 0.35)",
+              display: isEvalPanelOpen ? "flex" : "none",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 16,
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setIsEvalPanelOpen(false);
+            }}
+          >
+            <div
+              role="dialog"
+              aria-modal={isEvalPanelOpen}
+              aria-label="Evaluation panel"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: "min(980px, 92vw)",
+                maxHeight: "88vh",
+                overflow: "hidden",
+                borderRadius: 12,
+                border: `1px solid ${chrome.panelBorder}`,
+                background: chrome.panelBg,
+                color: chrome.appFg,
+                boxShadow: "0 12px 36px rgba(0,0,0,0.28)",
+                padding: 12,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <strong style={{ fontSize: 14 }}>Evaluation</strong>
+                <button
+                  type="button"
+                  onClick={() => setIsEvalPanelOpen(false)}
+                  aria-label="Close evaluation panel"
+                  style={{ border: "none", background: "transparent", cursor: "pointer", color: chrome.muted }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <EvaluationPanel
+                bookId={currentBookId}
+                bookTitle={toDisplayString(bookDoc.metadata?.title, "Book")}
+                scanStatus={scanStatus}
+                onRunCondition={handleEvalRunCondition}
+                onResolveAnchor={handleResolveEvalAnchor}
+              />
+            </div>
           </div>
         )}
         {showSmartScanBanner && (

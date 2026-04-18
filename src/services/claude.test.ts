@@ -66,19 +66,30 @@ describe("Phase 27 — assembleThreadContext (blind model posture)", () => {
     expect(text).toContain("ask before fetching or summarising");
   });
 
-  it("evaluation tools preset adds only close-reading and local-expansion retrieval guidance", () => {
+  it("evaluation tools preset injects benchmark instructions and stricter get_context retrieval patterns", () => {
     const result = assembleThreadContext({
       ...baseParams,
       evaluationToolPreset: "tools",
     });
     const text = result.systemBlocks[0].text;
-    expect(text).toContain("--- RETRIEVAL PATTERNS ---");
-    expect(text).toContain("Close reading:");
-    expect(text).toContain("Local expansion:");
-    expect(text).toContain("Treat these as heuristics, not rigid pipelines.");
-    expect(text).toContain("Start with the lightest strategy that fits the question. Escalate only when needed.");
+    expect(text).toContain("--- EVALUATION (TOOL BENCHMARK) ---");
+    expect(text).toContain("--- RETRIEVAL PATTERNS (BENCHMARK) ---");
+    expect(text).toContain("measures get_context against a passage-only baseline");
+    expect(text).toContain("must call get_context at least once");
+    expect(text).not.toContain("--- RETRIEVAL PATTERNS ---\n");
     expect(text).not.toContain("Orient then decide:");
     expect(text).not.toContain("Cross-section:");
+  });
+
+  it("smart_scan_tools eval preset injects tool benchmark block before normal TOOLS & CONTEXT", () => {
+    const result = assembleThreadContext({
+      ...baseParams,
+      evaluationToolPreset: "smart_scan_tools",
+    });
+    const text = result.systemBlocks[0].text;
+    expect(text).toContain("--- EVALUATION (TOOL BENCHMARK) ---");
+    expect(text).toContain("Smart Scan–backed retrieval");
+    expect(text).toContain("--- TOOLS & CONTEXT ---");
   });
 
   it("TOOLS & CONTEXT: attribution must not be answered by inference or guess; must fetch if not explicit", () => {
