@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "bookId": "souls_of_black_folk",
+  "sourceQuestions": "eval/questions/souls_of_black_folk.txt",
+  "entries": [
+    {
+      "stableKey": "souls_of_black_folk_q01",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "souls_of_black_folk_q02",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "souls_of_black_folk_q03",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "souls_of_black_folk_q04",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "souls_of_black_folk_q05",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "souls_of_black_folk_q06",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "souls_of_black_folk_q07",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "souls_of_black_folk_q08",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "souls_of_black_folk_q09",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "souls_of_black_folk_q10",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "souls_of_black_folk_q11",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "souls_of_black_folk_q12",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "souls_of_black_folk_q13",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "souls_of_black_folk_q14",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "souls_of_black_folk_q15",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    }
+  ]
+}

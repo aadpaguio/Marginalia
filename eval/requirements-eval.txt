@@ -1,0 +1,2 @@
+# Python eval scripts (eval/scripts/score_eval.py, judge_eval.py) use the stdlib only.
+# No pip packages are required for CSV scoring or the Anthropic judge (HTTPS via urllib).

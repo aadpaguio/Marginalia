@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "bookId": "meditations",
+  "sourceQuestions": "eval/questions/meditations.txt",
+  "entries": [
+    {
+      "stableKey": "meditations_q01",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "meditations_q02",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "meditations_q03",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "meditations_q04",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "meditations_q05",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "meditations_q06",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "meditations_q07",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "meditations_q08",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "meditations_q09",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "meditations_q10",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "meditations_q11",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "meditations_q12",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "meditations_q13",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "meditations_q14",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    },
+    {
+      "stableKey": "meditations_q15",
+      "status": "skeleton",
+      "answerInAnchor": null,
+      "requiredEvidence": [],
+      "expectedAnswerPoints": [],
+      "negativeConstraints": [],
+      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+    }
+  ]
+}

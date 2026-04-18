@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "title": "Marginalia eval — LLM judge rubric",
+  "classMetricMapping": {
+    "faithfulness": "faithfulness (no unsupported textual/factual claims vs ALLOWED_EVIDENCE)",
+    "chunk_relevance": "relevance of retrieved chunks to the question",
+    "answer_completeness": "recall of the prompt (and fair gold points) — did the answer cover what was asked",
+    "claim_precision": "precision — specificity and avoidance of vague or over-broad claims weakly tied to evidence"
+  },
+  "scale": {
+    "min": 1,
+    "max": 5,
+    "minLabel": "unacceptable",
+    "maxLabel": "excellent"
+  },
+  "defaultModel": "claude-haiku-4-5-20251001",
+  "binaryFlags": [
+    {
+      "id": "unsupported_claims",
+      "whenOne": "Set to 1 if substantive factual or textual claims are not grounded in ALLOWED_EVIDENCE (invention, fabricated quotes, wrong section references, facts not in anchor or tool excerpts). Otherwise 0."
+    },
+    {
+      "id": "retrieval_problem",
+      "whenOne": "Set to 1 if retrieved excerpts are largely off-topic, wrong locus, noisy filler, or evidence is insufficient for what the question asked (given tools/smart_scan were available or used). Otherwise 0."
+    },
+    {
+      "id": "incomplete_response",
+      "whenOne": "Set to 1 if major sub-parts of the prompt or fair gold rubric hints are missing, evaded, or only hand-waved. Otherwise 0."
+    },
+    {
+      "id": "imprecise_or_overbroad",
+      "whenOne": "Set to 1 if the answer is generic boilerplate, hand-wavy, or claims exceed what the evidence supports (precision / over-breadth). Otherwise 0."
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "faithfulness",
+      "weight": 0.35,
+      "definition": "Every substantive factual or textual claim in the assistant answer is supported by the ALLOWED_EVIDENCE block (anchor passage + retrieved tool text). Paraphrase is fine; invention is not.",
+      "anchors": {
+        "1": "Contains clear hallucinations, plot/author facts, or quotations not grounded in ALLOWED_EVIDENCE.",
+        "2": "Several important claims lack support or misrepresent the cited material.",
+        "3": "Mostly grounded, but one or two substantive claims are weakly supported or overreach.",
+        "4": "Nearly all substantive claims are well supported; any stretch is minor and hedged.",
+        "5": "Rigorously grounded; interpretations are explicitly tied to specific phrases or retrieved lines."
+      }
+    },
+    {
+      "id": "chunk_relevance",
+      "weight": 0.2,
+      "definition": "The retrieved excerpts (tool outputs) are pertinent to the user question: they help answer it or legitimately contextualize it, without being mostly off-topic filler.",
+      "anchors": {
+        "1": "Retrieval is largely irrelevant or misleading for the question.",
+        "2": "Some relevant material, but major portions are off-topic or the wrong locus.",
+        "3": "Mixed relevance: helpful chunks alongside noticeable noise.",
+        "4": "Mostly on-target; small amount of extra context is reasonable.",
+        "5": "Tight, high-yield retrieval for this prompt (given what was retrieved)."
+      }
+    },
+    {
+      "id": "answer_completeness",
+      "weight": 0.25,
+      "definition": "The answer addresses every part of the prompt (including implicit sub-parts like 'where later…' or 'how does X relate to Y') and reflects the gold rubric points when they are fair expectations for the ALLOWED_EVIDENCE.",
+      "anchors": {
+        "1": "Misses the main task or most sub-parts of the question.",
+        "2": "Addresses the topic but omits major requested elements.",
+        "3": "Covers the core adequately; noticeable gaps on secondary asks.",
+        "4": "Covers essentially all parts; only minor omissions.",
+        "5": "Fully responsive, including nuanced sub-parts, without unnecessary digression."
+      }
+    },
+    {
+      "id": "claim_precision",
+      "weight": 0.2,
+      "definition": "Precision of the answer as literary analysis: avoids vague boilerplate, avoids overbroad generalizations unsupported by evidence, and does not smuggle strong claims without textual backing.",
+      "anchors": {
+        "1": "Mostly generic or speculative; little textual specificity.",
+        "2": "Frequent vague claims; weak linkage to specifics.",
+        "3": "Adequate specificity with some hand-waving.",
+        "4": "Generally precise, with clear textual hooks.",
+        "5": "Sharply precise; claims match the grain of the quoted/retrieved language."
+      }
+    }
+  ],
+  "globalRules": [
+    "Score ONLY from ALLOWED_EVIDENCE and the assistant answer. Do not use private knowledge of the book beyond what appears in ALLOWED_EVIDENCE.",
+    "If ALLOWED_EVIDENCE is thin for a book-level question, do not penalize missing sections that were never retrieved—penalize only unsupported claims presented as textual fact.",
+    "Interpretation is allowed when tied to evidence; invented quotations or precise locations not present in ALLOWED_EVIDENCE are severe faithfulness failures.",
+    "If the condition is passage_only and there is no retrieved text, evaluate chunk_relevance as 5 only if no retrieval was needed; if the question clearly required elsewhere-in-book evidence and the answer supplies it without retrieval, treat unsupported book-wide factual claims as low faithfulness.",
+    "Return scores as integers on the 1–5 scale defined in this rubric.",
+    "Include binary flags: each flag id must be the integer 0 or 1 only (no booleans as strings). Set a flag to 1 only when that failure mode is clearly present."
+  ]
+}
