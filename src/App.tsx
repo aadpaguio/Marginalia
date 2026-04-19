@@ -17,6 +17,7 @@ import type {
 import type { ContextManifest } from "@/types/contextManifest";
 import type { ReaderTheme } from "@/app/reader/utils/readerStyles";
 import FoliateViewer from "@/app/reader/components/FoliateViewer";
+import { normalizeEvalAnchorForSearch } from "@/app/reader/utils/quoteMatch";
 import Library from "@/components/Library";
 import {
   dbArchiveThread,
@@ -553,6 +554,8 @@ function App() {
   const getContextAroundCfiRef = useRef<
     ((cfi: string, direction: import("@/services/claude").GetContextDirection, maxChars: number, anchorText?: string) => GetContextResult) | null
   >(null);
+  /** Resolves when FoliateViewer finishes `goTo` for an eval-precued jump (`setJumpToCfi`). */
+  const evalJumpCompleteRef = useRef<(() => void) | null>(null);
   const resolveCitationRef = useRef<
     ((citation: CitationPayload) => Promise<string | null>) | null
   >(null);
@@ -590,14 +593,8 @@ function App() {
     [bookDoc]
   );
 
-  /** Normalize string for fuzzy match (smart quotes, collapsed whitespace). */
-  const normalizeForQuoteMatch = useCallback((s: string) => {
-    return s
-      .replace(/\u201c|\u201d/g, '"')
-      .replace(/\u2018|\u2019/g, "'")
-      .replace(/\s+/g, " ")
-      .trim();
-  }, []);
+  /** Normalize string for fuzzy match (eval anchors vs EPUB section text). */
+  const normalizeForQuoteMatch = useCallback((s: string) => normalizeEvalAnchorForSearch(s), []);
 
   /** Strip one layer of surrounding quote chars so "passage" matches passage in the book. */
   const stripWrappingQuotes = useCallback((s: string): string => {
@@ -618,6 +615,15 @@ function App() {
       if (!quote) quote = citation.anchorBefore ?? "";
       if (!quote || !bookDoc?.sections) return null;
       quote = stripWrappingQuotes(quote);
+      if (quote.length > 240) {
+        const window = quote.slice(0, 240);
+        const sentenceBreak = Math.max(window.lastIndexOf(". "), window.lastIndexOf("? "), window.lastIndexOf("! "));
+        if (sentenceBreak >= 80) quote = window.slice(0, sentenceBreak + 1).trim();
+        else {
+          const clauseBreak = Math.max(window.lastIndexOf("; "), window.lastIndexOf(", "), window.lastIndexOf("--"));
+          quote = (clauseBreak >= 80 ? window.slice(0, clauseBreak) : window).trim();
+        }
+      }
 
       const spineItems = bookDoc.sections.filter((s) => s.linear !== "no");
       const normQuote = normalizeForQuoteMatch(quote);
@@ -1677,6 +1683,39 @@ function App() {
       };
 
       try {
+        // `get_context` reads from the *currently mounted* EPUB section. Jump to the eval anchor CFI first
+        // so `anchorText` can be found in the DOM (foliate-js only keeps nearby sections loaded).
+        if (pendingExcerpt?.cfi) {
+          await new Promise<void>((resolve, reject) => {
+            const ms = 12000;
+            const timeoutId = window.setTimeout(() => {
+              evalJumpCompleteRef.current = null;
+              reject(
+                new Error(
+                  "Timed out waiting for the reader to open the eval anchor section (jump to CFI). Keep the book open and try again."
+                )
+              );
+            }, ms);
+            evalJumpCompleteRef.current = () => {
+              window.clearTimeout(timeoutId);
+              resolve();
+            };
+            setJumpToCfi(pendingExcerpt.cfi);
+          });
+
+          const cfi = pendingExcerpt.cfi;
+          const anchorText = pendingExcerpt.text;
+          const settleDeadline = Date.now() + 3500;
+          while (Date.now() < settleDeadline) {
+            const fn = getContextAroundCfiRef.current;
+            if (fn) {
+              const probe = fn(cfi, "around", 2000, anchorText);
+              if (!probe.anchorUnresolved) break;
+            }
+            await new Promise((r) => setTimeout(r, 80));
+          }
+        }
+
         const result = await askClaudeThread(params, apiKey);
         const userMsg: ThreadMessage = {
           id: `msg-${now}-evu`,
@@ -2057,7 +2096,12 @@ function App() {
             if (h) handleDeleteHighlightFromPanel(h);
           }}
           jumpToCfi={jumpToCfi}
-          onJumpHandled={() => setJumpToCfi(null)}
+          onJumpHandled={() => {
+            const done = evalJumpCompleteRef.current;
+            evalJumpCompleteRef.current = null;
+            done?.();
+            setJumpToCfi(null);
+          }}
           deleteNoteCfi={deleteHighlightCfi}
           onDeleteNoteCfiHandled={() => setDeleteHighlightCfi(null)}
           onOpenNoteFromHighlight={(cfi) => {

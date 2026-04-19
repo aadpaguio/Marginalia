@@ -199,9 +199,13 @@ def per_book_summary(book_id: str, rows: list[dict[str, Any]]) -> dict[str, Any]
     flag_ids = _judge_binary_flag_ids()
     by_cond: dict[str, list[dict[str, Any]]] = defaultdict(list)
     by_cat: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    by_cat_cond: dict[str, dict[str, list[dict[str, Any]]]] = defaultdict(lambda: defaultdict(list))
     for r in rows:
-        by_cond[str(r.get("condition") or "")].append(r)
-        by_cat[str(r.get("category") or "")].append(r)
+        cond = str(r.get("condition") or "")
+        cat = str(r.get("category") or "")
+        by_cond[cond].append(r)
+        by_cat[cat].append(r)
+        by_cat_cond[cat][cond].append(r)
 
     def cond_stats(rs: list[dict[str, Any]]) -> dict[str, Any]:
         recalls = [float(r["evidenceRecall"]) for r in rs if r.get("evidenceRecall") is not None]
@@ -260,6 +264,10 @@ def per_book_summary(book_id: str, rows: list[dict[str, Any]]) -> dict[str, Any]
         ),
         "byCondition": {c: cond_stats(rs) for c, rs in sorted(by_cond.items())},
         "byCategory": {c: cat_stats(rs) for c, rs in sorted(by_cat.items())},
+        "byCategoryAndCondition": {
+            c: {cond: cond_stats(rs) for cond, rs in sorted(cond_map.items())}
+            for c, cond_map in sorted(by_cat_cond.items())
+        },
         "flagCounts": dict(sorted(flag_counts.items())),
         "problemQuestionCount": len(problem_keys),
         "likelyHallucinationRowCount": likely_halluc,
@@ -492,6 +500,27 @@ def write_summary_md(path: Path, payload: dict[str, Any]) -> None:
             jcells = " | ".join(_fmt_num(jm.get(d), nd=3) if isinstance(jm, dict) else "—" for d in rubric_dims)
             lines.append(f"| {cat} | {st.get('rows')} | {jcells} |")
         lines.append("")
+        by_cond = s.get("byCondition") or {}
+        by_cat_cond = s.get("byCategoryAndCondition") or {}
+        cond_names = [c for c in ("passage_only", "tools", "smart_scan_tools") if c in by_cond]
+        if cond_names:
+            lines.append("**Mean judge rubric scores by category and condition (1–5)**")
+            lines.append("")
+            header_cols = ["Category"]
+            for dim in rubric_dims:
+                for cond in cond_names:
+                    header_cols.append(f"{dim} ({cond})")
+            lines.append("| " + " | ".join(header_cols) + " |")
+            lines.append("| " + " | ".join(["---"] * len(header_cols)) + " |")
+            for cat, _st in sorted((s.get("byCategory") or {}).items()):
+                row_cols = [str(cat)]
+                for dim in rubric_dims:
+                    for cond in cond_names:
+                        st = (by_cat_cond.get(cat) or {}).get(cond) or {}
+                        jm = st.get("meanJudgeScoresByDimension") or {}
+                        row_cols.append(_fmt_num(jm.get(dim) if isinstance(jm, dict) else None, nd=3))
+                lines.append("| " + " | ".join(row_cols) + " |")
+            lines.append("")
         if flag_ids_summary and (s.get("judgeFlagDataRowCount") or 0) > 0:
             fh = " | ".join(flag_ids_summary)
             lines.append("**Mean judge flag rates by condition (0–1; flag_rows = rows with judge flag data)**")
@@ -520,6 +549,24 @@ def write_summary_md(path: Path, payload: dict[str, Any]) -> None:
                     f"| {cat} | {st.get('rows')} | {st.get('judgeFlagRowCount', 0)} | {fcells} |"
                 )
             lines.append("")
+            if cond_names:
+                lines.append("**Mean judge flag rates by category and condition (0–1)**")
+                lines.append("")
+                header_cols = ["Category"]
+                for fid in flag_ids_summary:
+                    for cond in cond_names:
+                        header_cols.append(f"{fid} ({cond})")
+                lines.append("| " + " | ".join(header_cols) + " |")
+                lines.append("| " + " | ".join(["---"] * len(header_cols)) + " |")
+                for cat, _st in sorted((s.get("byCategory") or {}).items()):
+                    row_cols = [str(cat)]
+                    for fid in flag_ids_summary:
+                        for cond in cond_names:
+                            st_cat_cond = (by_cat_cond.get(cat) or {}).get(cond) or {}
+                            fr = st_cat_cond.get("meanJudgeFlagRatesById") or {}
+                            row_cols.append(_fmt_num(fr.get(fid) if isinstance(fr, dict) else None, nd=3))
+                    lines.append("| " + " | ".join(row_cols) + " |")
+                lines.append("")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 

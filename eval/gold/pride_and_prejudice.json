@@ -5,138 +5,258 @@
   "entries": [
     {
       "stableKey": "pride_and_prejudice_q01",
-      "status": "skeleton",
-      "answerInAnchor": null,
+      "status": "ready",
+      "answerInAnchor": true,
       "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "expectedAnswerPoints": [
+        "Notes the narrator shifts from the opening 'truth' to how it is socially 'fixed' in neighbours' minds.",
+        "Explains the ironic bite of treating the rich bachelor as the 'rightful property' of local daughters (endorsed 'fact' vs critical distance)."
+      ],
+      "negativeConstraints": [
+        "Do not lean on biography of Austen or publication history; stay grounded in the anchor's wording."
+      ]
     },
     {
       "stableKey": "pride_and_prejudice_q02",
-      "status": "skeleton",
-      "answerInAnchor": null,
+      "status": "ready",
+      "answerInAnchor": true,
       "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "expectedAnswerPoints": [
+        "Identifies Mr. Bennet's reply as clipped, deadpan, or deliberately minimal ('he had not').",
+        "Explains the effect: polite withholding / teasing indifference toward his wife's excitement about Netherfield."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "pride_and_prejudice_q03",
-      "status": "skeleton",
-      "answerInAnchor": null,
+      "status": "ready",
+      "answerInAnchor": true,
       "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "expectedAnswerPoints": [
+        "Calls attention to the stressed negation on 'not' a great reader (pushing back on Miss Bingley's caricature).",
+        "Explains how the line rebuffs exaggerated praise/censure while keeping the exchange socially sharp."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "pride_and_prejudice_q04",
-      "status": "skeleton",
-      "answerInAnchor": null,
+      "status": "ready",
+      "answerInAnchor": true,
       "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "expectedAnswerPoints": [
+        "Recognizes the chain of 'could not / did not know' as feigned uncertainty or hedging about the younger daughters.",
+        "Explains the rhetorical aim: indirect steering so Collins (and the reader) still land on Jane as the preferred match."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "pride_and_prejudice_q05",
-      "status": "skeleton",
-      "answerInAnchor": null,
+      "status": "ready",
+      "answerInAnchor": true,
       "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "expectedAnswerPoints": [
+        "Explains that 'scrupled not' means he did not hesitate (he freely, even recklessly, accused Wickham).",
+        "Connects the phrasing to moral confidence or indelicacy in the accusation, which heightens Elizabeth's shock."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "pride_and_prejudice_q06",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "nearby_text",
+          "direction": "before",
+          "maxChars": 1200,
+          "mustContain": ["Mr. Denny", "Wickham"]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Names Mr. Denny as the speaker of the quoted line.",
+        "Identifies Wickham as the officer whose absence is being explained (avoiding Mr. Darcy)."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "pride_and_prejudice_q07",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "nearby_text",
+          "direction": "after",
+          "maxChars": 800,
+          "mustMentionAny": [
+            "Will you give me leave to defer your raptures",
+            "defer your raptures till I write again"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Gives Darcy's deflecting reply after Miss Bingley's flattery about Georgiana (typically the deferral of 'raptures' until he finishes writing)."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "pride_and_prejudice_q08",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "nearby_text",
+          "direction": "before",
+          "maxChars": 1600,
+          "mustMentionAny": ["gave her the letter", "went through them"]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Identifies the object as Mr. Darcy's letter (the document Elizabeth has just received and is reading line by line)."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "pride_and_prejudice_q09",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "nearby_text",
+          "direction": "before",
+          "maxChars": 1200,
+          "mustMentionAny": ["such a sight to be seen", "sight to be seen"]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Names Maria's teasing two-word label for what they rush to see: 'such a sight' (or the same phrase with 'seen')."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "pride_and_prejudice_q10",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": ["Chapter XV", "Mr. Collins", "Longbourn"],
+          "mustMentionAny": [
+            "plan of amends",
+            "atonement",
+            "chuse one of the daughters",
+            "Miss Bennet's lovely face"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Locates the earlier exposition in the Collins introduction (Volume I): his scheme to marry one of the Bennet daughters as reparation for the entail.",
+        "States his first settled choice was Jane (the eldest), before Mrs. Bennet's hints push him toward Elizabeth."
+      ],
+      "negativeConstraints": [
+        "Do not confuse with his later on-the-spot switch at Longbourn; the prompt asks for the original 'plan of amends' target."
+      ]
     },
     {
       "stableKey": "pride_and_prejudice_q11",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": ["Chapter XIII", "Hunsford", "letter"],
+          "mustMentionAny": [
+            "gave her the letter",
+            "Fitzwilliam Darcy"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Points to the Hunsford / Kent parsonage episode after Darcy's first proposal: he gives Elizabeth a long letter the morning after she refuses him.",
+        "Names it as the written account that reframes Wickham (not merely a later social conversation)."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "pride_and_prejudice_q12",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": ["Chapter X", "Netherfield", "drawing-room"],
+          "mustMentionAny": ["hand-writing", "handwriting", "commendations", "write so even"]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Identifies Miss Bingley (Caroline) as the woman who praises Darcy's letter, handwriting, or evenness while he writes."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "pride_and_prejudice_q13",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": ["Chapter II", "Kitty", "nerves"],
+          "mustMentionAny": ["Kitty", "nerves", "cough"]
+        },
+        {
+          "kind": "book_section",
+          "sectionHints": ["entail", "Longbourn", "Chapter XIII"],
+          "mustMentionAny": ["entail", "Longbourn", "five daughters", "Mr. Collins"]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Connects the farce of nerves/coughs to the household's real economic vulnerability: daughters must marry because the estate is entailed away from them.",
+        "Treats the comedy as intensifying, not canceling, the marriage-market pressure that drives Mrs. Bennet."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "pride_and_prejudice_q14",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": ["Chapter XIII", "letter", "Volume II"],
+          "mustMentionAny": ["Wickham", "gave her the letter", "infamous"]
+        },
+        {
+          "kind": "book_section",
+          "sectionHints": ["Chapter III", "assembly", "Meryton"],
+          "mustMentionAny": ["tolerable", "tempt"]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Tracks Elizabeth's early credulity toward Wickham and resentment of Darcy (assembly slight, Wickham's story, interference with Jane) as seeds of her prejudice.",
+        "Explains this letter-reading moment as a forced re-test of that prejudice: the same 'affair' can appear blameless for Darcy once she rereads with his facts."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "pride_and_prejudice_q15",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": ["Lady Catherine", "Rosings", "visit"],
+          "mustMentionAny": ["Lady Catherine", "not to be trifled with", "interfere", "engagement"]
+        },
+        {
+          "kind": "book_section",
+          "sectionHints": ["Charlotte", "Hunsford", "Collins"],
+          "mustMentionAny": ["Charlotte", "Hunsford", "Mr. Collins", "proposal accepted"]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Explains Lady Catherine's visit as high-rank interference meant to police a marriage and preserve family exclusivity.",
+        "Relates it to Charlotte's earlier 'practical' acceptance of Collins: both episodes show women securing (or defending) position through marriage under patronage and social control—one comic-bullying, the other quietly strategic."
+      ],
+      "negativeConstraints": []
     }
   ]
 }
