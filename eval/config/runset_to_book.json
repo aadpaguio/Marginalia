@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "setNameToBookId": {
-    "walden_test_1": "walden"
+    "walden_2": "walden",
+    "pnp_2": "pride_and_prejudice"
   }
 }

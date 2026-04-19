@@ -16,6 +16,11 @@ import {
 } from "../utils/iframeEventHandlers";
 import { getReaderStyles, type ReaderTheme } from "../utils/readerStyles";
 import { cfiRangesOverlap } from "../utils/cfi";
+import {
+  buildAugmentedPlainText,
+  buildSearchHaystack,
+  normalizeEvalAnchorForSearch,
+} from "../utils/quoteMatch";
 import { useInstantAnnotation } from "../hooks/useInstantAnnotation";
 import Annotator from "./annotator/Annotator";
 import type { CitationPayload, Highlight } from "@/types/book";
@@ -103,6 +108,44 @@ function findQuoteRangeInDocument(doc: Document, quote: string): Range | null {
   const body = doc.body;
   if (!body) return null;
 
+  const quoteTrim = stripWrappingQuotes(quote.trim());
+  if (quoteTrim.length === 0) return null;
+
+  const aug = buildAugmentedPlainText(body);
+  if (aug.text.length === 0) return null;
+
+  function rangeFromAugCharRange(startChar: number, endCharInclusive: number): Range | null {
+    const startMap = aug.charToTextPos[startChar];
+    const endMap = aug.charToTextPos[endCharInclusive];
+    if (!startMap || !endMap) return null;
+    const range = doc.createRange();
+    range.setStart(startMap.node, startMap.offset);
+    range.setEnd(endMap.node, Math.min(endMap.offset + 1, endMap.node.length));
+    return range;
+  }
+
+  let startChar = aug.text.indexOf(quoteTrim);
+  let endCharInclusive = startChar >= 0 ? startChar + quoteTrim.length - 1 : -1;
+
+  if (startChar === -1) {
+    const { hay, hayToAugCharIdx } = buildSearchHaystack(aug);
+    const needle = normalizeEvalAnchorForSearch(quoteTrim);
+    if (needle.length > 0) {
+      const j = hay.indexOf(needle);
+      if (j !== -1) {
+        const lastHay = j + needle.length - 1;
+        startChar = hayToAugCharIdx[j];
+        endCharInclusive = hayToAugCharIdx[lastHay];
+      }
+    }
+  }
+
+  if (startChar >= 0 && endCharInclusive >= startChar) {
+    const r = rangeFromAugCharRange(startChar, endCharInclusive);
+    if (r) return r;
+  }
+
+  // Legacy path: raw text-node glue (no cross-block spaces) + ellipsis-aware match.
   const textNodes: { node: Text; start: number }[] = [];
   let totalLength = 0;
 
@@ -126,9 +169,6 @@ function findQuoteRangeInDocument(doc: Document, quote: string): Range | null {
     .map((t) => t.node.textContent ?? "")
     .join("");
   if (fullText.length === 0) return null;
-
-  const quoteTrim = stripWrappingQuotes(quote.trim());
-  if (quoteTrim.length === 0) return null;
 
   let startIdx = fullText.indexOf(quoteTrim);
   let endIdx = startIdx + quoteTrim.length;
@@ -163,11 +203,9 @@ function findQuoteRangeInDocument(doc: Document, quote: string): Range | null {
       startIdx = normToOriginal[normIdx];
       endIdx = normToOriginal[normIdx + normQuote.length - 1] + 1;
     } else {
-      // Ellipsis-aware fallback: handles leading, trailing, and middle '...' / '…'.
       const ellipsisToken = /\.{3}|…/;
       if (!ellipsisToken.test(quoteTrim)) return null;
 
-      // Strip leading/trailing ellipsis, then split on any remaining middle ones.
       const stripped = quoteTrim
         .replace(/^[\s.…]+/, "")
         .replace(/[\s.…]+$/, "");
@@ -182,11 +220,9 @@ function findQuoteRangeInDocument(doc: Document, quote: string): Range | null {
       if (headIdx === -1) return null;
 
       if (parts.length === 1) {
-        // Trailing or leading ellipsis only — anchor on the single fragment.
         startIdx = normToOriginal[headIdx];
         endIdx = normToOriginal[headIdx + head.length - 1] + 1;
       } else {
-        // Middle ellipsis — anchor on head start and tail end.
         const tail = parts[parts.length - 1];
         const tailIdx = normFull.indexOf(tail, headIdx + head.length);
         if (tailIdx === -1) return null;
@@ -219,6 +255,21 @@ function findQuoteRangeInDocument(doc: Document, quote: string): Range | null {
   range.setEnd(endInfo.node, Math.min(endOffset, endInfo.node.length));
 
   return range;
+}
+
+function pickResolvableQuoteSnippet(quote: string, maxChars = 240): string {
+  const trimmed = stripWrappingQuotes(quote.trim());
+  if (trimmed.length <= maxChars) return trimmed;
+
+  const window = trimmed.slice(0, maxChars);
+  const sentenceBreak = Math.max(window.lastIndexOf(". "), window.lastIndexOf("? "), window.lastIndexOf("! "));
+  if (sentenceBreak >= 80) return window.slice(0, sentenceBreak + 1).trim();
+
+  const clauseBreak = Math.max(window.lastIndexOf("; "), window.lastIndexOf(", "), window.lastIndexOf("--"));
+  if (clauseBreak >= 80) return window.slice(0, clauseBreak).trim();
+
+  const wordBreak = window.lastIndexOf(" ");
+  return (wordBreak >= 80 ? window.slice(0, wordBreak) : window).trim();
 }
 
 export interface BookConfig {
@@ -936,7 +987,7 @@ export default function FoliateViewer({
       // Use short quote for search; when model only sends anchors or quote is huge, use anchorBefore.
       let quote = citation.quote?.trim();
       if (!quote || quote.length > 400) quote = citation.anchorBefore ?? "";
-      quote = stripWrappingQuotes(quote);
+      quote = pickResolvableQuoteSnippet(quote);
       if (!quote) return null;
 
       const contents = v.renderer.getContents?.() ?? [];

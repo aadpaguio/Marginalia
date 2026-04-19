@@ -36,7 +36,7 @@ Expected tools: none
 Chapter/Section: Chapter XVIII
 Prompt: Elizabeth insists she is ‘not’ what Miss Bingley claims—how does that little negation sharpen the social sparring?
 Anchor passage: "I deserve neither such praise nor such censure," cried Elizabeth; "I am
-_not_ a great reader, and I have pleasure in many things."
+not a great reader, and I have pleasure in many things."
 
 Notes: Self-definition vs. caricature; all in the quoted line.
 
@@ -50,9 +50,9 @@ Chapter/Section: Chapter XV
 Prompt: What is Mrs. Bennet really doing with all those hedges (‘could not… could not… did not know’) about Jane versus the younger girls?
 Anchor passage: produced from her, amid very complaisant smiles and general
 encouragement, a caution against the very Jane he had fixed on.--"As to
-her _younger_ daughters she could not take upon her to say--she could
-not positively answer--but she did not _know_ of any prepossession;--her
-_eldest_ daughter, she must just mention--she felt it incumbent on her
+her younger daughters she could not take upon her to say--she could
+not positively answer--but she did not know of any prepossession;--her
+eldest daughter, she must just mention--she felt it incumbent on her
 to hint, was likely to be very soon engaged."
 
 Notes: Rhetoric of negation and indirection; answerable from the quoted speech.
@@ -171,7 +171,7 @@ Chapter/Section: Chapter III
 Prompt: Here Darcy slights Elizabeth at the assembly—much later she teases him about another woman admiring his handwriting. Who was that other woman?
 Anchor passage: "Which do you mean?" and turning round, he looked for a moment at
 Elizabeth, till catching her eye, he withdrew his own and coldly said,
-"She is tolerable; but not handsome enough to tempt _me_; and I am in no
+"She is tolerable; but not handsome enough to tempt me; and I am in no
 humour at present to give consequence to young ladies who are slighted
 by other men. You had better return to your partner and enjoy her
 smiles, for you are wasting your time with me."
