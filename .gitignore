@@ -32,6 +32,9 @@ npm-debug.log*
 # PNGs 
 *.png
 !src-tauri/src/**/*.png
+!pngs/library_screen.png
+!pngs/threads_panel.png
+!pngs/memory_panel.png
 
 # Markdown except README
 *.md
