@@ -17,28 +17,28 @@ Built with Tauri v2 (`Rust + React + TypeScript`) and Anthropic's Claude API und
 
 ### Library
 
-![Marginalia library view](pngs/library_screen.png)
+Marginalia library view
 
 ### Threads Panel
 
-![Marginalia threads panel](pngs/threads_panel.png)
+Marginalia threads panel
 
 ### Memory Panel
 
-![Marginalia memory panel](pngs/memory_panel.png)
+Marginalia memory panel
 
 ## Architecture Overview
 
 Think of Marginalia as four pieces working together:
 
-1. **Reader (EPUB UI):** renders the book and captures selections/highlights.  
-   Implementation anchors: `src/app/reader/components/FoliateViewer.tsx` (L386-L415).
-2. **Conversation Threads:** each reading discussion is saved as a thread tied to a passage or book context.  
-   Implementation anchors: `src-tauri/src/lib.rs` thread schema in `threads`, `thread_highlights`, `thread_messages` (L480-L509).
-3. **Retrieval Layer (Smart Scan + tools):** gives the model a way to fetch only the extra context it needs.  
-   Implementation anchors: `src/services/claude.ts` tool definitions `get_context`, `get_section_summary`, `get_section_text` (L728-L788), and Smart Scan storage `section_summaries` in `src-tauri/src/lib.rs` (L511-L530).
-4. **Memory Layer:** stores durable reader facts and patterns across sessions.  
-   Implementation anchors: `src-tauri/src/lib.rs` tables `memory_items`, `memory_anchors`, `memory_vecs` (L532-L566).
+1. **Reader (EPUB UI):** renders the book and captures selections/highlights.
+  Implementation anchors: `src/app/reader/components/FoliateViewer.tsx` (L386-L415).
+2. **Conversation Threads:** each reading discussion is saved as a thread tied to a passage or book context.
+  Implementation anchors: `src-tauri/src/lib.rs` thread schema in `threads`, `thread_highlights`, `thread_messages` (L480-L509).
+3. **Retrieval Layer (Smart Scan + tools):** gives the model a way to fetch only the extra context it needs.
+  Implementation anchors: `src/services/claude.ts` tool definitions `get_context`, `get_section_summary`, `get_section_text` (L728-L788), and Smart Scan storage `section_summaries` in `src-tauri/src/lib.rs` (L511-L530).
+4. **Memory Layer:** stores durable reader facts and patterns across sessions.
+  Implementation anchors: `src-tauri/src/lib.rs` tables `memory_items`, `memory_anchors`, `memory_vecs` (L532-L566).
 
 In practice: you highlight a passage, ask a question, and Claude answers from that passage first.  
 If needed, it can call tools to fetch nearby text, section summaries, or section text.
@@ -57,13 +57,13 @@ Think of threads as chat: persistent reading conversations linked to your book c
 Marginalia's retrieval tools are intentionally explicit:
 
 - `get_context`  
-  Fetch text near the current passage anchor (`before`, `after`, `around`, `from_section_start`).
+Fetch text near the current passage anchor (`before`, `after`, `around`, `from_section_start`).
 - `get_section_summary`  
-  Fetch Smart Scan summary for a section (`spine_href`).
+Fetch Smart Scan summary for a section (`spine_href`).
 - `get_section_text`  
-  Fetch raw text for a section when line-level evidence is needed.
+Fetch raw text for a section when line-level evidence is needed.
 - `request_web_search` / `web_search`  
-  Optional web lookup path for external context (author background, historical references, criticism), not for replacing book-grounded reading.
+Optional web lookup path for external context (author background, historical references, criticism), not for replacing book-grounded reading.
 
 This is the core "blind model" posture: retrieval is a visible signal of complexity, not an invisible hidden context dump.
 
@@ -88,8 +88,22 @@ Desired Marginalia behavior:
 
 ### Smart Scan
 
-When enabled, Smart Scan creates per-section summaries and book-level structure hints, then stores them locally in SQLite.  
-This gives the model a "map" of the book before it pulls larger text spans.
+Smart Scan is **user-triggered** (not automatic): you run it from the scan button in the reader UI.  
+It is **not required** to use Marginalia, but it is highly recommended because it gives retrieval a reliable map of the book.
+
+How it works, briefly:
+
+- it marks the book scan state as in-progress;
+- iterates through linear spine sections;
+- extracts section text and generates structured per-section summaries;
+- infers book structure and generates a book-level overview;
+- stores summaries/status locally in SQLite for later retrieval tools.
+
+Relevant implementation files:
+
+- UI trigger and user confirmation flow: `src/App.tsx` (see `handleRunSmartScan` and scan button wiring around L1824-L1985).
+- Scan pipeline + summarization flow: `src/services/smartScan.ts` (see `runSmartScan` around L271-L439).
+- Persistence schema (`section_summaries`, `smart_scan_status`): `src-tauri/src/lib.rs` (around L511-L530 and migration/status fields).
 
 ### Memory Architecture
 
@@ -125,7 +139,7 @@ Current practical constraints:
 
 - **macOS-only** for development/testing at this stage.
 - **Claude-only** model stack (Haiku + Sonnet routing).  
-  Adding multi-provider support is possible, but not trivial in this architecture and timeline.
+Adding multi-provider support is possible, but not trivial in this architecture and timeline.
 
 ## Running The App (Dev)
 
@@ -141,11 +155,11 @@ Deployment packaging/docs will follow soon. For now, run in local dev mode.
 ### Setup
 
 1. Install dependencies:
-   - `npm install`
+  - `npm install`
 2. Add your key to `.env`:
-   - `VITE_ANTHROPIC_API_KEY=your_key_here`
+  - `VITE_ANTHROPIC_API_KEY=your_key_here`
 3. Start app:
-   - `npm run tauri dev`
+  - `npm run tauri dev`
 
 ## Local App Data Location (macOS)
 
