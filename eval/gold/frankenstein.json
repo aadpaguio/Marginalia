@@ -5,138 +5,315 @@
   "entries": [
     {
       "stableKey": "frankenstein_q01",
-      "status": "skeleton",
-      "answerInAnchor": null,
+      "status": "ready",
+      "answerInAnchor": true,
       "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "expectedAnswerPoints": [
+        "Distinguishes the novel from a mere ghost/enchantment tale by emphasizing novelty of situation rather than spectre effects.",
+        "Says the impossible physical premise is a device to explore human passions more comprehensively than ordinary realistic incidents."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "frankenstein_q02",
-      "status": "skeleton",
-      "answerInAnchor": null,
+      "status": "ready",
+      "answerInAnchor": true,
       "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "expectedAnswerPoints": [
+        "Victor says he and Elizabeth were motivated by a goal set before them, producing ardour.",
+        "He explicitly contrasts that method with emulation, which he says did not drive their application."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "frankenstein_q03",
-      "status": "skeleton",
-      "answerInAnchor": null,
+      "status": "ready",
+      "answerInAnchor": true,
       "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "expectedAnswerPoints": [
+        "The father's brief dismissal ('sad trash') is rhetorically ineffective because it gives no explanatory reason.",
+        "Victor states that a fuller explanation of obsolete principles and modern practical science would likely have redirected him away from Agrippa."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "frankenstein_q04",
-      "status": "skeleton",
-      "answerInAnchor": null,
+      "status": "ready",
+      "answerInAnchor": true,
       "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "expectedAnswerPoints": [
+        "The image shifts from small and ignoble origins to a swelling torrent.",
+        "The emotional trajectory foreshadows devastation ('swept away all my hopes and joys'), signaling tragic tone before concrete plot detail."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "frankenstein_q05",
-      "status": "skeleton",
-      "answerInAnchor": null,
+      "status": "ready",
+      "answerInAnchor": true,
       "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "expectedAnswerPoints": [
+        "Victor's certainty comes from private knowledge of the creature's existence and guilt, not from court-admissible evidence in this dialogue.",
+        "In-scene he can only assert Justine's innocence and does not disclose the full basis to others."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "frankenstein_q06",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "nearby_text",
+          "direction": "before",
+          "maxChars": 1800,
+          "mustMentionAny": [
+            "miniature",
+            "picture",
+            "found in her pocket",
+            "William",
+            "Justine"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Ernest reports that a miniature/picture of Caroline (kept by William) was discovered in Justine's pocket.",
+        "That planted object is presented as the physical evidence tying Justine to the murder."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "frankenstein_q07",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": true,
+      "requiredEvidence": [
+        {
+          "kind": "nearby_text",
+          "direction": "before",
+          "maxChars": 800,
+          "mustContain": [
+            "Ernest exclaimed",
+            "Good God, Papa",
+            "Victor says that he knows who was the murderer of poor William"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "The speaker is Ernest.",
+        "He blurts out that Victor claims to know who murdered William."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "frankenstein_q08",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "nearby_text",
+          "direction": "before",
+          "maxChars": 1800,
+          "mustMentionAny": [
+            "trial",
+            "this very day",
+            "Justine",
+            "convicted"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Ernest says Justine's trial is set for that day (or imminent that same day).",
+        "The legal event is her formal trial for William's murder."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "frankenstein_q09",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "nearby_text",
+          "direction": "before",
+          "maxChars": 1200,
+          "mustMentionAny": [
+            "Justine",
+            "depravity and ingratitude",
+            "one I valued so highly"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Alphonse is speaking about Justine when he laments depravity and ingratitude.",
+        "The line reflects the family's shock at believing a trusted member of the household could be guilty."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "frankenstein_q10",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": [
+            "Volume I, Chapter IV",
+            "creation scene",
+            "dreary night of November"
+          ],
+          "mustMentionAny": [
+            "dreary night of November",
+            "accomplishment of my toils",
+            "dull yellow eye",
+            "convulsive motion"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Locates the later scene in Volume I, Chapter IV when Victor animates the creature on a November night.",
+        "Contrasts the happy childhood frame with the horror and immediate revulsion of the creation moment."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "frankenstein_q11",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": [
+            "Volume II, Chapters II-III",
+            "Alpine meeting",
+            "Montanvert",
+            "A female for me"
+          ],
+          "mustMentionAny": [
+            "I demand a creature of another sex",
+            "you must create a female",
+            "if you consent",
+            "if you refuse"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Identifies the Alpine confrontation where the creature asks Victor to make a female companion.",
+        "Notes the ethical bargain/threat structure: promise compliance and withdrawal if granted, vengeance if denied."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "frankenstein_q12",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": [
+            "Volume III",
+            "Orkney",
+            "female creature destroyed",
+            "I shall be with you on your wedding-night"
+          ],
+          "mustMentionAny": [
+            "tore to pieces the thing on which I was engaged",
+            "destroyed the creature",
+            "wedding-night",
+            "revenge"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Finds the later Orkney/lab sequence where Victor destroys the unfinished female before giving it life.",
+        "Explains plot consequence: this rupture triggers the creature's retaliation trajectory, culminating in Clerval and wedding-night catastrophe."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "frankenstein_q13",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": [
+            "Justine trial",
+            "Volume I, Chapter VIII",
+            "confession",
+            "Victor's silence"
+          ],
+          "mustMentionAny": [
+            "Justine",
+            "trial",
+            "confession",
+            "innocent",
+            "I, not in deed, but in effect, was the true murderer"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Shows that the preface's domestic virtue ideal is complicated by Victor's failure to testify, enabling Justine's conviction.",
+        "Connects domestic affection to moral cowardice and systemic injustice rather than uncomplicated amiableness."
+      ],
+      "negativeConstraints": [
+        "Do not present Victor as legally exonerating himself in court; he withholds decisive knowledge."
+      ]
     },
     {
       "stableKey": "frankenstein_q14",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": [
+            "Volume I science education",
+            "Ingolstadt",
+            "Krempe",
+            "Waldman",
+            "fatal impulse"
+          ],
+          "mustMentionAny": [
+            "Agrippa",
+            "Paracelsus",
+            "Albertus Magnus",
+            "fatal impulse",
+            "ruin"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Links paternal pedagogical failure (dismissal without guidance) to Victor's uncritical attraction to grand mastery.",
+        "Relates that early intellectual formation to the novel's wider warning about ambition without ethical formation or relational accountability."
+      ],
+      "negativeConstraints": []
     },
     {
       "stableKey": "frankenstein_q15",
-      "status": "skeleton",
-      "answerInAnchor": null,
-      "requiredEvidence": [],
-      "expectedAnswerPoints": [],
-      "negativeConstraints": [],
-      "notes": "TODO: fill requiredEvidence + expectedAnswerPoints for this prompt (use walden.json as a template)."
+      "status": "ready",
+      "answerInAnchor": false,
+      "requiredEvidence": [
+        {
+          "kind": "book_section",
+          "sectionHints": [
+            "Walton letters",
+            "Victor's final warning",
+            "learn from me",
+            "seek happiness in tranquillity"
+          ],
+          "mustMentionAny": [
+            "Learn from me",
+            "how dangerous is the acquirement of knowledge",
+            "seek happiness in tranquillity",
+            "avoid ambition"
+          ]
+        }
+      ],
+      "expectedAnswerPoints": [
+        "Tracks Walton's initial exploratory ambition against Victor's retrospective warning about dangerous knowledge.",
+        "Explains how nested narration turns Victor into a cautionary mirror for Walton, creating an echoed arc of ambition and restraint."
+      ],
+      "negativeConstraints": []
     }
   ]
 }
