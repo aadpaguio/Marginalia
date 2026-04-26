@@ -118,20 +118,40 @@ Memory exists in production app behavior but is intentionally scoped out of the 
 
 ## Evaluation Strategy (Current Run)
 
-Due to budget/time constraints, the active benchmark is run on **3 public-domain books**.
+The current benchmark is run on **3 public-domain books**:
 
-We compare 3 conditions:
+- Frankenstein
+- Pride and Prejudice
+- Walden
+
+Each book uses a **15-prompt set** across four categories:
+
+- passage-local
+- nearby-context
+- book-level-thematic
+- cross-section
+
+We compare 3 retrieval tiers:
 
 1. **Passage-only** (no retrieval tools)
-2. **Tool-enabled** (`get_context`)
-3. **Smart Scan + tools** (`get_context` + section tools)
+2. **`get_context` only**
+3. **Smart Scan + all tools** (`get_context` + section summary/text tools)
 
-Primary evaluation questions:
+Evaluation is scored with an **LLM-as-judge** rubric (Haiku), using four metrics:
 
-- Does the model call tools **when needed** (precision/recall of retrieval)?
-- Do Smart Scan summaries improve section targeting and answer grounding?
-- Does performance improve on broader-context questions vs passage-only?
-- Does spoiler-sensitive behavior hold (low spoiler violations)?
+- faithfulness
+- chunk relevance
+- answer completeness
+- claim precision
+
+Judge outputs also include binary failure flags:
+
+- unsupported_claims
+- retrieval_problem
+- incomplete_response
+- imprecise_or_overbroad
+
+Presentation currently emphasizes **pooled plots** across the three books for condition-level comparison.
 
 ## Platform + Model Constraints
 
