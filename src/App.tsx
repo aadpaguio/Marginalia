@@ -242,7 +242,23 @@ function extractLeadingQuotedPassage(chunk: string): { quote: string | null; rem
     open === "\u2018" ? "\u2019" :
     null;
   if (!close) return { quote: null, remainder: chunk };
-  const closeIdx = start.indexOf(close, 1);
+
+  // Prefer a closing quote that looks like the end of a wrapped passage.
+  // This avoids truncating dialogue-heavy passages at the first inner quote pair.
+  const closeCandidates: number[] = [];
+  for (let i = 1; i < start.length; i++) {
+    if (start[i] === close) closeCandidates.push(i);
+  }
+  const looksLikeWrappedBoundary = (idx: number): boolean => {
+    const tail = start.slice(idx + 1);
+    if (!tail.trim()) return true;
+    const significant = tail.replace(/^[\s,.;:!?)\]\u201d\u2019"'`-]+/, "");
+    if (!significant) return true;
+    return !/^[a-z]/.test(significant);
+  };
+  const closeIdx =
+    closeCandidates.find((idx) => looksLikeWrappedBoundary(idx)) ??
+    (closeCandidates.length ? closeCandidates[closeCandidates.length - 1] : -1);
   if (closeIdx < 0) return { quote: null, remainder: chunk };
   const rawQuoted = start.slice(0, closeIdx + 1).trim();
   const quote =
@@ -499,10 +515,19 @@ function App() {
     Record<string, "ask" | "allow_thread">
   >({});
   /** Shown under the streaming assistant bubble; state (not ref) so React re-renders when citations arrive. */
-  const threadChatInputRef = useRef<HTMLInputElement | null>(null);
+  const threadChatInputRef = useRef<HTMLTextAreaElement | null>(null);
   const threadChatMessagesScrollRef = useRef<HTMLDivElement | null>(null);
   /** User message shown immediately on send; cleared when reply is persisted. */
-  const [pendingUserMessage, setPendingUserMessage] = useState<string | null>(null);
+  const [pendingUserMessage, setPendingUserMessage] = useState<{
+    content: string;
+    excerpt?: {
+      text: string;
+      cfi: string | null;
+      chapter: string | null;
+      color: string;
+      page: string | null;
+    };
+  } | null>(null);
   /** Assistant reply text revealed sequentially; cleared when done. */
   const [pendingAssistantContent, setPendingAssistantContent] = useState("");
   const revealIntervalRef = useRef<number | null>(null);
@@ -610,23 +635,37 @@ function App() {
   /** Find which section contains the citation quote (by fetching section text via createDocument). Returns index in bookDoc.sections for view.goTo(index). */
   const getSectionContainingQuote = useCallback(
     async (citation: CitationPayload): Promise<{ spineIndex: number } | null> => {
-      let quote = citation.quote?.trim();
-      if (quote && quote.length > 400) quote = citation.anchorBefore ?? quote;
-      if (!quote) quote = citation.anchorBefore ?? "";
-      if (!quote || !bookDoc?.sections) return null;
-      quote = stripWrappingQuotes(quote);
-      if (quote.length > 240) {
-        const window = quote.slice(0, 240);
-        const sentenceBreak = Math.max(window.lastIndexOf(". "), window.lastIndexOf("? "), window.lastIndexOf("! "));
-        if (sentenceBreak >= 80) quote = window.slice(0, sentenceBreak + 1).trim();
-        else {
+      if (!bookDoc?.sections) return null;
+      const candidateQuotes = [
+        { quote: citation.quote?.trim() ?? "", source: "quote" as const },
+        { quote: citation.anchorBefore?.trim() ?? "", source: "anchorBefore" as const },
+        { quote: citation.anchorAfter?.trim() ?? "", source: "anchorAfter" as const },
+      ]
+        .map((candidate) => ({ ...candidate, quote: stripWrappingQuotes(candidate.quote) }))
+        .filter((candidate) => candidate.quote.length > 0)
+        .map((candidate) => {
+          const q = candidate.quote;
+          if (q.length <= 240) return candidate;
+          const window = q.slice(0, 240);
+          const sentenceBreak = Math.max(window.lastIndexOf(". "), window.lastIndexOf("? "), window.lastIndexOf("! "));
+          if (sentenceBreak >= 80) return { ...candidate, quote: window.slice(0, sentenceBreak + 1).trim() };
           const clauseBreak = Math.max(window.lastIndexOf("; "), window.lastIndexOf(", "), window.lastIndexOf("--"));
-          quote = (clauseBreak >= 80 ? window.slice(0, clauseBreak) : window).trim();
-        }
-      }
+          return { ...candidate, quote: (clauseBreak >= 80 ? window.slice(0, clauseBreak) : window).trim() };
+        })
+        .filter((candidate, idx, arr) => {
+          const key = normalizeForQuoteMatch(candidate.quote);
+          return key.length > 0 && arr.findIndex((x) => normalizeForQuoteMatch(x.quote) === key) === idx;
+        });
+      if (candidateQuotes.length === 0) return null;
 
       const spineItems = bookDoc.sections.filter((s) => s.linear !== "no");
-      const normQuote = normalizeForQuoteMatch(quote);
+      let best: { spineIndex: number; score: number } | null = null;
+      const beforeNeedle = citation.anchorBefore
+        ? normalizeForQuoteMatch(stripWrappingQuotes(citation.anchorBefore)).slice(-90).trim()
+        : "";
+      const afterNeedle = citation.anchorAfter
+        ? normalizeForQuoteMatch(stripWrappingQuotes(citation.anchorAfter)).slice(0, 90).trim()
+        : "";
 
       for (let i = 0; i < spineItems.length; i++) {
         const section = spineItems[i];
@@ -634,12 +673,34 @@ function App() {
         const text = await getSectionTextByHref(href);
         if (!text) continue;
         const normText = normalizeForQuoteMatch(text);
-        if (normText.includes(normQuote) || text.includes(quote)) {
-          const spineIndex = bookDoc.sections!.indexOf(section);
-          if (spineIndex >= 0) return { spineIndex };
+        for (const candidate of candidateQuotes) {
+          const normQuote = normalizeForQuoteMatch(candidate.quote);
+          let from = 0;
+          while (from < normText.length) {
+            const idx = normText.indexOf(normQuote, from);
+            if (idx === -1) break;
+            const sourceBonus = candidate.source === "quote" ? 500 : 120;
+            const shortPenalty = normQuote.length < 32 ? 260 : normQuote.length < 60 ? 120 : 0;
+            let score = sourceBonus + Math.min(normQuote.length, 280) - shortPenalty;
+            if (beforeNeedle.length >= 16) {
+              const beforeWindow = normText.slice(Math.max(0, idx - 500), idx);
+              const beforeIdx = beforeWindow.lastIndexOf(beforeNeedle);
+              if (beforeIdx >= 0) score += 220 + Math.max(0, 80 - (beforeWindow.length - beforeIdx - beforeNeedle.length));
+            }
+            if (afterNeedle.length >= 16) {
+              const afterWindow = normText.slice(idx + normQuote.length, idx + normQuote.length + 500);
+              const afterIdx = afterWindow.indexOf(afterNeedle);
+              if (afterIdx >= 0) score += 220 + Math.max(0, 80 - afterIdx);
+            }
+            const spineIndex = bookDoc.sections!.indexOf(section);
+            if (spineIndex >= 0 && (!best || score > best.score)) {
+              best = { spineIndex, score };
+            }
+            from = idx + Math.max(normQuote.length, 1);
+          }
         }
       }
-      return null;
+      return best ? { spineIndex: best.spineIndex } : null;
     },
     [bookDoc, getSectionTextByHref, normalizeForQuoteMatch, stripWrappingQuotes]
   );
@@ -920,6 +981,21 @@ function App() {
     const el = threadChatMessagesScrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [activeThreadMessages, pendingUserMessage, pendingAssistantContent, pendingAssistantToolEvents, pendingWebSearchPrompt]);
+
+  useEffect(() => {
+    const el = threadChatInputRef.current;
+    if (!el) return;
+    el.style.height = "0px";
+    const computed = window.getComputedStyle(el);
+    const lineHeight = parseFloat(computed.lineHeight) || 20;
+    const verticalPadding =
+      (parseFloat(computed.paddingTop) || 0) + (parseFloat(computed.paddingBottom) || 0);
+    const verticalBorder =
+      (parseFloat(computed.borderTopWidth) || 0) + (parseFloat(computed.borderBottomWidth) || 0);
+    const minHeight = Math.round(lineHeight + verticalPadding + verticalBorder);
+    el.style.height = `${Math.max(el.scrollHeight, minHeight)}px`;
+    el.style.overflowY = "hidden";
+  }, [threadChatInput, activeThreadId]);
 
   useEffect(() => {
     return () => {
@@ -1443,6 +1519,16 @@ function App() {
     const userMessage = threadChatInput.trim() || "What can you tell me about the passages I've highlighted?";
     if (!activeThreadId || !currentBookId || !bookDoc || isActiveThreadAsking) return;
     const requestThreadId = activeThreadId;
+    const excerpt =
+      pendingMessageExcerpt != null
+        ? {
+            text: pendingMessageExcerpt.text,
+            cfi: pendingMessageExcerpt.cfi,
+            chapter: pendingMessageExcerpt.chapter,
+            color: pendingMessageExcerpt.color,
+            page: pendingMessageExcerpt.page ?? currentPageLabel ?? null,
+          }
+        : undefined;
     activeThreadIdRef.current = activeThreadId;
     const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
     if (!apiKey) {
@@ -1452,10 +1538,11 @@ function App() {
     setThreadChatAskingThreadId(requestThreadId);
     setThreadChatError(null);
     setThreadChatInput("");
-    setPendingUserMessage(userMessage);
+    setPendingUserMessage({ content: userMessage, excerpt });
     setPendingAssistantContent("");
     setPendingAssistantToolEvents([]);
     setPendingWebSearchPrompt(null);
+    setPendingMessageExcerpt(null);
     if (revealIntervalRef.current != null) {
       window.clearInterval(revealIntervalRef.current);
       revealIntervalRef.current = null;
@@ -1482,11 +1569,11 @@ function App() {
           threadId: activeThreadId,
           messages: activeThreadMessages,
           attachedHighlights: activeThreadHighlights.filter((h) => h.bookId === currentBookId),
-          pendingExcerpt: pendingMessageExcerpt
+          pendingExcerpt: excerpt
             ? {
-                text: pendingMessageExcerpt.text,
-                cfi: pendingMessageExcerpt.cfi,
-                chapter: pendingMessageExcerpt.chapter,
+                text: excerpt.text,
+                cfi: excerpt.cfi,
+                chapter: excerpt.chapter,
               }
             : undefined,
           userMessage,
@@ -1546,17 +1633,6 @@ function App() {
         setLatestCompletedManifest(result.completedManifest);
         setManifestRefreshTrigger((t) => t + 1);
       }
-      const excerpt = pendingMessageExcerpt
-        ? {
-            text: pendingMessageExcerpt.text,
-            cfi: pendingMessageExcerpt.cfi,
-            chapter: pendingMessageExcerpt.chapter,
-            color: pendingMessageExcerpt.color,
-            page: pendingMessageExcerpt.page ?? currentPageLabel ?? null,
-          }
-        : undefined;
-      setPendingMessageExcerpt(null);
-
       /* Reveal assistant reply sequentially, then persist and clear pending. */
       const REVEAL_CHUNK = 3;
       const REVEAL_MS = 16;
@@ -1582,6 +1658,7 @@ function App() {
       }, REVEAL_MS);
     } catch (e) {
       setThreadChatError(e instanceof Error ? e.message : String(e));
+      setPendingMessageExcerpt((prev) => prev ?? (excerpt ? { ...excerpt } : null));
       setPendingUserMessage(null);
       setPendingAssistantContent("");
       setPendingAssistantToolEvents([]);
@@ -2448,8 +2525,17 @@ function App() {
                           id: "pending-user",
                           threadId: activeThreadId,
                           role: "user",
-                          content: pendingUserMessage,
+                          content: pendingUserMessage.content,
                           createdAt: Date.now(),
+                          ...(pendingUserMessage.excerpt
+                            ? {
+                                excerptText: pendingUserMessage.excerpt.text,
+                                excerptCfi: pendingUserMessage.excerpt.cfi ?? null,
+                                excerptChapter: pendingUserMessage.excerpt.chapter ?? null,
+                                excerptColor: pendingUserMessage.excerpt.color ?? "yellow",
+                                excerptPage: pendingUserMessage.excerpt.page ?? null,
+                              }
+                            : {}),
                         });
                         displayMessages.push({
                           id: "pending-assistant",
@@ -2486,10 +2572,14 @@ function App() {
                         {displayMessages.map((m) => {
                           const isUser = m.role === "user";
                           const isPendingAssistant = m.id === "pending-assistant";
+                          const toolEvents = m.role === "assistant" ? (m.toolEvents ?? []) : [];
                           const hasPendingWebSearchPrompt =
                             !!pendingWebSearchPrompt && pendingWebSearchPrompt.threadId === activeThreadId;
-                          const showTypingDots = isPendingAssistant && m.content === "" && !hasPendingWebSearchPrompt;
-                          const toolEvents = m.role === "assistant" ? (m.toolEvents ?? []) : [];
+                          const showTypingDots =
+                            isPendingAssistant &&
+                            m.content === "" &&
+                            !hasPendingWebSearchPrompt &&
+                            toolEvents.length === 0;
                           const excerptColorKey = (m.excerptColor === "blue" || m.excerptColor === "green" || m.excerptColor === "pink" ? m.excerptColor : "yellow") as keyof typeof HIGHLIGHT_COLOR_HEX;
                           const excerptHex = m.excerptText ? HIGHLIGHT_COLOR_HEX[excerptColorKey] ?? HIGHLIGHT_COLOR_HEX.yellow : null;
                           const excerptPreview =
@@ -2968,14 +3058,14 @@ function App() {
                     </div>
                   )}
                   <div className="thread-chat-input-row">
-                    <input
+                    <textarea
                       ref={threadChatInputRef}
-                      type="text"
                       className="thread-chat-input"
                       value={threadChatInput}
+                      rows={1}
                       onChange={(e) => setThreadChatInput(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") {
+                        if (e.key === "Enter" && !e.shiftKey) {
                           e.preventDefault();
                           void handleThreadChatSend();
                         }
