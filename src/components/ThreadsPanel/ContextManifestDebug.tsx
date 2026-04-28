@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLatestManifest } from "@/hooks/useLatestManifest";
 import type { ContextManifest } from "@/types/contextManifest";
 
@@ -20,7 +20,11 @@ export function ContextManifestDebug({
       ? latestCompletedManifest
       : fromDb;
 
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
+
+  useEffect(() => {
+    setCollapsed(true);
+  }, [threadId]);
 
   if (!import.meta.env.DEV || !threadId) return null;
 

@@ -315,11 +315,11 @@
   background: var(--surface-page);
   color: var(--ink-primary);
   scrollbar-width: thin;
-  scrollbar-color: var(--border-moderate) transparent;
+  scrollbar-color: color-mix(in srgb, var(--ink-tertiary) 58%, transparent) transparent;
 }
 
 .thread-chat-content::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .thread-chat-content::-webkit-scrollbar-track {
@@ -327,12 +327,16 @@
 }
 
 .thread-chat-content::-webkit-scrollbar-thumb {
-  background: var(--border-moderate);
-  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--ink-tertiary) 58%, transparent);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  min-height: 28px;
 }
 
 .thread-chat-content::-webkit-scrollbar-thumb:hover {
-  background: var(--border-strong);
+  background: color-mix(in srgb, var(--ink-secondary) 68%, transparent);
+  background-clip: content-box;
 }
 
 .thread-chat-empty-hint {
@@ -604,7 +608,7 @@
 
 .thread-chat-input-row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: var(--space-2);
   background: var(--surface-sunken);
   border: 1px solid var(--border-subtle);
@@ -619,6 +623,11 @@
 
 .thread-chat-input {
   flex: 1;
+  width: 100%;
+  min-height: calc(1.4em + 4px);
+  max-height: none;
+  resize: none;
+  overflow-y: hidden;
   background: none;
   border: none;
   outline: none;

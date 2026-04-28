@@ -59,6 +59,59 @@ function stripWrappingQuotes(s: string): string {
   return t;
 }
 
+type CitationMatchCandidate = {
+  quote: string;
+  source: "quote" | "anchorBefore" | "anchorAfter";
+};
+
+type CitationRangeMatch = {
+  range: Range;
+  score: number;
+  quote: string;
+  source: CitationMatchCandidate["source"];
+};
+
+function contextNeedle(s: string, side: "before" | "after"): string {
+  const normalized = normalizeEvalAnchorForSearch(stripWrappingQuotes(s));
+  if (normalized.length <= 90) return normalized;
+  return side === "before" ? normalized.slice(-90).trim() : normalized.slice(0, 90).trim();
+}
+
+function contextScore(hay: string, startHay: number, endHayInclusive: number, citation: CitationPayload): number {
+  let score = 0;
+  const beforeNeedle = citation.anchorBefore ? contextNeedle(citation.anchorBefore, "before") : "";
+  const afterNeedle = citation.anchorAfter ? contextNeedle(citation.anchorAfter, "after") : "";
+  if (beforeNeedle.length >= 16) {
+    const beforeWindow = hay.slice(Math.max(0, startHay - 500), startHay);
+    const idx = beforeWindow.lastIndexOf(beforeNeedle);
+    if (idx >= 0) score += 220 + Math.max(0, 80 - (beforeWindow.length - idx - beforeNeedle.length));
+  }
+  if (afterNeedle.length >= 16) {
+    const afterWindow = hay.slice(endHayInclusive + 1, Math.min(hay.length, endHayInclusive + 501));
+    const idx = afterWindow.indexOf(afterNeedle);
+    if (idx >= 0) score += 220 + Math.max(0, 80 - idx);
+  }
+  return score;
+}
+
+function buildCitationMatchCandidates(citation: CitationPayload): CitationMatchCandidate[] {
+  const raw: CitationMatchCandidate[] = [
+    { quote: citation.quote?.trim() ?? "", source: "quote" },
+    { quote: citation.anchorBefore?.trim() ?? "", source: "anchorBefore" },
+    { quote: citation.anchorAfter?.trim() ?? "", source: "anchorAfter" },
+  ];
+  const seen = new Set<string>();
+  const candidates: CitationMatchCandidate[] = [];
+  for (const candidate of raw) {
+    const quote = pickResolvableQuoteSnippet(candidate.quote);
+    const key = normalizeEvalAnchorForSearch(quote);
+    if (!quote || !key || seen.has(key)) continue;
+    seen.add(key);
+    candidates.push({ ...candidate, quote });
+  }
+  return candidates;
+}
+
 function normalizeHrefForDocMatch(href: string): string {
   return href.split("#")[0].replace(/^\.\//, "").trim().toLowerCase();
 }
@@ -98,21 +151,20 @@ function getTocLabelForDocument(bookDoc: BookDoc, documentUri: string | null | u
   return match?.label?.trim() || null;
 }
 
-/**
- * Find quote in document and return a Range covering it, or null.
- * Uses text-node walk + optional normalized match so citations work when
- * Window.find() is unavailable (e.g. in iframes) or quote has smart quotes.
- * Strips surrounding quote characters so "passage" matches passage in the book.
- */
-function findQuoteRangeInDocument(doc: Document, quote: string): Range | null {
+function findNormalizedQuoteMatchesInDocument(
+  doc: Document,
+  quote: string,
+  source: CitationMatchCandidate["source"],
+  citation?: CitationPayload
+): CitationRangeMatch[] {
   const body = doc.body;
-  if (!body) return null;
+  if (!body) return [];
 
   const quoteTrim = stripWrappingQuotes(quote.trim());
-  if (quoteTrim.length === 0) return null;
+  if (quoteTrim.length === 0) return [];
 
   const aug = buildAugmentedPlainText(body);
-  if (aug.text.length === 0) return null;
+  if (aug.text.length === 0) return [];
 
   function rangeFromAugCharRange(startChar: number, endCharInclusive: number): Range | null {
     const startMap = aug.charToTextPos[startChar];
@@ -124,28 +176,70 @@ function findQuoteRangeInDocument(doc: Document, quote: string): Range | null {
     return range;
   }
 
-  let startChar = aug.text.indexOf(quoteTrim);
-  let endCharInclusive = startChar >= 0 ? startChar + quoteTrim.length - 1 : -1;
+  const { hay, hayToAugCharIdx } = buildSearchHaystack(aug);
+  const needle = normalizeEvalAnchorForSearch(quoteTrim);
+  if (needle.length === 0) return [];
 
-  if (startChar === -1) {
-    const { hay, hayToAugCharIdx } = buildSearchHaystack(aug);
-    const needle = normalizeEvalAnchorForSearch(quoteTrim);
-    if (needle.length > 0) {
-      const j = hay.indexOf(needle);
-      if (j !== -1) {
-        const lastHay = j + needle.length - 1;
-        startChar = hayToAugCharIdx[j];
-        endCharInclusive = hayToAugCharIdx[lastHay];
-      }
+  const matches: CitationRangeMatch[] = [];
+  let searchFrom = 0;
+  while (searchFrom < hay.length) {
+    const j = hay.indexOf(needle, searchFrom);
+    if (j === -1) break;
+    const lastHay = j + needle.length - 1;
+    const startChar = hayToAugCharIdx[j];
+    const endCharInclusive = hayToAugCharIdx[lastHay];
+    const range = rangeFromAugCharRange(startChar, endCharInclusive);
+    if (range) {
+      const sourceBonus = source === "quote" ? 500 : 120;
+      const lengthBonus = Math.min(needle.length, 280);
+      const shortPenalty = needle.length < 32 ? 260 : needle.length < 60 ? 120 : 0;
+      const score =
+        sourceBonus +
+        lengthBonus -
+        shortPenalty +
+        (citation ? contextScore(hay, j, lastHay, citation) : 0);
+      matches.push({ range, score, quote: quoteTrim, source });
     }
+    searchFrom = j + Math.max(needle.length, 1);
   }
+  return matches;
+}
 
-  if (startChar >= 0 && endCharInclusive >= startChar) {
-    const r = rangeFromAugCharRange(startChar, endCharInclusive);
-    if (r) return r;
-  }
+function findBestCitationRangeInDocument(
+  doc: Document,
+  citation: CitationPayload,
+  candidates: CitationMatchCandidate[]
+): CitationRangeMatch | null {
+  const matches = candidates.flatMap((candidate) =>
+    findNormalizedQuoteMatchesInDocument(doc, candidate.quote, candidate.source, citation)
+  );
+  if (matches.length === 0) return null;
+  matches.sort((a, b) => b.score - a.score);
+  const best = matches[0];
+
+  // Avoid confidently jumping to a repeated, generic phrase unless context helped.
+  const normalizedBest = normalizeEvalAnchorForSearch(best.quote);
+  const repeated = matches.filter(
+    (m) => normalizeEvalAnchorForSearch(m.quote) === normalizedBest
+  ).length > 1;
+  if (repeated && normalizedBest.length < 60 && best.score < 650) return null;
+  return best;
+}
+
+/**
+ * Find quote in document and return a Range covering it, or null.
+ * Uses normalized text-node search so citations work when Window.find() is unavailable
+ * (e.g. in iframes) or quote has smart quotes/punctuation differences.
+ */
+function findQuoteRangeInDocument(doc: Document, quote: string): Range | null {
+  const match = findNormalizedQuoteMatchesInDocument(doc, quote, "quote")[0];
+  if (match) return match.range;
 
   // Legacy path: raw text-node glue (no cross-block spaces) + ellipsis-aware match.
+  const body = doc.body;
+  if (!body) return null;
+  const quoteTrim = stripWrappingQuotes(quote.trim());
+  if (quoteTrim.length === 0) return null;
   const textNodes: { node: Text; start: number }[] = [];
   let totalLength = 0;
 
@@ -984,40 +1078,45 @@ export default function FoliateViewer({
       const v = viewRef.current;
       if (!v) return null;
 
-      // Use short quote for search; when model only sends anchors or quote is huge, use anchorBefore.
-      let quote = citation.quote?.trim();
-      if (!quote || quote.length > 400) quote = citation.anchorBefore ?? "";
-      quote = pickResolvableQuoteSnippet(quote);
-      if (!quote) return null;
+      // Try quote first, then anchors (before/after). This is resilient when citation payloads
+      // contain dialogue-heavy text or only one anchor field.
+      const candidateQuotes = buildCitationMatchCandidates(citation);
+      if (candidateQuotes.length === 0) return null;
 
       const contents = v.renderer.getContents?.() ?? [];
 
+      let loadedBest: { match: CitationRangeMatch; spineIndex: number } | null = null;
       for (let i = 0; i < contents.length; i++) {
         const entry = contents[i];
         const doc = entry?.doc;
         if (!doc) continue;
 
-        const range = findQuoteRangeInDocument(doc, quote);
-        if (!range) continue;
+        const bestMatch = findBestCitationRangeInDocument(doc, citation, candidateQuotes);
+        if (!bestMatch) continue;
 
         const spineIndex = entry?.index ?? i;
-        const cfi = v.getCFI?.(spineIndex, range);
-        if (!cfi) continue;
+        if (!loadedBest || bestMatch.score > loadedBest.match.score) {
+          loadedBest = { match: bestMatch, spineIndex };
+        }
+      }
+      if (loadedBest) {
+        const cfi = v.getCFI?.(loadedBest.spineIndex, loadedBest.match.range);
+        if (cfi) {
+          await v.goTo(cfi);
 
-        await v.goTo(cfi);
+          const tempId = "temp-citation-" + Date.now();
+          const tempAnn = {
+            id: tempId,
+            value: cfi,
+            color: "rgba(255,200,0,0.4)",
+          };
+          await v.addAnnotation?.(tempAnn);
+          setTimeout(() => {
+            v.addAnnotation?.(tempAnn, true);
+          }, 4000);
 
-        const tempId = "temp-citation-" + Date.now();
-        const tempAnn = {
-          id: tempId,
-          value: cfi,
-          color: "rgba(255,200,0,0.4)",
-        };
-        await v.addAnnotation?.(tempAnn);
-        setTimeout(() => {
-          v.addAnnotation?.(tempAnn, true);
-        }, 4000);
-
-        return cfi;
+          return cfi;
+        }
       }
 
       // getContents() only has the current section. Find which section has the quote
@@ -1043,18 +1142,18 @@ export default function FoliateViewer({
         }
         // Section may have only one content entry with no index — try doc match too.
         if (candidate?.doc) {
-          const range = findQuoteRangeInDocument(candidate.doc, quote);
-          if (range) { entry = candidate; break; }
+          const hasCandidate = !!findBestCitationRangeInDocument(candidate.doc, citation, candidateQuotes);
+          if (hasCandidate) { entry = candidate; break; }
         }
       }
       const doc = entry?.doc;
       if (!doc) return null;
 
-      const range = findQuoteRangeInDocument(doc, quote);
-      if (!range) return null;
+      const bestMatch = findBestCitationRangeInDocument(doc, citation, candidateQuotes);
+      if (!bestMatch) return null;
 
       const spineIndex = entry?.index ?? sectionResult.spineIndex;
-      const cfi = v.getCFI?.(spineIndex, range);
+      const cfi = v.getCFI?.(spineIndex, bestMatch.range);
       if (!cfi) return null;
 
       await v.goTo(cfi);
