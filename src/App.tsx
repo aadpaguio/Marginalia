@@ -229,6 +229,13 @@ function stripTrailingIncompleteHtmlComment(text: string): string {
   return lastOpen > lastClose ? text.slice(0, lastOpen) : text;
 }
 
+/** Remove leaked model/tool control tags from assistant prose before markdown rendering. */
+function stripLeakedControlTags(text: string): string {
+  return text
+    .replace(/<\/?(?:parameter|parameters|function_calls?|invoke|tool_use|tool_result)\b[^>]*>/gi, "")
+    .replace(/\n{3,}/g, "\n\n");
+}
+
 /** Extract one quoted passage at the start of a chunk (if present), preserving the remaining prose. */
 function extractLeadingQuotedPassage(chunk: string): { quote: string | null; remainder: string } {
   const leadingWhitespace = (chunk.match(/^\s*/) ?? [""])[0];
@@ -272,7 +279,7 @@ function extractLeadingQuotedPassage(chunk: string): { quote: string | null; rem
 /** Split message text at inline <!--cite:{...}--> markers into renderable segments.
  * Citation comment precedes the quote: consume the quoted passage into a clickable citation card. */
 function parseCitationSegments(text: string): CitationSegment[] {
-  const safeText = stripTrailingIncompleteHtmlComment(text);
+  const safeText = stripLeakedControlTags(stripTrailingIncompleteHtmlComment(text));
   const citeRegex = /<!--cite:([\s\S]*?)-->/g;
   const matches = [...safeText.matchAll(citeRegex)];
   if (matches.length > 0) {
