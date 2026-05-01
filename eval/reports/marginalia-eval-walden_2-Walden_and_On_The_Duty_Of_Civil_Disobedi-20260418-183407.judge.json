@@ -1,0 +1,1944 @@
+{
+  "csv": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.csv",
+  "bookId": "walden",
+  "setName": "walden_2",
+  "rubricPath": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/config/judge_rubric.json",
+  "model": "claude-haiku-4-5-20251001",
+  "rowsJudged": 45,
+  "judgments": [
+    {
+      "stableKey": "walden_q06",
+      "questionOrdinal": 6,
+      "condition": "passage_only",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2041,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 387,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The answer directly quotes the enumerated list from the anchor passage and accurately paraphrases Thoreau's argument about refusing 'more warmth of the same kind.' The interpretation of 'to adventure on life now' as the alternative is explicitly anchored to the passage.",
+          "chunk_relevance": "No retrieval was attempted; the condition is passage_only and the anchor passage contains the full answer. No additional context was needed, making chunk_relevance appropriately scored at 5.",
+          "answer_completeness": "The response fully addresses the prompt by identifying and quoting the specific refused items (food, houses, clothing, fires), explaining their nature as escalations, and providing Thoreau's proposed alternative. All parts of the gold rubric hint are covered.",
+          "claim_precision": "The answer is sharply specific, quoting verbatim the list of refused 'more warmth' items and tying interpretation directly to Thoreau's distinction between 'more warmth' and 'more of the same kind.' The characterization of these as a 'treadmill of acquisition' is grounded in the passage's logic."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q06",
+      "questionOrdinal": 6,
+      "condition": "smart_scan_tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2035,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 365,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The assistant directly quotes the enumerated list from the anchor passage and accurately represents Thoreau's argument about refused superfluities versus necessary things. All claims are grounded in the provided text.",
+          "chunk_relevance": "The anchor passage is precisely the passage needed to answer this question; no retrieval tools were required and the question was fully answerable from the selection.",
+          "answer_completeness": "The answer directly identifies and lists the refused items ('more and richer food, larger and more splendid houses, finer and more abundant clothing, more numerous incessant and hotter fires, and the like') and explains the philosophical context (that after obtaining necessities, one should pursue 'adventure' rather than perpetual accumulation).",
+          "claim_precision": "The answer is textually precise, quoting the exact enumeration and explaining how each item represents an escalation of basic categories rather than new categories of need. The interpretation of 'adventure on life' as Thoreau's proposed alternative is well-anchored to the final sentence."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q06",
+      "questionOrdinal": 6,
+      "condition": "tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2779,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 396,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.8,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 4,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is grounded directly in the anchor passage. The enumerated list is quoted verbatim, and the interpretation of 'superfluities' and 'dead end' are directly supported by adjacent text.",
+          "chunk_relevance": "Retrieved chunks provide useful philosophical context about luxury, simplicity, and philosophy's relationship to material life, though they do not directly address the specific list being asked about. Still pertinent to the broader Thoreauvian argument.",
+          "answer_completeness": "The answer directly identifies and quotes the enumerated list of refused items ('more and richer food, larger and more splendid houses, finer and more abundant clothing, more numerous incessant and hotter fires, and the like') as required by the gold rubric. It also explains the philosophical distinction Thoreau draws between necessary warmth and superfluity, and mentions the alternative he offers.",
+          "claim_precision": "The answer is sharply tied to exact textual phrases. The distinction between 'same kind' and true alternatives is precisely derived from Thoreau's own language ('Surely not more warmth of the same kind'). No overreach or vagueness."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q15",
+      "questionOrdinal": 15,
+      "condition": "passage_only",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2199,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 686,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.8000000000000003,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 5,
+          "answer_completeness": 2,
+          "claim_precision": 3
+        },
+        "rationales": {
+          "faithfulness": "The assistant makes strong interpretive claims about the rhetorical function of the questions and the meaning of 'vital heat' that are grounded in the anchor passage. However, it then claims that 'wildness,' 'beans,' and 'unmarked paths' are 'practical instantiation' of the philosopher's refusal—but no retrieved evidence supports these connections, and the prompt explicitly asks to 'trace how his answers in Economy echo his later praise of wildness, beans, and unmarked paths.' The assistant asserts the link without evidence from those later sections.",
+          "chunk_relevance": "No tool excerpts were retrieved; the condition is passage_only and the anchor passage is directly relevant to the immediate question about degeneration and luxury. The anchor alone suffices for close reading of that rhetorical moment.",
+          "answer_completeness": "The answer deeply analyzes the anchor passage's rhetorical structure and the immediate answer it contains ('better methods'). However, it fails the core prompt requirement: to trace how Economy's answers echo *later* praise of wildness, beans, and unmarked paths. The assistant gestures toward this synthesis ('Beans and unmarked paths are the practical instantiation') but provides no textual grounding and does not actually retrieve or cite those later sections, leaving the synthesis incomplete and unsupported.",
+          "claim_precision": "The close reading of the anchor is sharp and precise, with careful attention to rhetorical function and the demands embedded in form. The broader claim about practical instantiation, however, is speculative and lacks the textual specificity that would anchor it to the later passages the prompt asks about."
+        },
+        "violations": [
+          "Unsupported synthesis claim: The answer asserts that beans and unmarked paths are 'the practical instantiation' of the philosopher's refusal to live like contemporaries, but provides no evidence from those later sections of Walden. This is a critical gap given the prompt's explicit instruction to trace the echo across sections.",
+          "Missing retrieval for book-level question: Although condition is passage_only, the prompt is fundamentally book-level-thematic, asking to connect Economy to later sections. The assistant supplies no retrieved text from those later sections and provides no citations to them, making the synthesis unverifiable.",
+          "Incomplete response: The answer addresses only the immediate anchor passage and does not fulfill the second part of the prompt's expected answer points: 'Makes the link as synthesis (multiple sections), not a single correct sentence.' The claimed links are asserted without evidence."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q15",
+      "questionOrdinal": 15,
+      "condition": "smart_scan_tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3763,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 457,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.75,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 4,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is anchored in ALLOWED_EVIDENCE: the 'unnaturally hot' language, the vegetable metaphor about humbler esculents never flowering, the diagnosis of luxury as enervating, and the philosophical simplicity as ascent are all directly quoted or paraphrased from the retrieved chunks.",
+          "chunk_relevance": "Retrieved excerpts are tightly targeted: Chunk 1 provides the core Economy argument on luxury's degenerative effect and the philosopher's austere path; Chunk 2 develops the plant metaphor and the practical alternatives to accumulation. Both excerpts directly support the synthesis the answer constructs.",
+          "answer_completeness": "The answer traces the connection across multiple sections as the gold rubric requires: it anchors in Economy's diagnosis, identifies the vegetable metaphor as the bridging concept, and projects forward to beans and wildness. The only minor gap is that it gestures to wildness without retrieving a specific later passage where Thoreau explicitly praises it, though the logic of the synthesis is sound from what is present.",
+          "claim_precision": "Language is sharp and specific: 'enervates,' 'unnaturally hot,' the distinction between simplification-as-withdrawal vs. simplification-as-ascent, and the precise observation that beans are about discipline, not outcome. The analysis avoids boilerplate and stays tethered to Thoreau's exact metaphors and logic."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q15",
+      "questionOrdinal": 15,
+      "condition": "tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3725,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 576,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.1,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 4,
+          "answer_completeness": 3,
+          "claim_precision": 4
+        },
+        "rationales": {
+          "faithfulness": "All substantive claims are rigorously grounded in ALLOWED_EVIDENCE. The assistant quotes directly and accurately from the luxury passage and the philosophy definition, and the interpretive link between luxury-as-domestication and the later pursuit of simplicity is well-supported by the retrieved text.",
+          "chunk_relevance": "Retrieved excerpts are highly pertinent: Chunk 2 contains the key luxury-enervation diagnosis and the philosopher passage that anchors the synthesis. Chunk 1 includes the plant metaphor ('rise in the same proportion into the heavens') and the pursuit of wildness/adventure that supports the later thematic echo, though some passages (the hound/horse/dove, the lamplight section) are tangential.",
+          "answer_completeness": "The answer traces luxury→enervation→simplicity well, but it incompletely addresses the specific promised imagery. The prompt asks to trace 'wildness, beans, and unmarked paths'—the assistant mentions 'bean patch' and 'unmarked path' briefly but does not substantially elaborate on how Thoreau's cultivation of beans or pursuit of wildness later in the book specifically echo or resolve the Economy diagnosis. The synthesis is present but thin.",
+          "claim_precision": "The answer is precise in its textual anchoring and interpretive moves (domestication metaphor, 'golden or silver fetters,' the practical-vs-theoretical distinction). The claim that beans and paths are 'conditions under which a man can actually think' is well-grounded in the retrieved language about simplicity enabling philosophy."
+        },
+        "violations": [
+          "Incomplete treatment of the specific later sections: the prompt asks to trace 'wildness, beans, and unmarked paths,' but the answer names them without substantively showing how those sections *echo* or *resolve* the Economy critique. A more complete response would retrieve and contrast passages from later chapters (e.g., the bean-field chapter, discussions of wildness) with the luxury diagnosis to show the thematic continuity."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q13",
+      "questionOrdinal": 13,
+      "condition": "passage_only",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2076,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 564,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.5499999999999998,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 1,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The answer makes several interpretive claims ('frenetic, far-flung commercial entanglement,' 'constant scrambling,' 'civilization's tendencies') and asserts these appear in 'the lead-up passage' without any retrieved evidence to support them. The anchor alone does not contain these characterizations of the railroad's role.",
+          "chunk_relevance": "No tool excerpts were retrieved. The gold rubric explicitly requires citation of 'at least one non-anchor locale where hurry/commerce/railroad imagery appears,' but condition passage_only and zero retrieval mean the answer cannot meet this requirement.",
+          "answer_completeness": "The response fails to cite or reference any section beyond the anchor passage. The gold rubric requires identification of other book locations where similar themes appear; the answer gestures vaguely to 'lead-up passage' and 'the railroad merchant's life' without grounding these in specific text or sections.",
+          "claim_precision": "The answer relies on interpretive generalizations ('frenzied world,' 'far-flung commercial entanglement,' 'civilization's tendencies') that sound plausible but are not anchored to specific phrases in ALLOWED_EVIDENCE. The anchor passage itself is spare and ironic, but the answer elaborates these themes far beyond what the single sentence supports."
+        },
+        "violations": [
+          "Unsupported claims about 'frenetic, far-flung commercial entanglement' and 'constant scrambling'—these interpretations are not in the anchor and no retrieval supports them.",
+          "Missing required evidence per gold rubric: no citation of at least one non-anchor locale where railroad/commerce/hurry imagery appears elsewhere in the book.",
+          "Vague reference to 'lead-up passage' without specification or textual grounding.",
+          "Condition passage_only with zero retrieval: answer cannot fulfill the book-level thematic requirement to cite multiple sections."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q13",
+      "questionOrdinal": 13,
+      "condition": "smart_scan_tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3695,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 487,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.55,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 4,
+          "answer_completeness": 4,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "All substantive claims are well-grounded in ALLOWED_EVIDENCE. The assistant correctly identifies the irony of Thoreau's 'business' language, anchors it to the retrieved passage describing commercial exhaustion (charts, navigation, markets, 'universal science'), and ties the railroad's presence to this wider critique. No inventions or unsupported attributions.",
+          "chunk_relevance": "Chunk 1 is highly relevant, providing the extended passage on business labor that directly contextualizes the half-joke. Chunk 2 shifts to clothing and fashion, which is tangential to the railroad/commerce question, though not entirely off-topic since it illustrates Thoreau's critique of societal convention. Overall yield is strong for the specific question.",
+          "answer_completeness": "The answer addresses both gold rubric points: explains the irony of Walden as a 'business' site, and cites the extensive passage on commercial hurry/noise elsewhere in the book (trade routes, accounts, markets). It could have been marginally stronger by explicitly naming one or two additional non-anchor sections (e.g., 'Economy' chapter framing), but the retrieved evidence adequately supports the wider pattern.",
+          "claim_precision": "The analysis is sharply grounded in specific textual details: 'exhausting labour of managing trade routes,' 'ceaseless mental grinding,' 'the advantages which it may not be good policy to divulge,' and the distinction between 'private business' and profit. Language and interpretation are tightly tied to quoted phrases, avoiding vagueness."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q13",
+      "questionOrdinal": 13,
+      "condition": "tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3646,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 527,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.8749999999999996,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 4,
+          "chunk_relevance": 2,
+          "answer_completeness": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant's core claims about Thoreau's 'business' and the railroad/ice trade are well-grounded in the anchor passage. The paraphrase of the purpose statement is accurate. However, broad characterizations of the railroad as 'industrial civilization's relentless machinery' and its effects on landscape and schedules are elaborations not directly evidenced in ALLOWED_EVIDENCE.",
+          "chunk_relevance": "The retrieved chunks discuss Thoreau's philosophy of work, clothing, and commerce in general terms, but neither chunk explicitly addresses the railroad, ice trade, or their connection to noise/hurry elsewhere in the text. Chunk 1 discusses 'business' broadly and international trade, but does not ground the railroad imagery or its symbolic role in his critique.",
+          "answer_completeness": "The gold rubric requires citing 'at least one non-anchor locale where hurry/commerce/railroad imagery appears.' The answer discusses the railroad thematically but does not cite a specific passage elsewhere in the book where railroad or noise/hurry critique reappears. This is a major omission of the second expected answer point.",
+          "claim_precision": "The answer makes interpretive leaps (e.g., 'the railroad represents industrial civilization's relentless machinery') that go beyond what the retrieved evidence supports. While the logic is coherent, it lacks grounding in specific textual anchors beyond the anchor passage itself."
+        },
+        "violations": [
+          "Missing second gold rubric point: no citation of a non-anchor passage where hurry/commerce/railroad imagery appears elsewhere in the text, despite the question and rubric explicitly requiring it.",
+          "Retrieval did not surface railroad or noise/hurry passages from elsewhere in Walden that would support the thematic connection the question asks about."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q12",
+      "questionOrdinal": 12,
+      "condition": "passage_only",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1955,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 470,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.8,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 1,
+          "claim_precision": 4
+        },
+        "rationales": {
+          "faithfulness": "The assistant makes no unsupported claims; it correctly acknowledges the anchor passage discusses heat retention and insulation, which is accurate and grounded.",
+          "chunk_relevance": "No retrieved tool excerpts were provided, so relevance cannot be assessed on retrieval quality—the anchor alone is on-topic for the passage itself, though insufficient for the cross-section question.",
+          "answer_completeness": "The question explicitly asks for a cross-section identification (where does he revisit ice/water/bathing later?)—a task that requires evidence from elsewhere in the book. The assistant declines to answer, correctly noting it lacks the needed evidence, but this results in complete non-fulfillment of the prompt.",
+          "claim_precision": "The assistant's analysis of the anchor passage is precise and specific (correctly identifying heat retention, fuel, clothing, shelter as insulation)."
+        },
+        "violations": [
+          "Retrieval failure: The prompt is a cross-section question requiring identification of a later locus in the book. No tool retrieval was attempted or provided; the assistant should have either requested a smart_scan/search for 'cold water', 'bathing', 'ice' or other relevant keywords, or explicitly flagged that retrieval tools were unavailable. Instead, it defaults to 'I don't have access' without attempting retrieval.",
+          "Incomplete response: The gold rubric expects identification of at least one later passage where cold water/bathing becomes deliberate practice. The assistant provides zero answer to this core requirement."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q12",
+      "questionOrdinal": 12,
+      "condition": "smart_scan_tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 47020,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 723,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 2,
+          "answer_completeness": 2,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The answer misrepresents the ice/water passage. Thoreau does not claim the laborer 'needed' the cold ducking as discipline; rather, he observes that the laborer had so many layers he could afford to refuse extra garments. The phrase 'This ducking was the very thing he needed' refers to the warming process at Thoreau's house, not cold exposure as virtue. The assistant invents an interpretation unsupported by the text.",
+          "chunk_relevance": "The retrieved material is almost entirely the 'Economy' section of Walden discussing clothing, shelter, and fuel—none of which addresses the question about cold water/ice/bathing as deliberate bodily discipline. The single ice reference appears in a charity/poverty anecdote, not a meditation on cold-water practice. No 'other locus' in the retrieved text revisits this theme.",
+          "answer_completeness": "The gold rubric asks for 'at least one later locus where cold water / ice / bathing becomes a deliberate practice.' The assistant offers only a single incident (the laborer in water) and does not locate it elsewhere in the book or explain it as deliberate practice. The answer fails to identify any distinct later section or passage where Thoreau systematically revisits the theme as requested.",
+          "claim_precision": "The answer is vague and over-interpretive. Phrases like 'This contrasts with the opening passage' and 'suggests bodily exposure' and 'practical discipline or necessity' are hand-waved inferences not textually anchored. The assistant does not cite a specific practice Thoreau *deliberately* adopts; the laborer's mishap is accidental."
+        },
+        "violations": [
+          "Misrepresentation: The assistant claims Thoreau presents the cold water immersion as 'its own kind of hardening' and beneficial discipline, but the text indicates the laborer needed warming afterward, not that cold water was therapeutic.",
+          "Fabricated interpretation: No support for the claim that this passage represents 'bodily resilience' as a deliberate practice or revisits the clothing/shelter discussion in a new key.",
+          "Incomplete answer: The question asks where Thoreau revisits ice, water, and bathing 'as a different kind of bodily discipline'—implying intentional practice. The answer provides only one accidental immersion anecdote, not a deliberate practice or multiple loci.",
+          "Retrieval failure: The retrieved text is 30+ pages of Economy chapter with no mention of deliberate cold-water bathing, ice swimming, or related practice. If such a passage exists, it was not retrieved."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q12",
+      "questionOrdinal": 12,
+      "condition": "tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 13808,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 581,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.5499999999999998,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 1,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant's response admits it is 'not finding it in the immediate passages' and states it will 'search a different section,' but then provides no actual answer with textual evidence. The claim that the passage 'might be earlier' or 'in another section' is speculation without grounding in ALLOWED_EVIDENCE.",
+          "chunk_relevance": "The retrieved excerpts focus heavily on clothing, shelter, fuel, and philosophical simplicity, with extensive discussion of dress and fashion. None of the chunks address ice, water, or bathing as deliberate bodily disciplines distinct from insulation. The retrieval missed the core topic of the question.",
+          "answer_completeness": "The response does not answer the question at all. It provides no named locus where cold water, ice, or bathing appear as deliberate practice. The assistant explicitly acknowledges failure to locate the answer and offers only a meta-statement about searching elsewhere.",
+          "claim_precision": "The response contains only a vague hedge ('might be earlier, in the \"Where I Lived\" or another section') with no specific textual anchor, name, or page reference. No literary analysis or interpretation is attempted."
+        },
+        "violations": [
+          "No answer provided: The assistant explicitly states 'I'm not finding it' and does not supply any passage, locus, or evidence addressing ice/water/bathing as bodily discipline.",
+          "Unsupported meta-claim: The assertion that the answer 'might be earlier' or 'in another section' is speculative and not grounded in ALLOWED_EVIDENCE.",
+          "Retrieval failure: The tool excerpts do not contain passages about bathing, cold water immersion, or ice as deliberate practices. The question required cross-sectional retrieval of a passage not present in the anchor; retrieval did not successfully locate it.",
+          "Incomplete response: No completion of the gold rubric expectation to 'name at least one later locus where cold water / ice / bathing becomes a deliberate practice.'"
+        ],
+        "_repair_pass": true
+      }
+    },
+    {
+      "stableKey": "walden_q09",
+      "questionOrdinal": 9,
+      "condition": "passage_only",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1881,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 512,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.8,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 1,
+          "chunk_relevance": 5,
+          "answer_completeness": 1,
+          "claim_precision": 1
+        },
+        "rationales": {
+          "faithfulness": "The assistant invents a quotation ('The grand necessity, then, for our bodies, is to keep warm') that does not appear in the ALLOWED_EVIDENCE anchor passage. The anchor clearly shows 'The summer, in some climates, makes possible to man a sort of Elysian life' as the opening pivot sentence, not the fabricated quote.",
+          "chunk_relevance": "No tool excerpts were retrieved, which is appropriate for a passage_only condition focused on nearby context within the anchor itself. The anchor passage is directly relevant to the question.",
+          "answer_completeness": "The question asks for the transition phrase that opens the pivot 'a few lines above' the Elysian sentence. The answer fails to identify the actual opening phrase from the anchor ('The summer, in some climates, makes possible to man a sort of Elysian life') and instead supplies an invented quotation not present in the allowed evidence.",
+          "claim_precision": "The answer is entirely speculative and generic, offering broad logical reasoning ('the passage can now examine what happens when that necessity is suspended') rather than identifying the actual textual pivot phrase requested by the question."
+        },
+        "violations": [
+          "Fabricated quotation: 'The grand necessity, then, for our bodies, is to keep warm' does not appear in ALLOWED_EVIDENCE.",
+          "Failure to identify the correct opening transition phrase from the anchor passage: 'The summer, in some climates, makes possible to man a sort of Elysian life.'",
+          "The answer misses the straightforward textual task: naming the phrase 'a few lines above' the Elysian reference, which is the anchor passage's opening sentence itself."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q09",
+      "questionOrdinal": 9,
+      "condition": "smart_scan_tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 7881,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 648,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.3,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 4,
+          "chunk_relevance": 5,
+          "answer_completeness": 2,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The answer correctly identifies the opening phrase 'The summer, in some climates, makes' from the anchor passage and accurately references the preceding cold-weather context. However, the answer conflates the transition phrase itself with contextual setup, which slightly muddies what the question asks for.",
+          "chunk_relevance": "Chunk 3 is highly relevant, containing both the anchor passage and the immediately preceding sentence about cold, allowing direct verification of the transition structure.",
+          "answer_completeness": "The question asks for the transition phrase that opens the pivot 'a few lines above' the Elysian sentence. The answer names 'The summer, in some climates, makes' but then equivocates by claiming 'the full pivot point is better marked by' the preceding sentence. The gold rubric expects identification of the sentence beginning 'The summer, in some climates…,' not commentary on what precedes it. The answer avoids directly naming the transition phrase as requested.",
+          "claim_precision": "The answer is vague about what constitutes the 'transition phrase'—it initially offers 'The summer, in some climates, makes' but then pivots to saying the preceding sentence about cold 'establishes the winter hardship' and 'better marks' the pivot. This hand-waving obscures whether the answer is identifying the opening phrase itself or just the contrast structure. The phrasing 'The summer, in some climates, makes' is also incomplete as a standalone phrase (it is part of a longer sentence beginning)."
+        },
+        "violations": [
+          "The answer equivocates on what the 'transition phrase' is. The question asks for the phrase that opens the pivot, which should be the opening words of the sentence 'The summer, in some climates, makes possible to man a sort of Elysian life.' Instead, the answer muddies this by suggesting the preceding sentence 'better marks' the pivot point, which is not what was asked.",
+          "The answer presents 'The summer, in some climates, makes' as the transition phrase, but this is technically the beginning of a longer sentence—the full phrase is 'The summer, in some climates, makes possible to man a sort of Elysian life.' The answer should clarify whether it is citing the opening words or the full opening clause."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q09",
+      "questionOrdinal": 9,
+      "condition": "tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3380,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 627,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.6,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 5,
+          "answer_completeness": 2,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant correctly identifies 'The summer, in some climates, makes possible to man a sort of Elysian life' as the pivot sentence, which is grounded in the anchor passage. However, the claim that the preceding sentence ('The poor man is wont to complain...') is 'immediately before the Elysian passage' is demonstrably false—there is substantial intervening text in Chunk 2 about keeping warm, beds, and robbing nests, contradicting the assistant's directness claim.",
+          "chunk_relevance": "Chunk 2 directly provides the full context of the transition, showing the lengthy discussion of cold/heat/vital necessity immediately preceding 'The summer' sentence. This is precisely what was needed to locate the pivot phrase accurately.",
+          "answer_completeness": "The question asks for the 'transition phrase' that opens the pivot 'a few lines above' the Elysian sentence. The gold rubric expects identification of the sentence beginning 'The summer, in some climates…' as the pivot itself. The assistant identifies that sentence but fails to clearly identify what specifically opens the transition a few lines above, instead providing a sentence that is much further removed.",
+          "claim_precision": "The assistant makes a vague and partially incorrect claim about what comes 'immediately before' without acknowledging the several lines of intervening material. The assertion about 'direct' pivot is unsupported by the retrieved text, which shows considerable material about hardship and cold between the complaint and the summer sentence."
+        },
+        "violations": [
+          "The assistant claims the poor-man sentence comes 'immediately before the Elysian passage,' but Chunk 2 shows multiple sentences intervening (about keeping warm, beds, birds' nests, etc.), making this factually incorrect.",
+          "The answer does not clearly identify which specific transition phrase 'a few lines above' the Elysian sentence opens the pivot—it conflates the pivot sentence itself with what comes before it.",
+          "The gold rubric expects the answer to name the pivot sentence ('The summer, in some climates…'), which the assistant does, but the prompt specifically asks for the transition phrase 'a few lines above' that sentence, which is not clearly addressed."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q14",
+      "questionOrdinal": 14,
+      "condition": "passage_only",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2091,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 639,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 2,
+          "claim_precision": 3
+        },
+        "rationales": {
+          "faithfulness": "The answer invents several specific quotations and passages ('poor man who is wont to complain that this is a cold world,' 'ancient philosophers' passage, 'go to the other side of the globe' material) that do not appear in ALLOWED_EVIDENCE. Only the anchor phrase about voluntary poverty vantage ground is grounded.",
+          "chunk_relevance": "No retrieved tool excerpts were provided. The question explicitly asks for comparison with 'the Poor Man' or portraits of real poverty elsewhere in the book, which requires book-wide evidence the assistant had to supply without retrieval support.",
+          "answer_completeness": "The answer addresses the tension between voluntary and involuntary poverty, but lacks concrete textual anchors to specific named characters or scenes (e.g., 'the Poor Man,' John Field, laboring poor portraits) that the gold rubric expects and that passage_only condition requires to be drawn from ALLOWED_EVIDENCE or clearly noted as unsupported.",
+          "claim_precision": "The analysis is thematically coherent and interpretively sharp, but the textual specificity is undermined by invented quotations and unsupported references that appear authoritative without grounding."
+        },
+        "violations": [
+          "Fabricated quotation: 'poor man' who 'is wont to complain that this is a cold world'—not in anchor or retrieved texts.",
+          "Fabricated reference to 'ancient philosophers' passage and claim they are 'poorer in outward riches' yet 'so rich in inward'—not supported.",
+          "Fabricated quotation about men who 'go to the other side of the globe...in order that they may live,—that is, keep comfortably warm'—not in ALLOWED_EVIDENCE.",
+          "Gold rubric requires 'at least one portrait of real poverty elsewhere in the book (e.g., laboring poor / John Field–type material).' The answer alludes to such material but does not ground specific references to actual textual passages or characters with anchors to ALLOWED_EVIDENCE.",
+          "Condition is passage_only with no retrieved excerpts; answer supplies book-wide factual claims about specific passages and characters as if verified when they are not present in ALLOWED_EVIDENCE."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q14",
+      "questionOrdinal": 14,
+      "condition": "smart_scan_tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3205,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 577,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.3499999999999996,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 4,
+          "chunk_relevance": 2,
+          "answer_completeness": 3,
+          "claim_precision": 4
+        },
+        "rationales": {
+          "faithfulness": "The answer is well grounded in the retrieved text: the claim about those traveling to 'barbarous and unhealthy regions,' the 'Poor Man' complaint about cold, and the contrast between ancient philosophers' inward riches are all present in Chunk 1. The interpretation of 'voluntary poverty' as a chosen vantage tied to education and leisure is fair extrapolation from the evidence.",
+          "chunk_relevance": "While the retrieved chunks contain relevant material on simplicity, philosophy, and Thoreau's critique of luxury, they do not include a substantive portrait of 'real poverty' (like laboring poor or John Field material) that would directly illustrate the tension with voluntary poverty. The 'Poor Man' complaint is present, but the retrieval lacks sustained character or social portraiture elsewhere in the book.",
+          "answer_completeness": "The answer addresses the core contrast (voluntary vs. involuntary poverty) well, but it does not fulfill the gold rubric hint of referencing 'at least one portrait of real poverty elsewhere in the book (e.g., laboring poor / John Field–type material).' The answer infers the Poor Man as such a portrait, but the retrieved evidence does not include other book-level portraits of real poverty that would strengthen the comparison.",
+          "claim_precision": "The answer avoids vagueness and ties specific claims ('cooked,' the Poor Man's complaint about cold, the notion of aristocratic freedom) directly to quoted language. The interpretation of tension and the point about freedom as prerequisite for voluntary poverty are precise and well articulated."
+        },
+        "violations": [
+          "Gold rubric expects reference to 'at least one portrait of real poverty elsewhere in the book (e.g., laboring poor / John Field–type material).' The retrieved chunks do not include sustained portraits of John Field or other laborers; the answer infers the Poor Man as the only example but lacks supporting material from elsewhere in the book. Retrieval was insufficient for the full book-level scope of the question."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q14",
+      "questionOrdinal": 14,
+      "condition": "tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 4591,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 697,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.2,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 2,
+          "answer_completeness": 2,
+          "claim_precision": 3
+        },
+        "rationales": {
+          "faithfulness": "The answer makes substantive claims about John Field and the 'Poor Man' passage—including specific narrative details about Field's family, self-perpetuating labor cycles, and Thoreau's attempted alternative—none of which appear in ALLOWED_EVIDENCE. The retrieved chunks do not contain the Field passage or any portrait of named poor individuals. Only the anchor passage and general philosophical material on voluntary poverty are present.",
+          "chunk_relevance": "Retrieved chunks discuss Thoreau's philosophy of voluntary simplicity, necessary vs. luxurious living, and the phrase 'the poor man is wont to complain that this is a cold world,' but none of the excerpts actually contain a portrait of real poverty (e.g., John Field or a 'Poor Man' character). The chunks are thematically adjacent but do not directly support the comparison the question asks for.",
+          "answer_completeness": "The answer addresses the conceptual tension between voluntary and involuntary poverty, which is good, but it relies entirely on an unsupported reference to the John Field passage to fulfill the gold rubric requirement to 'reference at least one portrait of real poverty elsewhere in the book.' The answer is incomplete because it does not ground this key example in retrieved text.",
+          "claim_precision": "The answer is reasonably specific in articulating the philosophical contrast (choice vs. necessity, wisdom vs. exhaustion) and Thoreau's apparent awareness gap. However, because the central illustrative example (John Field) is not retrieved or verified, the precision is undermined by ungrounded specificity about a passage not in ALLOWED_EVIDENCE."
+        },
+        "violations": [
+          "The assistant invokes the 'John Field, the Irish laborer' passage and claims it shows Field and his family in 'a self-perpetuating cycle of labor and consumption' and that 'Thoreau tries to offer an alternative vision of voluntary simplicity, but Field cannot imagine it.' None of this narrative detail is present in ALLOWED_EVIDENCE. This is a substantive, textual hallucination.",
+          "The question itself suggests the user may have selected a 'Poor Man' passage as anchor, but the provided anchor is only the philosophical statement about voluntary poverty. The retrieval did not return any portrait of real poverty matching the question's prompt. The assistant proceeded as though the Field passage were known, creating unsupported claims.",
+          "While the general philosophical framing (voluntary vs. involuntary poverty as a contrast) can be inferred from the anchor and retrieved chunks, the specific character analysis and narrative details about John Field are fabricated."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q10",
+      "questionOrdinal": 10,
+      "condition": "passage_only",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1972,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 537,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.5499999999999998,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 1,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant makes interpretive claims about Thoreau's 'conviction' and intent ('the math of survival is far simpler') that are plausible but not grounded in the anchor passage, which is only a brief critique of overseas trade. No retrieved text supports the link between this passage and the later cost accounting.",
+          "chunk_relevance": "No tool excerpts were retrieved despite the question explicitly asking for a cross-section reference to a specific itemized cost passage elsewhere in Walden. The anchor is unrelated to the requested detailed accounting of cabin boards and axe costs.",
+          "answer_completeness": "The prompt directly asks 'where later in Walden does he report what he actually paid'—a specific location or section reference. The answer acknowledges it cannot reach that section and provides only generic thematic commentary instead of the itemized figures requested (boards, axe, cents-level detail).",
+          "claim_precision": "The answer relies on vague attributions ('Your question points forward…', 'the conviction that people wildly overspend') rather than precise textual support. It does not cite specific dollar amounts, board prices, or borrowed-axe costs as the prompt requests."
+        },
+        "violations": [
+          "Retrieval failure: No tool excerpts provided despite clear need for the later Economy/cost accounting section of Walden; the question cannot be answered from the anchor passage alone.",
+          "Incomplete: Does not provide the specific location (chapter, section, or page reference) of the itemized cost table.",
+          "Unsupported thematic claim: States that the passage 'establishes the principle' for a later 'reckoning' without textual grounding.",
+          "Missing specificity: Does not report any actual figures (cents, prices for boards, axe cost) as the prompt explicitly requests."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q10",
+      "questionOrdinal": 10,
+      "condition": "smart_scan_tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 42141,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 615,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.05,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 2,
+          "claim_precision": 4
+        },
+        "rationales": {
+          "faithfulness": "The assistant accurately cites the itemized house-cost table with penny-level precision ($28.12½ total, detailed items like $0.01 chalk, $3.90 nails) directly from the retrieved text. The reference to the borrowed axe is also well-grounded in the same passage.",
+          "chunk_relevance": "The retrieved 'Economy' section contains the exact itemized accounting of house-building costs the user asked for, making retrieval highly targeted and directly responsive.",
+          "answer_completeness": "The prompt asks 'where later in Walden does he report what he actually paid for his cabin boards and borrowed axe, down to cents?' The assistant provides the house cost table but fails to explicitly address the borrowed axe's cost. The answer notes the axe was borrowed but does not answer the implicit sub-question: what did he pay for it, or did he not include a monetary value for it because it was borrowed? The gold rubric expects itemized accounting of the axe cost 'down to cents,' yet the assistant sidesteps this by saying 'He doesn't break the borrowed axe's value out separately.' This is an incomplete response to the prompt's full scope.",
+          "claim_precision": "The assistant precisely quotes the cost table and specifies dollar amounts to fractions of cents as the prompt requested. The observation about the axe is textually anchored ('Near the end of March, 1845, I borrowed an axe'). The distinction between borrowed items and purchased ones is clear and well-grounded."
+        },
+        "violations": [
+          "The prompt specifically asks for costs of the cabin boards AND the borrowed axe, 'down to cents.' While the answer delivers the boards' cost ($8.03½) with precision, it does not definitively answer whether Thoreau assigned a monetary value to the borrowed axe in his accounting. The assistant notes the axe was borrowed and not counted in the $28.12½ total, but this is acknowledged rather than directly answering the 'down to cents' requirement for the axe itself. The gold rubric expects itemized detail on both items; the incomplete treatment of the axe cost violates that expectation."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q10",
+      "questionOrdinal": 10,
+      "condition": "tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 17015,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 630,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.4,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 1,
+          "chunk_relevance": 2,
+          "answer_completeness": 1,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant acknowledges the retrieved material does not contain the specific cost table requested and does not invent details, but then speculates about what 'would logically follow' without evidence. It also claims Thoreau lists costs like 'five dollars' for a coat in the context, which appears in the fashion/clothing discussion, not the cabin construction section being asked about.",
+          "chunk_relevance": "The retrieved excerpts focus heavily on philosophy of clothing, shelter philosophy, and general economic theory rather than the specific itemized cabin construction costs (boards, nails, axe) the question asks about. While the Economy chapter is relevant, these chunks are tangential filler.",
+          "answer_completeness": "The response completely fails to answer the core question: it does not identify where in Walden the detailed cost accounting appears, does not provide the penny-level specifics requested, and instead offers a meta-commentary on rhetorical structure. The gold rubric explicitly requires pointing to 'the later itemized accounting of house-building costs' with 'penny-level specificity.'",
+          "claim_precision": "The answer is vague and speculative ('would logically follow,' 'appears to come later,' 'I haven't yet retrieved it precisely'). It does not ground claims in the actual text provided and hand-waves the retrieval failure as intentional, avoiding the direct answer expected."
+        },
+        "violations": [
+          "CRITICAL: The assistant does not answer the question. It explicitly admits the specific itemized cost section has not been retrieved ('I haven't yet retrieved it precisely') and offers no location, no specific costs, and no penny-level figures.",
+          "The answer pivots to meta-analysis of Thoreau's rhetorical strategy rather than fulfilling the cross-section prompt, which requires identifying where later in Walden the costs are reported.",
+          "The assistant invents a rhetorical interpretation ('Thoreau is building his theoretical argument about necessity before revealing the practical numbers—this rhetorical structure strengthens his point') that is not grounded in the retrieved evidence.",
+          "Retrieval failed to capture the Economy chapter's 'Cost of my House' section, which is the standard location of this accounting in Walden and should have been targeted by the tool."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q03",
+      "questionOrdinal": 3,
+      "condition": "passage_only",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2060,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 420,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every claim is directly supported by the anchor passage. The assistant accurately cites the key sentence 'Yet it is admirable to profess because it was once admirable to live' and correctly identifies the word play on 'profess' and the definition of a true philosopher (simplicity, independence, magnanimity, trust; solving life's problems practically).",
+          "chunk_relevance": "No retrieval was needed for this passage-only condition. The anchor passage contains the complete joke and sharpening device, making chunk_relevance evaluation unnecessary—score reflects that no extraneous material was introduced.",
+          "answer_completeness": "The answer fully addresses both gold rubric points: it explains the antithesis between 'professors' and living 'philosophers,' and it identifies the definition of a philosopher by life-practice rather than credentials. It also clarifies how the sharpening works through the polysemy of 'profess' and the contrast between theory and practice.",
+          "claim_precision": "The analysis is sharply grounded in specific phrases from the passage ('profess,' 'solve some of the problems of life, not only theoretically, but practically'). The assistant identifies the exact mechanism of wit—the semantic slippage—and shows precisely how the comparison deflates the modern professor."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q03",
+      "questionOrdinal": 3,
+      "condition": "smart_scan_tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2164,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 410,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly anchored in the passage: the 'profess' vs. 'live' antithesis, the definition of philosopher by simplicity/independence/magnanimity/trust, the contrast between theoretical and practical philosophy, and the 'courtier-like success' vs. progenitors of nobility. No invention or hallucination.",
+          "chunk_relevance": "The anchor passage contains the full joke and its sharpening mechanism; no retrieval was needed, and the assistant correctly worked within the provided text without over-reaching beyond it.",
+          "answer_completeness": "The answer fully addresses both gold rubric points: it identifies the antithesis setup (professors vs. philosophers) and explains how Thoreau defines a real philosopher by life-practice and embodiment rather than credentials or subtle thoughts. It also explores the practical vs. theoretical dimension.",
+          "claim_precision": "The analysis is tightly textual, isolating specific words ('profess' vs. 'live'), matching interpretations to exact phrases ('courtier-like success,' 'progenitors of a nobler race'), and avoiding generic boilerplate. The etymological insight about the verb forms is precise and well-tied to Thoreau's language."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q03",
+      "questionOrdinal": 3,
+      "condition": "tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2602,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 486,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.95,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 1,
+          "answer_completeness": 4,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly grounded in the anchor passage: the temporal paradox ('it was once admirable to live'), the definition of true philosophy (simplicity, independence, magnanimity, trust, lived practice), and the condemnation of courtier-like success are all precisely quoted or closely paraphrased from Thoreau's text.",
+          "chunk_relevance": "The retrieved tool excerpts discuss ancient philosophers living simply and avoiding luxury, which tangentially relates to the theme of lived philosophy versus mere professing, but they do not directly address the joke's structure or the antithesis between 'professors' and 'philosophers' that the question asks about. The retrieval is largely off-topic for this passage-local question.",
+          "answer_completeness": "The answer fully addresses both gold rubric points: the antithesis between professors and living philosophers, and the definition of a true philosopher by life-practice (simplicity, independence, magnanimity, trust). It also explains how the joke is sharpened through structural contrast and culminates in moral indictment.",
+          "claim_precision": "The analysis is sharply precise, identifying specific rhetorical moves ('paradox of time,' 'drives the distinction deeper,' 'devastating final move') and tying each to exact textual evidence. The language matches the grain of Thoreau's passage."
+        },
+        "violations": [
+          "Retrieved excerpts are largely irrelevant noise for a passage-local question about how Thoreau structures a joke in the anchor text. The tool retrieval added no value and should have been minimal or absent for this task."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q11",
+      "questionOrdinal": 11,
+      "condition": "passage_only",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1877,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 471,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.8,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 1,
+          "claim_precision": 4
+        },
+        "rationales": {
+          "faithfulness": "The assistant makes no unsupported claims; it correctly acknowledges the anchor passage does not contain the answer and avoids inventing details about later sections.",
+          "chunk_relevance": "No tool excerpts were retrieved, but the anchor passage alone is insufficient to answer a cross-section question asking where a later description appears. The assistant appropriately notes this limitation.",
+          "answer_completeness": "The prompt explicitly requests identification of a later chapter/section where the pond experiment is described in concrete, seasonal terms. The assistant declines to answer, stating it needs to see that section, thus failing to address the core task entirely.",
+          "claim_precision": "The assistant is cautiously precise in its scope: it correctly identifies what the anchor passage does and does not contain, without overreaching or making vague claims about the broader work."
+        },
+        "violations": [
+          "Retrieval failure: No tool excerpts were provided to search the text for later pond-dwelling narrative. The question is explicitly cross-sectional (asking where a later section appears), requiring retrieval of candidate sections from elsewhere in Walden. The assistant was not equipped with retrieved evidence and declined to answer rather than request or infer from context.",
+          "Incomplete response: The prompt asked for a concrete location (chapter/section) where seasonal or pond-life details appear. The assistant provides no answer to this, only a statement that more text is needed. For a passage_only condition with no retrieval, this is appropriate epistemic honesty, but it leaves the user's question entirely unaddressed."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q11",
+      "questionOrdinal": 11,
+      "condition": "smart_scan_tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1905,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 508,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.5499999999999998,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 1,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant makes a claim that 'That content lies ahead of where you are now—in the sections that follow \"Economy\"' without any textual evidence from ALLOWED_EVIDENCE to support this. No retrieved excerpts are provided to ground this assertion.",
+          "chunk_relevance": "No tool excerpts were retrieved at all, despite the condition being 'smart_scan_tools' which should enable searches. The anchor alone is insufficient for answering this cross-section question, which explicitly asks for a later location in the text.",
+          "answer_completeness": "The answer completely fails to address the core task: identifying the specific chapter/section where Thoreau describes his experiment in concrete, seasonal terms. Instead of providing the answer or retrieving the relevant passage, the assistant asks permission to search—evading the direct question.",
+          "claim_precision": "The response is vague and speculative ('That content lies ahead…', 'shifts from opening critique') without citing or retrieving any specific textual evidence. It reads as a deflection rather than literary analysis."
+        },
+        "violations": [
+          "Assistant asserts that the concrete seasonal narration is in sections following 'Economy' without any retrieved evidence to support this location claim.",
+          "No retrieval was attempted despite smart_scan_tools condition and the question clearly requiring elsewhere-in-book evidence (it asks 'where does he later describe').",
+          "The assistant defers the actual answer with a permission request rather than using available tools to fetch the relevant section, failing to deliver what the prompt asks for.",
+          "The answer provides no concrete chapter/section title, no seasonal details, no textual anchors—only a generic statement about content being 'ahead'."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q11",
+      "questionOrdinal": 11,
+      "condition": "tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 7000,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 756,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 2,
+          "answer_completeness": 2,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The answer makes several unsupported claims: it asserts Thoreau describes 'his decision to go to Walden' and details 'clothing, shelter, food, and fuel in concrete seasonal and economic terms' immediately after the anchor passage, but the retrieved excerpts do not show this. The claim that 'The most explicit seasonal grounding of his actual experiment comes somewhat further into the chapter' is vague and not anchored in the provided material.",
+          "chunk_relevance": "The retrieved text includes extensive material from the 'Economy' chapter covering clothing and shelter discussions, but does not contain the promised concrete, seasonal description of Thoreau's actual life at the pond (e.g., daily routines, seasonal cycles, specific pond observations). The retrieval appears to be from the theoretical/prescriptive sections rather than the narrative/observational account the question seeks.",
+          "answer_completeness": "The answer fails to identify where Thoreau actually does provide concrete seasonal details of pond life. The gold rubric expects identification of a specific later chapter/section (like 'Where I Lived, and What I Lived For' or seasonal passages describing actual observations), but the answer is vague about location ('somewhat further into the chapter') and does not cite specific section names or demonstrate where the promised concrete seasonal narrative appears.",
+          "claim_precision": "The answer is overly general and hand-wavy. It repeatedly asserts that seasonal and concrete details 'come' or 'follow' without quoting or precisely locating them in the retrieved material. Phrases like 'moves from critique to concrete narrative' and 'begins his account' are supported only by inference, not by the actual passage structure visible in the evidence."
+        },
+        "violations": [
+          "Unsupported claim: 'he describes his journey to Walden and begins his account of what he calls \"transacting some private business\"'—this phrase appears in the retrieved text but is not followed by seasonal/concrete description in the provided excerpts.",
+          "Unsupported claim: 'discussing clothing, shelter, food, and fuel in ways that contrast sharply with the impoverished rich'—while clothing and shelter are discussed in the retrieved text, the answer does not show how these discussions are grounded in the actual pond experiment or seasonal observation.",
+          "Vague and unanchored: 'The most explicit seasonal grounding of his actual experiment comes somewhat further into the chapter'—no chapter name, section title, or specific location is provided; this fails the gold rubric expectation to identify the section ('Where I Lived…' and nearby pond-life narration).",
+          "Retrieval gap: The retrieved excerpts do not contain the concrete seasonal narrative the question asks for. The answer discusses content not visible in ALLOWED_EVIDENCE, suggesting either hallucination or reliance on outside knowledge."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q01",
+      "questionOrdinal": 1,
+      "condition": "passage_only",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2057,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 554,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.0500000000000003,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 5,
+          "answer_completeness": 3,
+          "claim_precision": 3
+        },
+        "rationales": {
+          "faithfulness": "The core rhetorical analysis of the double negative and its escalation is sound and grounded in the anchor. However, the assistant invents specific textual support ('Thoreau's examples show people exhausting themselves in trade,' 'the luxuriously rich are unnaturally hot'—cooked') that does not appear in ALLOWED_EVIDENCE, violating the passage_only condition.",
+          "chunk_relevance": "No retrieval was performed; the anchor passage alone is sufficient for the question. The anchor directly contains the phrase under analysis, so no additional context was needed.",
+          "answer_completeness": "The answer addresses the rhetorical effect of the doubled negation and provides two of the expected gold rubric points (escalation from unnecessary to harmful, and the syntactic slowdown/pivot structure). However, it lacks explicit engagement with 'hindrances to the elevation of mankind'—the moral/philosophical stakes of the claim—which is a secondary but fair sub-part.",
+          "claim_precision": "The analysis is reasonably specific about the mechanics of the double negative and its corrective tone, but the invented supporting details about examples and the 'unnaturally hot' image weaken precision and create the appearance of closer textual grounding than is actually present."
+        },
+        "violations": [
+          "Unsupported inventions: The assistant claims 'Thoreau's examples show people exhausting themselves in trade across the globe' and describes 'the luxuriously rich are unnaturally hot'—*cooked*. These are not in the anchor passage and no retrieved evidence was provided. Under passage_only condition, this is a clear hallucination of textual support.",
+          "Incomplete secondary element: The answer does not explicitly unpack what 'hindrances to the elevation of mankind' means or how the rhetorical effect serves that specific moral claim, which is central to understanding the stakes of the negations."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q01",
+      "questionOrdinal": 1,
+      "condition": "smart_scan_tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2047,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 445,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "All substantive claims are directly grounded in the anchor passage. The answer faithfully describes the syntax ('not only not indispensable, but positive hindrances') and correctly interprets the doubled negation leading to the escalation to 'hindrances,' without any invented quotations or unsupported biographical claims.",
+          "chunk_relevance": "No retrieval was needed for this passage-local rhetorical analysis; the anchor alone is sufficient. The condition allows smart_scan_tools but the question is purely about the syntax and effect within the given sentence, making retrieval unnecessary and the absence of retrieved excerpts appropriate.",
+          "answer_completeness": "The answer addresses both gold rubric points: it explains how the doubled negation escalates from 'not necessary' to 'actively harmful' and it describes the syntactic slowing and pivoting that creates moral impact. It also adds the nuanced insight about the precision and layering of force (unnecessary vs. obstructive), which enriches the core analysis.",
+          "claim_precision": "The analysis is sharply textual and specific: it ties observations directly to the grammar ('double negative forces you to parse'), the logical progression ('from mere absence of value to active damage'), and the intended effect ('the inevitable conclusion of careful logical unfolding'). Language like 'lawyer's precision deployed for moral effect' is grounded in the syntactic behavior demonstrated in the passage."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q01",
+      "questionOrdinal": 1,
+      "condition": "tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2597,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 398,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The answer is entirely grounded in the anchor passage and retrieved context. The quoted phrase 'not only not indispensable, but positive hindrances' is directly cited from the anchor, and the interpretation—escalation from necessity to harm—is explicitly supported by the textual structure presented.",
+          "chunk_relevance": "The retrieved chunks provide rich contextual support for understanding Thoreau's broader argument about simplicity, philosophy, and the corrupting effects of luxury, reinforcing the claim that the negation syntax enacts his philosophical stance on comfort and human elevation.",
+          "answer_completeness": "The answer fully addresses both gold rubric points: the escalation from 'not necessary' to 'actively harmful' is clearly articulated, and the syntactic effect (slowing the reader, pivoting to moral verdict) is explained with attention to how structure mirrors argument.",
+          "claim_precision": "The analysis is sharply specific, grounded in precise textual features (the doubled negation, the logical leap, the syntactic mirroring). Claims are tied directly to quoted language and avoid generic abstraction; the observation that 'the negations are themselves ascetic' is a precise, earned insight."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q07",
+      "questionOrdinal": 7,
+      "condition": "passage_only",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1842,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 372,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every item listed in the assistant answer is directly present in the anchor passage with identical or minimal paraphrase: knife, axe, spade, wheelbarrow for practical work; lamplight, stationery, and books for study. No hallucinations or unsupported claims.",
+          "chunk_relevance": "The anchor passage directly contains the entire answer to the prompt; no retrieval was needed, and the condition is passage_only, so this full alignment merits a perfect score.",
+          "answer_completeness": "The answer addresses the core of the prompt—identifying the concrete implements and studious extras ranked after necessaries—and covers all items explicitly listed in the anchor passage without omission or digression.",
+          "claim_precision": "The answer is sharply precise, maintaining the textual distinction between practical implements (knife, axe, spade, wheelbarrow) and studious additions (lamplight, stationery, access to books), with minimal interpretive gloss ('for practical work' and 'for those inclined to study') that matches the anchor's structure."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q07",
+      "questionOrdinal": 7,
+      "condition": "smart_scan_tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1906,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 394,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly grounded in the anchor passage: the four implements (knife, axe, spade, wheelbarrow) and three studious extras (lamplight, stationery, access to books) are all explicitly listed and accurately paraphrased. The interpretation that these rank 'just below true necessaries' is well-supported by the text's phrasing 'rank next to necessaries.'",
+          "chunk_relevance": "The anchor passage alone fully addresses the question; no additional retrieval was needed or provided. The passage is entirely on-topic and yields all requested information in a single, comprehensive sentence.",
+          "answer_completeness": "The answer addresses all parts of the prompt: it lists the concrete implements, identifies the studious extras, and contextualizes their ranking relative to necessaries, exactly as the gold rubric expects.",
+          "claim_precision": "The response matches the exact grain of the source text, directly mirroring Thoreau's language and structure while adding a brief interpretive gloss ('suggesting that while not strictly essential...') that remains tightly tied to the textual claim about 'trifling cost' and intellectual work."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q07",
+      "questionOrdinal": 7,
+      "condition": "tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2479,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 346,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly supported by the anchor passage: the implements (knife, axe, spade, wheelbarrow) and studious extras (lamplight, stationery, access to a few books) are quoted verbatim, and their ranking 'next to necessaries' is accurately represented.",
+          "chunk_relevance": "The retrieved chunk contains the full anchor passage in context, providing the complete paragraph from which the question draws. It is maximally relevant and directly answers the prompt.",
+          "answer_completeness": "The answer fully addresses the prompt by listing all concrete implements and studious extras mentioned, specifying their ranking, and noting their cost accessibility—covering all expected gold rubric points.",
+          "claim_precision": "The answer is sharply precise, directly quoting and paraphrasing the exact implements and extras from the text without vague generalization, and correctly anchors them to the hierarchical ranking ('rank just after necessaries')."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q02",
+      "questionOrdinal": 2,
+      "condition": "passage_only",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1998,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 566,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.8000000000000003,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 5,
+          "answer_completeness": 2,
+          "claim_precision": 3
+        },
+        "rationales": {
+          "faithfulness": "The assistant correctly identifies the layered natural images and the comparison structure, but makes a critical error by claiming the 'poor man' is 'not identified yet' when the anchor passage explicitly states 'The poor man is wont to complain that this is'—he is identified right there as the one complaining about coldness, not a future introduction.",
+          "chunk_relevance": "The anchor passage directly contains both elements of the question: the layered shelter imagery (birds' nests, mole's burrow, 'shelter within a shelter') and the introduction of the 'poor man' complaining of cold.",
+          "answer_completeness": "The answer addresses the layered image well, but fundamentally fails the second part of the prompt by declining to identify the 'poor man' when the passage explicitly introduces him as the figure complaining 'this is a cold world.' The answer hedges and speculates rather than answering what is directly present.",
+          "claim_precision": "The analysis of the shelter-stacking metaphor is reasonably precise and well-grounded, but the evasion on the 'poor man's' identity undermines precision by introducing unnecessary speculation about 'what follows' when the gold rubric and the anchor itself make clear he is the complainer introduced in that very passage."
+        },
+        "violations": [
+          "Unsupported hedging: The assistant claims 'The poor man is not identified yet in the passage,' directly contradicting the anchor, which states 'The poor man is wont to complain that this is [a cold world].' The poor man is identified in the anchor as the complainer about coldness.",
+          "Incomplete response: The second part of the prompt asks 'who is the poor man complaining of cold?' The answer should identify him as the figure Thoreau introduces as complaining 'this is a cold world'—a complaint about human dependence on elaborate shelter compared to animals. The assistant evades this."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q02",
+      "questionOrdinal": 2,
+      "condition": "smart_scan_tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2945,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 490,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.8,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 4,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "All substantive claims are rigorously grounded in the anchor passage and retrieved chunks. The assistant correctly identifies the 'poor man' as a generalized figure complaining about cold (supported by anchor and Chunk 2), accurately describes the layered image of birds' nests, mole burrows, and 'shelter within a shelter,' and ties interpretation directly to specific phrases from the text.",
+          "chunk_relevance": "Retrieved chunks are highly relevant, particularly Chunk 2, which contextualizes the 'poor man's' complaint about cold within Thoreau's broader discussion of warmth, necessity, and human comfort-seeking. Chunk 1 provides useful background on animal heat and shelter's role in retaining it, though it is somewhat tangential to the specific image in question.",
+          "answer_completeness": "The answer fully addresses both parts of the prompt: it identifies the layered image (birds, mole, shelter-within-shelter) and clarifies who the 'poor man' is (humanity in general, not a specific character). It also adds interpretive depth by explaining the purpose and effect of this image, fulfilling the implicit 'what does this achieve?' dimension of the question.",
+          "claim_precision": "The answer is sharply precise, grounding each claim in specific textual phrases ('robbing the nests and breasts of birds,' 'shelter within a shelter,' 'the mole has its bed of grass and leaves'). The interpretation—that the image shows successive layers of insulation and critiques elaborate comfort-seeking—is tightly tied to the language and logic of the passage."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q02",
+      "questionOrdinal": 2,
+      "condition": "tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3133,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 494,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.8,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 4,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "All substantive claims are grounded in the anchor passage and retrieved chunks. The layered shelter image (birds' nests, moles, grass/leaves) is directly quoted; the 'poor man' complaining 'this is a cold world' is anchored in the passage; Thoreau's philosophy about heat, hardiness (Tierra del Fuego, New Holland), and critique of luxury is well-supported by the retrieved contextual excerpts.",
+          "chunk_relevance": "Retrieved chunks are tightly relevant, providing essential context about Thoreau's theory of animal heat, the unnecessary luxuries of civilization, and the examples of hardy peoples that the assistant cites. One minor note: chunks emphasize general heat philosophy more than the specific animal imagery, but this is appropriate context and not noisy filler.",
+          "answer_completeness": "The answer fully addresses both gold rubric points: (1) it identifies the stacked animal/natural images with specific detail (birds robbing nests, moles with grass/leaves, 'shelter within a shelter'); (2) it correctly identifies the 'poor man' as the complaining figure from the anchor excerpt and traces his role in Thoreau's argument. The response also contextualizes why Thoreau introduces this figure, enriching the answer without digression.",
+          "claim_precision": "The answer is sharply precise throughout: it quotes directly ('shelter within a shelter'), ties interpretations to textual moves (the 'pivot to critique'), and anchors broader philosophical claims to specific passages (naked peoples, habit vs. nature, voluntary poverty). No vague boilerplate or overreach."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q08",
+      "questionOrdinal": 8,
+      "condition": "passage_only",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1912,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 506,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.3000000000000003,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 5,
+          "answer_completeness": 4,
+          "claim_precision": 3
+        },
+        "rationales": {
+          "faithfulness": "The assistant correctly identifies the summer/winter contrast and accurately paraphrases the anchor passage about fuel and the sun. However, the quoted material ('the poor man is wont to complain that this is a cold world' and 'The summer, in some climates, makes possible to man a sort of Elysian life') is not present in ALLOWED_EVIDENCE and appears to be invented or drawn from elsewhere in the text without retrieval support.",
+          "chunk_relevance": "The anchor passage is directly on-topic and sufficient for answering the question about the seasonal contrast framing the 'fuel is unnecessary' claim.",
+          "answer_completeness": "The response identifies the summer/winter contrast and explains its implications for necessity and luxury. It adequately addresses the core task, though it could have been more explicit about grounding the interpretation solely in the anchor text given the passage_only condition.",
+          "claim_precision": "The answer makes reasonable inferences about the winter/summer dichotomy and its significance, but relies on unsupported quotations that weaken its precision and introduce uncertainty about what is actually in the text versus paraphrased or misremembered."
+        },
+        "violations": [
+          "Unsupported quotations: 'the poor man is wont to complain that this is a cold world' and 'The summer, in some climates, makes possible to man a sort of Elysian life' are presented as direct text but do not appear in ALLOWED_EVIDENCE. Under passage_only condition with no retrieval, these claims require anchor support.",
+          "The answer invents textual evidence not present in the provided anchor passage, which is a significant faithfulness failure."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q08",
+      "questionOrdinal": 8,
+      "condition": "smart_scan_tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2407,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 354,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "All claims are directly supported by the retrieved evidence. The assistant correctly quotes the 'Elysian life' phrase and accurately paraphrases the winter/summer contrast and the transition from fuel necessity to solar heat.",
+          "chunk_relevance": "The retrieved chunk is extremely relevant, containing both the anchor passage and the immediately preceding seasonal contrast ('The summer, in some climates, makes possible to man a sort of Elysian life'), making it perfectly fitted to answer the question.",
+          "answer_completeness": "The answer fully addresses the prompt by identifying the winter/summer contrast, quoting the specific preceding claim about summer's Elysian ease, and explaining how it contrasts with the winter necessity for fuel and warmth.",
+          "claim_precision": "The answer is sharply precise, grounding the seasonal contrast in exact textual phrases ('grand necessity,' 'Elysian life,' 'the sun is his fire') and clearly articulating the logical relationship between seasons and necessity."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q08",
+      "questionOrdinal": 8,
+      "condition": "tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2511,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 376,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every claim is directly grounded in the retrieved excerpts: the assistant quotes 'the grand necessity, then, for our bodies, is to keep warm' and 'The summer, in some climates, makes possible to man a sort of Elysian life' verbatim from the tool output, establishing the cold/warmth and winter/summer contrast.",
+          "chunk_relevance": "The retrieved chunk is perfectly targeted—it contains the exact passage setting up the seasonal contrast (cold necessity vs. Elysian summer ease) that immediately precedes the anchor passage about fuel being unnecessary.",
+          "answer_completeness": "The response fully answers the question by identifying the specific seasonal contrast (winter's cold necessity vs. summer's Elysian ease) that sets up the fuel-is-unnecessary claim, with proper textual anchoring and logical flow.",
+          "claim_precision": "The answer is sharp and textually specific, using direct quotations from the evidence to show exactly how Thoreau moves from establishing winter hardship and the need for warmth to celebrating summer's ease where fuel becomes unnecessary."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q04",
+      "questionOrdinal": 4,
+      "condition": "passage_only",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2116,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 452,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly grounded in the anchor passage: the root/shoot distinction, the contrast between humble esculents (cut down, kept for root) and nobler plants (valued for fruit in air and light), and the rhetorical question about man's rooting as prerequisite for rising. The answer's interpretation of 'subsistence vs. flourishing' is explicitly tied to the passage's language.",
+          "chunk_relevance": "No retrieval was performed, which is appropriate for a passage_only condition where the anchor passage fully contains the answer. The anchor is densely relevant to the question—it *is* the seed/root metaphor doing the work of distinction requested.",
+          "answer_completeness": "The answer addresses both gold rubric points: it explains the contrast between 'upward growth toward fruit/light vs root-bound biennials kept for the root,' and it shows how the plant figure distinguishes two ways of living (elevation via flourishing vs stunted cultivation). It also captures the metaphorical logic linking root-work to human necessity and flourishing to purpose.",
+          "claim_precision": "The answer is sharply specific, anchoring each interpretive claim to exact phrases from the passage ('cut down at top,' 'fruit...in the air and light, far from the ground,' 'rise in the same proportion into the heavens'). The distinction between phase and destination is precisely warranted by the passage's structure."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q04",
+      "questionOrdinal": 4,
+      "condition": "smart_scan_tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2212,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 423,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly grounded in the anchor passage. The answer traces the botanical metaphor precisely as Thoreau develops it: roots as foundation vs. upward growth, 'humbler esculents' kept for root vs. 'nobler plants' valued for fruit in air and light, the explicit rhetorical question about rooting to rise, and the cutting down of humble plants to perfect roots.",
+          "chunk_relevance": "No retrieval was needed; the anchor passage is self-contained and complete for this question. The passage itself articulates the full metaphorical distinction, making external excerpts unnecessary.",
+          "answer_completeness": "The answer addresses both gold rubric points: it clearly contrasts the two vegetal destinies (upward growth toward fruit/light vs. root-bound biennials) and explains how the plant figure distinguishes ways of living (elevation vs. stunted cultivation). It also contextualizes the metaphor's purpose—distinguishing noble from humble existence.",
+          "claim_precision": "The analysis is sharply tied to specific phrases and structural moves in the text. The answer avoids vagueness by anchoring each interpretive claim ('material foundation as launching pad,' 'rootedness with completion') to precise textual passages and Thoreau's explicit rhetorical question."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q04",
+      "questionOrdinal": 4,
+      "condition": "tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3173,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 585,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.2,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 1,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is anchored directly in the anchor passage: the citations accurately capture Thoreau's contrast between humble esculents (cultivated only for roots, cut down at top) and noble plants (valued for fruit in air and light). The interpretation of 'rooting' as an endpoint versus a platform is well-supported by the rhetorical question 'Why has man rooted himself thus firmly in the earth, but that he may rise in the same proportion into the heavens above?'",
+          "chunk_relevance": "Retrieved chunks 1 and 2 are entirely off-topic. They discuss luxury, philosophy, labor, and ambition in general terms, with no connection to the seed/root metaphor or the plant-destiny contrast central to the question. Since the anchor passage alone contains the complete answer, the retrieval adds no value and constitutes noise.",
+          "answer_completeness": "The answer fully addresses both expected points: it contrasts the two vegetal destinies (root-bound subsistence vs. upward fruit-bearing growth) and explicitly explains how the plant figure distinguishes two ways of living (moral arrest versus transcendent aspiration). The interpretation of 'rooting' as a foundation rather than a terminal destination is also developed.",
+          "claim_precision": "Precise and specific language throughout: 'root-perfection,' 'humble esculents consumed,' 'arrested growth,' 'material security as endpoint vs. platform.' Each interpretive move is tethered to specific phrases from the text with accurate citations. The reading of the metaphor as moral-philosophical critique is sharp and supported by the rhetoric of the passage."
+        },
+        "violations": [
+          "Retrieval problem: Retrieved chunks 1 and 2 are substantially irrelevant to the question about the seed/root metaphor. They discuss philosophy, luxury, and labor philosophy but contain no reference to plants, seeds, roots, or the metaphorical distinction asked about. The retrieval tool was available but returned off-topic material; this is a retrieval failure rather than an answer failure."
+        ]
+      }
+    },
+    {
+      "stableKey": "walden_q05",
+      "questionOrdinal": 5,
+      "condition": "passage_only",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2056,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 324,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly anchored in the passage: the two groups are precisely identified by their textual markers, and the characterization of each group's disposition is grounded in the quoted language.",
+          "chunk_relevance": "The anchor passage contains the full answer to the question; no retrieval was needed, and the passage_only condition is satisfied with the user's original selection.",
+          "answer_completeness": "The answer identifies both bracketed groups by their exact defining traits, notes the speaker's self-positioning, and explains why they are excluded from his main address—fully addressing the prompt.",
+          "claim_precision": "The answer quotes directly from the text ('strong and valiant natures,' 'fondness of lovers') and ties interpretation tightly to the speaker's rhetorical structure and stated self-inclusion, with no vague generalizations."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q05",
+      "questionOrdinal": 5,
+      "condition": "smart_scan_tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2180,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 363,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "All substantive claims are precisely grounded in the anchor passage. The assistant correctly identifies and quotes both long-dash-bracketed groups verbatim, and the interpretation of their characteristics is directly supported by the text.",
+          "chunk_relevance": "The anchor passage contains the complete answer; no retrieval was needed. The condition is passage_only and the retrieved excerpts field is empty, which is appropriate since all evidence is present in the anchor.",
+          "answer_completeness": "The answer fully addresses the question by identifying both groups bracketed by long dashes before the phrase 'mainly to the mass of men.' It also contextualizes the third exclusion and explains the rhetorical purpose, which enriches understanding without overshooting the core prompt.",
+          "claim_precision": "The answer is sharply precise, quoting directly from the text and matching the grain of Thoreau's language. Interpretive claims ('rare, exceptional people,' 'already satisfied with the status quo') are tightly anchored to specific phrases in the passage."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "walden_q05",
+      "questionOrdinal": 5,
+      "condition": "tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2613,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 352,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.8,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 4,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "All substantive claims are directly grounded in the anchor passage. The two bracketed groups are quoted accurately, and the assistant correctly characterizes why Thoreau excludes them based on explicit textual evidence.",
+          "chunk_relevance": "The anchor passage contains the full answer to the question. Retrieved chunks provide useful downstream context about the mass of men Thoreau addresses, though they are not strictly necessary for answering the direct question about the two bracketed groups.",
+          "answer_completeness": "The answer fully addresses the prompt by identifying both bracketed groups with precise quotations and explaining their significance in relation to the 'mass of men' statement. The assistant also includes the relevant detail that Thoreau counts himself partly in the second group.",
+          "claim_precision": "Highly precise with sharp textual grounding. The answer quotes directly from the passage, preserves the exact phrasing Thoreau uses, and connects the bracketed exclusions logically to the intended audience of the address."
+        },
+        "violations": []
+      }
+    }
+  ],
+  "incomplete": false
+}

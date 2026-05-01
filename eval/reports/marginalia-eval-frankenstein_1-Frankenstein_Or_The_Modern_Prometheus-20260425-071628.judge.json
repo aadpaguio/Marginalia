@@ -1,0 +1,1951 @@
+{
+  "csv": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.csv",
+  "bookId": "frankenstein",
+  "setName": "frankenstein_1",
+  "rubricPath": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/config/judge_rubric.json",
+  "model": "claude-haiku-4-5-20251001",
+  "rowsJudged": 45,
+  "judgments": [
+    {
+      "stableKey": "frankenstein_q08",
+      "questionOrdinal": 8,
+      "condition": "passage_only",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1962,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 504,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.85,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 5,
+          "answer_completeness": 3,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant cites a quotation ('She is to be tried to-day') that does not appear anywhere in the ALLOWED_EVIDENCE. The anchor passage is Elizabeth's speech, which mentions Justine's fate but contains no such quoted text. The citation is fabricated.",
+          "chunk_relevance": "No tool excerpts were retrieved, which is appropriate given the condition (passage_only). The anchor passage itself is directly relevant to the question.",
+          "answer_completeness": "The answer identifies the trial and names Justine correctly, matching the gold rubric expectation that 'Justine's trial is set for that day.' However, it does not explicitly confirm that this trial is for William's murder, which is part of the expected gold rubric.",
+          "claim_precision": "The answer correctly identifies what legal proceeding is scheduled (Justine's trial), but the unsupported quotation and attribution to 'Your father' (Ernest) undermines precision. The anchor text alone does not provide the 'to-day' timing or an explicit statement from Ernest."
+        },
+        "violations": [
+          "Fabricated quotation: The assistant presents 'She is to be tried to-day' with a citation anchor, but this exact phrase does not appear in the ALLOWED_EVIDENCE (the anchor passage). The citation is false.",
+          "Misattribution: The answer attributes the trial-timing statement to 'Your father' (Ernest), but no such statement from Ernest appears in the ALLOWED_EVIDENCE provided.",
+          "Missing textual support for timing: The anchor passage does not state when the trial occurs; the assistant supplies the 'to-day' detail without evidence."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q08",
+      "questionOrdinal": 8,
+      "condition": "smart_scan_tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2478,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 355,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The answer is directly supported by the retrieved excerpt. Victor's father explicitly states 'She is to be tried to-day,' and Elizabeth's conditional about joy ('If she is condemned, I never shall know joy more') is preserved in the anchor passage.",
+          "chunk_relevance": "The retrieved tool excerpt is precisely on-target: it contains Victor's father's statement about the trial scheduled 'to-day' and immediately precedes Elizabeth's speech in the anchor passage, establishing the temporal and contextual link the question asks for.",
+          "answer_completeness": "The answer fully addresses both parts of the prompt: it identifies the legal proceeding (Justine's trial) and confirms it is scheduled for the same day as Elizabeth's speech, with specific textual support for both claims.",
+          "claim_precision": "The answer is sharp and specific, quoting directly from Victor's father ('She is to be tried to-day') and connecting it precisely to Elizabeth's conditional statement about joy in the anchor passage."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q08",
+      "questionOrdinal": 8,
+      "condition": "tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2754,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 395,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "All substantive claims are directly grounded in ALLOWED_EVIDENCE. The assistant correctly identifies Justine's trial as the legal proceeding and supports this with two explicit textual references (Ernest's and Victor's father's statements that the trial is 'to-day'), and correctly links it to Elizabeth's conditional about joy in the anchor passage.",
+          "chunk_relevance": "Retrieved excerpts are tightly focused and essential to answering the question. Chunk 1 provides Ernest's account and the father's confirmation that the trial is scheduled for that day, which directly addresses the prompt's request for 'Ernest's account' of the legal proceeding.",
+          "answer_completeness": "The response fully addresses all parts of the prompt: it identifies the legal proceeding (Justine's trial for William's murder), locates it in Ernest's account, confirms it is scheduled for the same day as Elizabeth's speech, and makes the temporal connection explicit.",
+          "claim_precision": "The answer is sharp and specific, anchoring claims to exact phrases ('she will be tried to-day') and clearly distinguishing between Ernest's report and Victor's father's confirmation, demonstrating precise textual engagement."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q02",
+      "questionOrdinal": 2,
+      "condition": "passage_only",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2012,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 531,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.65,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 3,
+          "chunk_relevance": 5,
+          "answer_completeness": 4,
+          "claim_precision": 3
+        },
+        "rationales": {
+          "faithfulness": "The answer correctly cites and interprets the core contrast from the anchor passage—emulation vs. having 'an end placed in view' that excites ardour. However, it ventures into unsupported interpretation (e.g., 'Victor describes having... an appetite is his true engine') that invokes knowledge beyond the anchor and goes beyond what the passage explicitly states about motivation.",
+          "chunk_relevance": "The anchor passage is directly and tightly relevant to the question; no retrieval was needed, and no extraneous material was provided.",
+          "answer_completeness": "The answer covers both elements of the contrast (emulation dismissed; internal purpose-driven method praised) and addresses the 'method' aspect. A minor gap: it does not explicitly flag Victor's reference to the studies never being 'forced,' which is part of the evidence for why the method worked.",
+          "claim_precision": "The answer offers good interpretive language ('external and relative' vs. 'internal and absolute') that clarifies the distinction, but then overreaches by ascribing motivations ('his true engine,' 'appetite') that are interpretive leaps not grounded in the anchor passage alone. The final sentence about 'what you've already learned' also introduces outside knowledge."
+        },
+        "violations": [
+          "The final sentence ('That appetite is his true engine, not the desire to beat a schoolmate at it') and the phrase about Victor investigating facts as a 'secret' he desires to discover are not present in the anchor passage and rely on knowledge assumed from elsewhere in the book, violating the passage_only condition.",
+          "The statement about Victor respecting 'his own curiosity' rather than 'imposing external competition' is interpretive and slightly overextends the anchor's claim that studies were 'never forced.'"
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q02",
+      "questionOrdinal": 2,
+      "condition": "smart_scan_tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3007,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 666,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.65,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 4,
+          "answer_completeness": 3,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The answer misattributes a key quotation to Victor about emulation, pulling language from the chunk about Elizabeth's drawing lessons ('not incited to apply herself to drawing, that her companions might not outstrip her') and presenting it as Victor's direct statement about the emulation/motivation contrast. The anchor passage contains Victor's explicit contrast, but the assistant conflates it with contextual material about Elizabeth's upbringing from the retrieved chunks.",
+          "chunk_relevance": "The retrieved excerpts provide useful surrounding context about the family's educational philosophy and Victor's upbringing, and they do contain the example about Elizabeth and drawing that the assistant cites. However, they are not the source of Victor's direct statement about emulation vs. his actual method—that contrast lives in the anchor passage alone.",
+          "answer_completeness": "The answer addresses the core contrast but does not fully ground it in Victor's own words from the anchor. It also does not clearly state that Victor says 'an end placed in view' produced 'ardour,' which is the gold rubric's first key point. The answer gestures at this idea ('an actual end in view') but does not anchor it sharply to the anchor text.",
+          "claim_precision": "The answer offers interpretive elaboration ('external and comparative' vs. 'internal and purposeful,' Romantic philosophy) that goes beyond what the anchor passage explicitly supports. While the interpretation is reasonable, it is presented with more certainty than the evidence warrants, and the key quotations are either paraphrased loosely or misattributed."
+        },
+        "violations": [
+          "Misattribution: The quotation about Elizabeth not being 'incited to apply herself to drawing, that her companions might not outstrip her' is from the retrieved chunk (Chunk 2), not a statement by Victor in the anchor about his own contrast. The assistant presents it as if Victor is directly describing emulation in this phrase, but Victor's actual contrast between emulation and his method is in the anchor passage alone.",
+          "Incomplete grounding: The anchor passage explicitly states 'by some means we always had an end placed in view, which excited us to ardour in the prosecution of them,' but the assistant does not directly quote or clearly anchor to this 'ardour' language, which is central to the gold rubric.",
+          "Overreach: The final sentence about Romantic philosophy is speculation not grounded in the anchor or retrieved material."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q02",
+      "questionOrdinal": 2,
+      "condition": "tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2817,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 382,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every claim is directly grounded in the anchor passage and retrieved chunk. The assistant accurately quotes Victor's exact contrast between emulation and intrinsic motivation, and the Elizabeth example is precisely cited from the text.",
+          "chunk_relevance": "The retrieved chunk contains the entire anchor passage plus substantial contextual material (characterizations of Elizabeth, Henry Clerval, and the household atmosphere), all of which supports and enriches understanding of Victor's educational philosophy.",
+          "answer_completeness": "The answer fully addresses both gold rubric points: (1) the intrinsic motivation via 'an end placed in view, which excited us to ardour,' and (2) the explicit contrast with emulation. The Elizabeth drawing example directly fulfills the expected demonstration of how Victor distinguished the two methods.",
+          "claim_precision": "The analysis is sharply precise, distinguishing external/comparative emulation from intrinsic/personal motivation with textual hooks at each step. The characterization of emulation as 'external and comparative' and the alternative as 'rooted in genuine interest or personal affection' directly maps to the passage's examples and language."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q12",
+      "questionOrdinal": 12,
+      "condition": "passage_only",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2077,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 497,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.8,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 1,
+          "claim_precision": 4
+        },
+        "rationales": {
+          "faithfulness": "The assistant makes no unsupported factual claims; it correctly acknowledges that the anchor passage does not contain the later admission about destroying the second being and appropriately declines to invent details.",
+          "chunk_relevance": "No tool excerpts were retrieved, but the anchor passage itself is directly relevant to the November night scene mentioned in the question. The retrieval_problem flag reflects insufficient evidence for the cross-section question, not irrelevance of what exists.",
+          "answer_completeness": "The question explicitly asks for two core elements: (1) where Victor admits destroying the second being, and (2) why that matters to the plot. The assistant addresses neither, correctly noting the evidence is absent, but therefore fails to complete the prompt's required task.",
+          "claim_precision": "The assistant's observation about the gap between Victor's expected triumph and his actual visceral dread is textually grounded in the anchor passage and is a precise, nuanced reading of tone and affect."
+        },
+        "violations": [
+          "No retrieval was performed despite a cross-section question that explicitly requires evidence from 'much later' in the book (the Orkney sequence). The condition is passage_only, but the question itself demands book-wide factual information (where and why Victor destroys the female creature). The assistant correctly refuses to invent this information, but no attempt was made to retrieve the necessary passages. Given that tools were available, retrieval_problem = 1 is appropriate.",
+          "The answer does not address the main task: identifying the location of Victor's admission or explaining its plot consequences (retaliation, Clerval, wedding night). incomplete_response = 1."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q12",
+      "questionOrdinal": 12,
+      "condition": "smart_scan_tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3207,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 517,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is anchored in the retrieved excerpts: the Orkney island setting, the crisis of conscience about breeding a race of demons, the destruction of the unfinished female, the creature witnessing from the window, and the vow to return on the wedding night are all explicitly stated in Chunk 4. The causal chain (destruction → revenge → Clerval and wedding-night deaths) is directly supported.",
+          "chunk_relevance": "The retrieved chunks are tightly targeted: Chunk 3 establishes Victor's arrival on the Orkney island and his isolation to complete the female; Chunk 4 provides the exact sequence of destruction and the creature's confrontation and vow. Chunks 1–2 contextualize the downstream consequences (Clerval's death, the wedding-night threat), reinforcing the plot trajectory the answer traces.",
+          "answer_completeness": "The answer fully addresses both gold rubric points: it locates the Orkney sequence where Victor destroys the unfinished female, and it explains the plot consequences in detail—the breach of the creature's only contract, the transformation of sorrow into murderous intent, and the cascade of deaths (Clerval, Elizabeth, Victor) that follow. The answer also contextualizes why the destruction matters (the creature's rage and the vow).",
+          "claim_precision": "The answer is sharply specific: it names the island location, identifies the exact trigger (fear of breeding a race of demons), describes the creature's witnessing of the act, and traces the precise causal pathway from destruction to the wedding-night vow to the subsequent retaliation. Language mirrors the retrieved text ('demons,' 'wedding night,' 'creature's rage')."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q12",
+      "questionOrdinal": 12,
+      "condition": "tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 7441,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 619,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.7999999999999998,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 2,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant makes multiple specific plot claims (Chapter IX location, the bargain about South America, the wedding-night threat, murders of Clerval/Elizabeth/father) that are not present in or supported by ALLOWED_EVIDENCE. The citation provided is a paraphrase with no anchor quotes and no retrieved text to ground it.",
+          "chunk_relevance": "Retrieved chunks are entirely about Victor's immediate horror after the first creature's animation and his subsequent fever—they contain nothing about the Orkney lab, the female creature, its destruction, or the creature's retaliation. They are off-topic for the question asked.",
+          "answer_completeness": "The answer identifies the correct plot event (destruction of female before completion) and attempts to explain consequences, but without textual evidence from ALLOWED_EVIDENCE, it reads as unsupported synthesis rather than grounded analysis. The assistant acknowledges the retrieval gap but proceeds to answer from outside the evidence.",
+          "claim_precision": "Claims are specific (Chapter IX, bargain, wedding night, named victims) but lack any anchor in the provided material. The answer conflates generic plot knowledge with textual grounding, making precision claims that exceed evidence."
+        },
+        "violations": [
+          "Unsupported claim: 'Chapter IX' location not confirmed in ALLOWED_EVIDENCE.",
+          "Unsupported claim: The specific bargain ('create a female companion, and he would withdraw to South America') is not in ALLOWED_EVIDENCE.",
+          "Unsupported claim: The creature's 'wedding night' threat is referenced but not quoted or located in ALLOWED_EVIDENCE.",
+          "Unsupported claim: The sequence of murders (Clerval, Elizabeth, father) is asserted but not substantiated by any retrieved text.",
+          "Retrieval failure: No tool output contains the Orkney scene, female creature destruction, or the creature's retaliation plan. The retrieved chunks focus on the first creature's animation and Victor's fever, not the second being.",
+          "Citation artifact: The HTML comment cite tag references anchor text not present in ALLOWED_EVIDENCE ('I was possessed by a maddening rage...' does not appear in any chunk)."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q13",
+      "questionOrdinal": 13,
+      "condition": "passage_only",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2143,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 619,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.35,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 5,
+          "answer_completeness": 1,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant explicitly states 'Without having read the trial scene itself, I can't tell you precisely how it unfolds,' then proceeds to speculate about Victor's role without anchoring to any textual evidence. The answer makes conditional claims ('if the hero's silence…reveals a failure') that are not grounded in the trial passage, violating the passage_only condition.",
+          "chunk_relevance": "The anchor passage (the preface) is directly relevant to the question about how the fiction frames 'domestic affection' and 'universal virtue.' However, no retrieved excerpts contain the actual trial scene or Victor's actions during it, which is essential to answer the question fully.",
+          "answer_completeness": "The answer fails to address the core task: it does not explain how Victor's treatment of Justine's trial actually complicates the preface's claim. Instead, it asks the user for clarification and admits it cannot answer without the trial passage. The gold rubric expects analysis of Victor's failure to testify and its connection to domestic virtue's collapse, neither of which is provided.",
+          "claim_precision": "The response is highly speculative and hedged throughout ('your question hints that,' 'if the hero's silence,' 'I can't tell you precisely'). It avoids making specific claims about what actually happens, reducing to generic observations about the preface's disclaimer rather than precise literary analysis of the thematic contradiction."
+        },
+        "violations": [
+          "Assistant admits it has not read or retrieved the trial scene and cannot answer the question directly. Under passage_only condition with no retrieved tool excerpts of the trial, the answer should either decline to answer or note the retrieval gap clearly—not proceed as if providing analysis.",
+          "No textual evidence supports claims about Victor's actions during Justine's trial. The assistant frames possibilities rather than grounding answers in evidence.",
+          "The answer pivots to a meta-question ('Does the trial scene show…?') rather than answering the user's question with available evidence.",
+          "Gold rubric explicitly expects discussion of 'Victor's failure to testify' and 'Justine's conviction'—factual outcomes not present in ALLOWED_EVIDENCE or the assistant's answer."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q13",
+      "questionOrdinal": 13,
+      "condition": "smart_scan_tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3144,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 584,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.85,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 4,
+          "chunk_relevance": 4,
+          "answer_completeness": 1,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant's framing of the issue (Victor's inaction during Justine's trial) is grounded in Chunk 3, which confirms Victor knew the creature was guilty but remained silent, leading to Justine's conviction. The characterization is accurate to the evidence.",
+          "chunk_relevance": "Retrieved chunks directly address the preface's stated aims (Chunks 1–2) and the Justine trial sequence (Chunks 3–4), providing strong contextual support for the question. Minor noise from plot summary is reasonable for book-level retrieval.",
+          "answer_completeness": "The assistant does not answer the question at all. Instead, it asks permission to address the topic, treating the user's straightforward literary question as a spoiler concern that requires consent. This completely fails to engage the prompt, which explicitly requests thematic analysis of how the trial complicates the preface.",
+          "claim_precision": "The assistant's statement is vague and tentative ('reveals how Victor's inaction...undermines') rather than precise. It frames the answer as a conditional offer rather than delivering the analysis the rubric expects: specific connection between domestic affection rhetoric and moral cowardice."
+        },
+        "violations": [
+          "CRITICAL: Assistant does not answer the question. Instead of providing literary analysis, it asks meta-permission ('are you comfortable with me addressing a later passage'). This is a conversational deflection, not a response.",
+          "The prompt is explicit and direct; there is no ambiguity suggesting the user wants content warnings or spoiler-proofing. The assistant over-interprets and substitutes request-for-permission for analysis.",
+          "Gold rubric expects two key analytical points: (1) Victor's failure to testify enables Justine's conviction, and (2) domestic affection is complicated by moral cowardice. The assistant supplies zero of these.",
+          "The answer is a meta-question, not a claim or interpretation grounded in the evidence. It cannot be evaluated on claim_precision because no substantive claim is made."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q13",
+      "questionOrdinal": 13,
+      "condition": "tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2537,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 664,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.25,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 3,
+          "claim_precision": 3
+        },
+        "rationales": {
+          "faithfulness": "The assistant makes several substantive claims about Justine's trial (Victor's silence, Justine's innocence, her execution, Victor's fear of the creature's revenge) that are not grounded in ALLOWED_EVIDENCE. The retrieved chunks contain only preface material about the story's genesis, not the trial itself. No textual support is provided for the specific narrative details asserted.",
+          "chunk_relevance": "The retrieved excerpts are entirely off-topic: they discuss the story's composition in Geneva in 1816 and the supernatural tale-writing competition, with no connection to Justine's trial or Victor's conduct during it. The anchor passage is relevant (it contains the preface's claims about domestic affection), but the tool retrieval failed to locate trial material.",
+          "answer_completeness": "The answer addresses the core prompt (how Victor's trial behavior complicates the preface's domestic virtue claim) and identifies the key mechanism (his silence enabling Justine's conviction). However, it relies entirely on narrative knowledge not in ALLOWED_EVIDENCE rather than supporting claims with retrieved text, which weakens confidence in completeness for a tools-condition evaluation.",
+          "claim_precision": "The answer is analytically strong in its reasoning about irony and contradiction, but precision is undermined by the absence of textual grounding. The assistant acknowledges the lack of trial evidence midway through ('I need to find the Justine trial scene') but proceeds to assert specific plot details (her innocence, her execution, Victor's fear of the creature) without citation or retrieval."
+        },
+        "violations": [
+          "Unsupported claim: 'Victor remains silent' during trial—not in ALLOWED_EVIDENCE.",
+          "Unsupported claim: 'Justine faces execution for a murder Victor knows she didn't commit'—not retrieved or anchored.",
+          "Unsupported claim: Victor is 'paralyzed by fear of the creature's revenge'—not in ALLOWED_EVIDENCE.",
+          "Retrieval failure: Tool excerpts are biographical/compositional context, not narrative content from the trial scene. No chunks address Victor's actual conduct at Justine's trial.",
+          "Condition violation: Under 'tools' condition, substantive factual claims about plot require retrieval support or explicit caveat. The assistant narrates from private knowledge of the text without retrieving evidence of the trial itself."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q14",
+      "questionOrdinal": 14,
+      "condition": "passage_only",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2163,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 525,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.3,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 3,
+          "claim_precision": 4
+        },
+        "rationales": {
+          "faithfulness": "All claims are directly grounded in the anchor passage. The assistant accurately represents Victor's distinction between dismissal and education, the contrast between chimerical and real powers, and the counterfactual about rational chemistry.",
+          "chunk_relevance": "The anchor passage alone is sufficient and directly addresses the question about paternal dismissal of Agrippa. No tool retrieval was needed given the passage_only condition and the explicit textual content available.",
+          "answer_completeness": "The answer addresses the pedagogical failure component well but only partially engages the gold rubric's second point about relating early intellectual formation to the novel's wider warning about ambition without ethical formation or relational accountability. The answer hints at negligent pedagogy broadly but does not substantively connect this to the wider novel-level critique of overreaching science—it remains localized to Victor's self-justification.",
+          "claim_precision": "The assistant distinguishes carefully between disapproval and dismissive pedagogy, and precisely identifies the misdirection of Victor's ambition rather than ambition itself as the problem. The reading is textually grounded and avoids boilerplate, though it stops short of fully synthesizing with the novel's broader ethical warnings."
+        },
+        "violations": [
+          "The answer does not adequately address the second gold rubric point: connecting the pedagogical failure to the novel's wider critique of ambition without ethical formation. The assistant notes that 'the novel may be critiquing not science itself but the failure of those in positions to educate' but does not develop how this ties to the broader novel-level warning about overreaching ambition or relational accountability that the gold rubric suggests. Under passage_only condition, this is a fair expectation if the answer claims to address the novel's 'wider critique.'"
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q14",
+      "questionOrdinal": 14,
+      "condition": "smart_scan_tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2283,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 553,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.75,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 4,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is grounded in the anchor passage. The assistant accurately quotes and paraphrases Victor's own analysis: the father's mere 'remark' vs. reasoned 'explanation,' the 'warm' imagination, the reference to chemistry's 'real and practical powers,' and the counterfactual that proper instruction might have prevented his ruin.",
+          "chunk_relevance": "No tool excerpts were retrieved, which is appropriate given that the anchor passage itself contains Victor's explicit reflection on the pedagogical failure. The passage is self-contained and sufficient for this localized question about the relationship between parental instruction and scientific ambition.",
+          "answer_completeness": "The answer addresses the core connection between paternal dismissal and uncritical attraction to grand mastery, and links this to the novel's wider warning about ambition without ethical formation. The only minor gap is that the answer does not explicitly ground the 'relational accountability' component (the second gold rubric point) in textual evidence, though it is implied through the discussion of mentorship and institutional constraint.",
+          "claim_precision": "The analysis is sharply precise, distinguishing between the father's mere dismissal and the pedagogical work that would have been needed, isolating the gap where tragedy 'germinates,' and carefully unpacking Victor's own reasoning about how different instruction would have rechanneled rather than suppressed his ambition."
+        },
+        "violations": [
+          "Retrieval_problem flag set to 1 because no tool excerpts were retrieved despite smart_scan_tools condition being available. While the anchor passage alone is sufficient for this question, the condition suggests tools should have been used to potentially strengthen wider-novel context or corroborate the pedagogical theme elsewhere in the text. However, this is a borderline case: the question is answerable and well-answered from the anchor alone, so the retrieval gap does not materially harm answer quality."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q14",
+      "questionOrdinal": 14,
+      "condition": "tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3210,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 564,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is grounded in the anchor and retrieved passages. The assistant accurately cites Victor's father's dismissal, the consequence of the cursory glance, and the subsequent isolation. The interpretation that the father's brief judgment inflames rather than extinguishes curiosity is explicitly supported by the retrieved text ('my father looked carelessly... and said... do not waste your time... But the cursory glance my father had taken... by no means assured me that he was acquainted with its contents').",
+          "chunk_relevance": "The retrieved excerpts are tightly targeted. Chunk 1 provides the formative Agrippa encounter and the father's dismissal, while Chunk 2 shows the downstream effects: secret reading, pursuit of occult knowledge, intellectual isolation, and the trajectory from ancient to modern systems. Both passages directly illuminate the pedagogical failure and its consequences.",
+          "answer_completeness": "The answer fully addresses both gold rubric points: it explicitly links paternal pedagogical failure (dismissal without guidance) to Victor's uncritical, isolated attraction to grand mastery, and it connects early intellectual formation to the novel's wider warning about ambition divorced from ethical formation and relational accountability. It also addresses the implicit sub-question of how the father's specific *cursory* approach (rather than reasoned explanation) matters.",
+          "claim_precision": "The answer is sharply precise, with concrete textual hooks. It quotes the anchor phrase 'cursory glance' and the father's dismissal as 'sad trash,' identifies the counterintuitive dynamic (brief judgment inflames curiosity), and traces the specific consequence (Victor hides from Elizabeth and pursues knowledge 'in secret'). The interpretation that the father could have 'anchored the conversation in reason and epistemological limits' is a fair inference tied directly to the anchor's conditional clause ('If, instead of this remark, my father had taken the pains, to explain...')."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q05",
+      "questionOrdinal": 5,
+      "condition": "passage_only",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1906,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 464,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.5,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 3,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The answer is entirely grounded in the anchor passage. It correctly identifies that Victor makes an assertion without explanation and accurately notes the dialogue reveals no explicit grounds for his certainty.",
+          "chunk_relevance": "The anchor passage directly contains the quoted dialogue in question and is perfectly relevant to answering what the dialogue itself reveals about Victor's grounds for knowing the murderer.",
+          "answer_completeness": "The answer addresses the core question—what grounds the dialogue reveals—and correctly concludes none are given. However, it omits discussion of Victor's private knowledge (the creature's existence and guilt), which the gold rubric indicates should be addressed as the implicit contrast: Victor knows through non-dialogue channels. The answer focuses only on what is *not* stated in dialogue rather than addressing the full tension between what dialogue reveals and what Victor privately knows.",
+          "claim_precision": "The answer is sharply precise in its textual analysis, identifying the exact rhetorical move Victor makes (unsubstantiated assertion) and the specific evidence Ernest presents (portrait, timing, behaviour). It avoids overreach by hedging appropriately ('the reader at this point knows only that')."
+        },
+        "violations": [
+          "Incomplete response: The gold rubric expects acknowledgment of the gap between Victor's private knowledge (creature's existence/guilt) and his inability to disclose it in dialogue. The answer correctly identifies that he gives no grounds within the dialogue but does not explicitly frame this against his unstated private knowledge, which is the conceptual core of the answer."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q05",
+      "questionOrdinal": 5,
+      "condition": "smart_scan_tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3360,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 732,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.65,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 4,
+          "answer_completeness": 3,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The answer makes a strong interpretive claim ('pure assertion without foundation') that goes beyond what the dialogue reveals. The anchor and chunks show Victor declares certainty but do not explain his grounds explicitly in scene, which is grounded; however, the assistant then overstates by claiming he 'offers no investigation, no alternative suspect, no firsthand knowledge' as direct textual fact, when the dialogue simply does not elaborate on his internal reasoning. The parenthetical about the Creature is authorial knowledge beyond ALLOWED_EVIDENCE.",
+          "chunk_relevance": "Retrieved chunks are well-targeted: they show the false evidence against Justine (the picture in her pocket, her confused behavior) and Victor's assertion of her innocence, directly contextualizing why his claim seems baseless to observers. Chunk 2 explicitly frames his certainty against the circumstantial case.",
+          "answer_completeness": "The answer addresses the core question (grounds for Victor's assertion) and correctly identifies that the dialogue itself provides no explicit rational basis. However, it underplays the gold rubric point that he cannot disclose the full basis to others in scene—it hints at this with 'cannot say so without revealing' but doesn't center it as the direct answer to what the dialogue reveals.",
+          "claim_precision": "The answer relies heavily on interpretive speculation ('guilty knowledge,' 'desperation and secret torment') that, while plausible for a reader, moves beyond what the dialogue itself shows and ventures into thematic irony rather than passage-local grounds. The claim 'no rational grounds whatsoever' is too categorical given that the question asks what grounds the dialogue reveals, not whether they are rational."
+        },
+        "violations": [
+          "Unsupported interpretive overreach: The assistant asserts Victor's knowledge is purely from 'guilty knowledge' and 'secret torment' as if these are directly evidenced by the dialogue, when in fact they are inferences about internal state not explicitly revealed in the passage.",
+          "Authorial knowledge insertion: Reference to 'the Creature' and Victor's confession of his role is not present in ALLOWED_EVIDENCE and relies on knowledge beyond the dialogue itself.",
+          "Categorical claim beyond evidence: 'No rational grounds whatsoever' overshoots; the dialogue shows lack of *articulated* grounds in scene, but the question asks what grounds the dialogue reveals, leaving room for implicit or unstated knowledge.",
+          "Incomplete framing of gold rubric: The answer does not clearly anchor to the key rubric point that 'in-scene he can only assert Justine's innocence and does not disclose the full basis to others'—this is the passage-local answer, which the assistant touches but does not center."
+        ],
+        "_repair_pass": true
+      }
+    },
+    {
+      "stableKey": "frankenstein_q05",
+      "questionOrdinal": 5,
+      "condition": "tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3913,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 447,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The answer is rigorously grounded in the allowed evidence. The assistant correctly identifies that Victor has no publicly defensible grounds for his claim within the dialogue, citing the specific evidence Ernest presents (the portrait, confused behavior) and correctly noting that Victor does not disclose his private knowledge of the creature's existence or the midnight encounter.",
+          "chunk_relevance": "Both retrieved chunks are highly pertinent. Chunk 2 provides the crucial context showing Victor's internal struggle—his knowledge of the creature and his decision to remain silent about it—which directly explains why the dialogue itself reveals no grounds for his assertion. Chunk 1 contains the full dialogue where Victor makes the claim and Ernest presents the circumstantial evidence.",
+          "answer_completeness": "The answer fully addresses the prompt's core question and both gold rubric points: it clarifies that Victor's certainty comes from private knowledge (not court-admissible evidence), and it notes that in-scene he does not disclose the full basis to others. The answer also captures the dramatic irony inherent in the situation.",
+          "claim_precision": "The response is sharply precise, directly quoting the anchor passage, explicitly identifying the specific evidence Ernest cites (portrait, confused manner), and anchoring the interpretation to Victor's internal monologue in the retrieved text ('I resolved to remain silent'). The distinction between what the dialogue reveals and what Victor privately knows is crisply articulated."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q11",
+      "questionOrdinal": 11,
+      "condition": "passage_only",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1985,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 558,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.7999999999999998,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 2,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The answer makes a specific factual claim—that the creature's request occurred 'in the Arctic ice, near the end of his final confrontation with Victor'—which is not supported by ALLOWED_EVIDENCE. No retrieved excerpts confirm the location or timing of this scene. The rhetorical parallel drawn between creature and Victor is interpretive, but the factual locus of the creature's request is unsupported.",
+          "chunk_relevance": "No tool excerpts were retrieved. The anchor passage concerns Victor demanding official pursuit in the Alps; it does not contain or reference the earlier Alpine/creature demand scene that the question asks about. With passage_only condition and no retrieval, the answer cannot ground the factual claim about where the creature made the request.",
+          "answer_completeness": "The answer attempts to identify the confrontation and the obligation/threat structure (matching gold rubric points), but does so without textual support. The second half—the rhetorical reversal Victor performs in the anchor passage—is interpretive and plausible but remains largely unanchored to specific phrasing in the anchor.",
+          "claim_precision": "The answer relies on generic descriptions of emotional dynamics ('wronged and abandoned,' 'duty,' 'vengeance') rather than precise textual citation. The parallel between creature and Victor's rhetoric is suggestive but hand-waved; no direct quotation from either scene supports the claim."
+        },
+        "violations": [
+          "Factual claim 'in the Arctic ice, near the end of his final confrontation' is not supported by ALLOWED_EVIDENCE and appears to be private knowledge of the book.",
+          "No retrieval was provided despite the question clearly requiring earlier-book evidence (the creature's demand scene), per the cross-section category.",
+          "The interpretation of Victor's rhetorical reversal, while clever, lacks precise textual anchoring to the anchor passage itself (no specific phrases quoted)."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q11",
+      "questionOrdinal": 11,
+      "condition": "smart_scan_tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2586,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 574,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.55,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 2,
+          "answer_completeness": 1,
+          "claim_precision": 1
+        },
+        "rationales": {
+          "faithfulness": "The answer makes a claim ('The creature's actual demand for a mate comes in his own narration') that is not supported by ALLOWED_EVIDENCE. The retrieved chunks describe Victor's internal conflict about the female companion and the creature's threats, but do not provide the Alpine confrontation dialogue that is the focus of the question.",
+          "chunk_relevance": "The retrieved summaries describe Victor's later pursuit and his crisis of conscience about the female companion, but none of them contain the specific Alpine confrontation scene where the creature directly asks Victor for a mate. The chunks are tangentially related to the topic but miss the key textual locus the question asks about.",
+          "answer_completeness": "The answer does not identify or describe the Alpine confrontation at all. It deflects to the creature's narration in Volume II without providing the specific scene, oath structure, or threat-vs-obligation framing that the prompt explicitly requests. The gold rubric calls for identification of both the location and the ethical bargain structure; neither is supplied.",
+          "claim_precision": "The answer is generic and speculative ('it should be earlier in Volume II') without grounding in any retrieved or provided text. It avoids the actual work of analyzing the scene and instead asserts a vague location guess unsupported by ALLOWED_EVIDENCE."
+        },
+        "violations": [
+          "Answer does not locate or quote the Alpine confrontation where the creature requests a female companion.",
+          "No mention of the ethical bargain (promise of compliance/withdrawal vs. threat of vengeance) that is central to the question.",
+          "Claim that 'the creature's actual demand...comes in his own narration' is unsupported; the creature does confront Victor directly about this demand (as hinted in gold rubric and Chunk 2's reference to the creature appearing at Victor's window).",
+          "Answer is incomplete and does not address the user's cross-section question, which requires identifying where earlier in the text the mate demand occurred and what its framing was."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q11",
+      "questionOrdinal": 11,
+      "condition": "tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 7160,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 605,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.05,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 3,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The answer makes specific claims about the creature's demand on the ice field near the Northern Pole, framing it as a conditional bargain (mate for peace), but these details are not grounded in ALLOWED_EVIDENCE. The assistant invents the location, the exact structure of the offer, and specific language not present in any retrieved text.",
+          "chunk_relevance": "Retrieved chunks focus entirely on Victor's later appeal to the magistrate and his emotional state after Elizabeth's death, with no material addressing the creature's earlier demand for a mate. The retrieval is off-locus for answering the cross-section question, which explicitly asks where the creature 'first asked Victor for a mate.'",
+          "answer_completeness": "The answer addresses the anchor passage (Victor demanding official pursuit) and identifies that the earlier mate-demand scene occurs elsewhere (Volume II), but fails to actually retrieve or cite the relevant passage where the creature makes that demand. It thus cannot fully support the expected gold rubric points about the bargain/threat structure with textual evidence.",
+          "claim_precision": "The answer relies heavily on paraphrase and interpretive framing ('conditional offer,' 'power dynamic has inverted') without grounding these observations in specific quoted language from the actual encounter being discussed. The details supplied (Northern Pole ice field, exact nature of the bargain) are not verified by ALLOWED_EVIDENCE."
+        },
+        "violations": [
+          "Unsupported specificity: The answer claims the creature's demand occurs 'on the ice field near the Northern Pole' and describes the bargain as a conditional offer to 'spare his life and vanish' if Victor creates a mate—none of this is present in ALLOWED_EVIDENCE.",
+          "Retrieval failure: Retrieved chunks contain no content from the Alpine/ice confrontation where the creature first demands a mate. The question requires evidence from elsewhere in the book, but the tool retrieval did not surface it.",
+          "Fabricated textual structure: The assistant describes the creature's framing of the demand in precise terms ('obligation born of duty,' 'conditional offer') without citing or retrieving the actual words from that scene."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q10",
+      "questionOrdinal": 10,
+      "condition": "passage_only",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1900,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 457,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.05,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 3,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The answer correctly identifies Volume I, Chapter IV as the location, but makes unsupported claims about the creature's eyes opening and lacks grounding for specific textual details about the creation scene itself, which are not present in ALLOWED_EVIDENCE.",
+          "chunk_relevance": "No retrieved excerpts were provided; the anchor passage contains only the happy childhood frame and does not include the later creation scene. The retrieval system failed to return the relevant Chapter IV passage describing the animation.",
+          "answer_completeness": "The answer identifies the correct volume and chapter (meeting one gold rubric point about location) but does not substantively contrast the happy childhood frame with the horror of creation as the question and gold rubric suggest; it only asserts the contrast exists without elaboration.",
+          "claim_precision": "The answer uses vague formulations ('fevered work,' 'culminating in') and makes specific claims about the creature's eyes opening without textual grounding in the provided evidence. The language is more interpretive speculation than precise textual analysis."
+        },
+        "violations": [
+          "Fabricated or unsupported detail: 'the moment he sees the creature's eyes open' is not grounded in ALLOWED_EVIDENCE.",
+          "Missing retrieval: No tool excerpts were provided from the critical Chapter IV passage, preventing verification of the creation scene description.",
+          "Incomplete contrast: The answer acknowledges but does not develop the expected contrast between the happy childhood picture and the horror of animation."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q10",
+      "questionOrdinal": 10,
+      "condition": "smart_scan_tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2675,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 383,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The answer is fully grounded in the retrieved evidence. Chunk 3 explicitly states that Victor 'achieves his obsessive goal of animating lifeless matter on a dreary November night' and describes his immediate horror and revulsion, matching the assistant's account precisely.",
+          "chunk_relevance": "Chunk 3 is directly and tightly relevant, providing the exact scene requested—the moment Victor animates the creature on a November night and his immediate revulsion. The other chunks contextualize the aftermath but Chunk 3 supplies the core answer.",
+          "answer_completeness": "The answer fully addresses both gold rubric points: it locates the scene in Chapter IV and contrasts the happy childhood frame (from the anchor) with the horror of the creation moment. The assistant captures the immediate revulsion and anguish Victor experiences.",
+          "claim_precision": "The answer is sharp and specific, grounding claims in textual details ('dreary November night,' 'two years of obsessive labour,' 'immediate revulsion') rather than generic statements. The contrast between ardor and horror is crisply articulated."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q10",
+      "questionOrdinal": 10,
+      "condition": "tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3803,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 520,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.75,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 1,
+          "claim_precision": 3
+        },
+        "rationales": {
+          "faithfulness": "The answer correctly identifies that the creation scene occurs later during university years at Ingolstadt, but makes unsupported claims about the specific setting (narrating to Walton) and provides no evidence from ALLOWED_EVIDENCE that the creation happens on a November night or in Volume I, Chapter IV.",
+          "chunk_relevance": "The retrieved excerpts cover only Victor's childhood and early studies leading up to university; they contain no information about the creation scene, the November night, Ingolstadt, or the animating moment itself. The retrieval is entirely off-target for answering where Victor describes the creation.",
+          "answer_completeness": "The answer fails to locate the specific chapter and volume where the creation is described (as required by gold rubric). It does not provide the concrete textual location ('Volume I, Chapter IV') or contrast the happiness of childhood with the horror of the creation moment.",
+          "claim_precision": "The answer is reasonably precise about the general trajectory (childhood innocence → later transgression at university), but lacks textual specificity about the actual passage where the animating moment is narrated and provides no quoted evidence."
+        },
+        "violations": [
+          "No evidence in ALLOWED_EVIDENCE for the claim that Victor narrates the creation scene to Walton; the retrieved text covers only childhood and does not extend to the actual creation sequence.",
+          "Missing the core required answer: the specific chapter location (Volume I, Chapter IV) where the November night creation is described.",
+          "The answer does not contrast the happy domestic picture with the horror and revulsion of the creation moment, as expected by the gold rubric.",
+          "No retrieved excerpts address the creation scene itself or the November night setting; retrieval failed to locate relevant later passages in the text."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q15",
+      "questionOrdinal": 15,
+      "condition": "passage_only",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2189,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 665,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.7999999999999998,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 2,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant makes substantive claims about Victor's warnings and their resonance through the narrative structure, but the ALLOWED_EVIDENCE contains only a single exchange between Walton and Victor with no explicit warning about dangerous knowledge. The assistant asserts 'when Victor warns—if he does' and discusses Victor's 'cautionary tale,' but these are not grounded in the anchor passage, which lacks any warning or tale about knowledge.",
+          "chunk_relevance": "No tool excerpts were retrieved, and the anchor passage alone—a brief dialogue about friendship and loss—does not substantively address the question's core premise about knowledge warnings echoing through nested narrators. The anchor lacks Victor's explicit cautionary statements or systematic treatment of the frame narrative's thematic arc.",
+          "answer_completeness": "The answer addresses the frame narrative structure and hints at Walton's ambition, but it does not fulfill the gold rubric requirement to track Victor's retrospective warning against Walton's initial exploratory ambition, nor does it substantively explain how the warning 'echoes back.' The answer is largely speculative about what Victor 'might' warn rather than grounded in textual evidence of actual warnings.",
+          "claim_precision": "The response is highly interpretive and somewhat hand-wavy, relying on phrases like 'if he does' and 'arguably' to hedge around the absence of concrete textual evidence. Claims about 'Victor's cautionary tale' and his warnings are asserted as structural facts without support from the passage provided."
+        },
+        "violations": [
+          "Unsupported claim: 'Victor warns—if he does' and 'when Victor warns' are introduced without grounding in the anchor passage, which contains no explicit warning about knowledge or ambition.",
+          "Unsupported claim: 'Victor's cautionary tale about the dangers of ambition and unchecked knowledge' is asserted as fact, but the anchor passage offers only a brief confession of loss, not a developed cautionary narrative.",
+          "Insufficient evidence: The answer requires book-level knowledge (Victor's later warnings to Walton about dangerous knowledge), but no retrieval was performed and the condition is passage_only. The anchor alone does not contain the thematic echoing the question asks about.",
+          "Speculation presented as analysis: The assistant extensively theorizes about what the warning structure 'might' do and 'becomes' without anchoring to textual instances."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q15",
+      "questionOrdinal": 15,
+      "condition": "smart_scan_tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2234,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 753,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 2,
+          "claim_precision": 3
+        },
+        "rationales": {
+          "faithfulness": "The answer makes several substantive claims about Victor's warning and its effect that are not grounded in the ALLOWED_EVIDENCE. The anchor passage shows Walton seeking companionship and Victor saying he 'lost every thing,' but does not contain Victor's actual warning about knowledge, ambition, or dangerous pursuit. The assistant invents the thematic arc by extrapolating far beyond what these two brief exchanges show.",
+          "chunk_relevance": "No tool excerpts were retrieved, and the anchor passage alone—a single exchange between Walton and Victor—is insufficient to answer a book-level question about how a warning 'echoes back through nested tellers.' The passage shows one moment of contrast but does not contain Victor's warnings about knowledge or evidence of how this warning recirculates through the narrative structure.",
+          "answer_completeness": "The answer addresses the general concept of Walton's ambition and Victor's loss, but it does not ground its claims in textual evidence from the book. It offers sophisticated literary interpretation (e.g., the irony of the warning being unheeded, the seductive power of testimony) but without support from retrieved passages showing Victor's actual warnings or how they manifest across narrators. The gold rubric expects tracking of the warning's echo through nested tellers, which requires evidence of that warning and its repetition—neither of which is in ALLOWED_EVIDENCE.",
+          "claim_precision": "While the analysis is intellectually coherent, it is speculative rather than precise. Phrases like 'Victor's warning about the dangers of unchecked knowledge' and 'the ironic echo' are asserted without quotation or specific textual grounding. The claim that 'the form itself becomes almost seductive' is suggestive but not anchored to particular evidence."
+        },
+        "violations": [
+          "Unsupported claim: 'Victor's warning about the dangers of unchecked knowledge'—the anchor passage does not contain Victor issuing such a warning; the assistant inverts a thematic expectation into textual fact.",
+          "Unsupported claim: 'the nested structure of the narrative (Walton to his sister, Victor to Walton, the Creature to Victor) creates a chain of testimony where each teller tries to warn'—no retrieved evidence supports that all three narrators issue warnings or that this structure is present in the passage.",
+          "Insufficient retrieval: No tool excerpts retrieved for a book-level thematic question. The anchor passage alone (one dialogue exchange) cannot establish how a warning 'echoes back through nested tellers' without evidence of the warning's occurrence and circulation elsewhere in the text.",
+          "Overreach: The assistant builds a sophisticated interpretive claim ('knowledge itself...may be unteachable through narrative alone') without textual anchor in ALLOWED_EVIDENCE."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q15",
+      "questionOrdinal": 15,
+      "condition": "tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3744,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 468,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.75,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 4,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "All substantive claims are rigorously grounded in ALLOWED_EVIDENCE. The assistant quotes Victor's warning directly ('the gratification of your wishes may not be a serpent to sting you, as mine has been') and anchors the interpretation to the retrieved passages showing Walton's initial ambition and Victor's gentle, wise character before the warning.",
+          "chunk_relevance": "The retrieved excerpts are tightly focused on the frame narrative exchange between Walton and Victor, including Walton's confession of seeking a friend and Victor's immediate warning about knowledge. Chunk 2 contains the pivotal serpent metaphor and establishes the nested temporal structure of the warning.",
+          "answer_completeness": "The answer addresses both gold rubric points: it tracks Walton's exploratory ambition against Victor's retrospective warning, and it explains how the nested narration creates Victor as a cautionary mirror. The only minor gap is that the answer could have more explicitly discussed how this echo reverberates through the reader's experience of Victor's full narrative (though this is a fair limitation given the prompt's focus on how the warning 'echoes back').",
+          "claim_precision": "The analysis is sharply precise, moving from the literal serpent metaphor to the meta-literary observation that the warning arrives 'in the nested present of their meeting' and creates 'an ironic echo.' The claim that Walton hears the warning alongside (not after) the narrative shows careful reading of the text's temporal structure."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q01",
+      "questionOrdinal": 1,
+      "condition": "passage_only",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2026,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 414,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly grounded in the anchor passage. The assistant accurately paraphrases 'spectres or enchantment,' correctly identifies the 'point of view to the imagination' phrase, and faithfully represents the distinction between the impossible premise as vehicle versus as purpose.",
+          "chunk_relevance": "No retrieval was needed for this passage_only condition; the anchor passage contains the entire distinction. The assistant answer relies exclusively and appropriately on the provided text.",
+          "answer_completeness": "The answer fully addresses both gold rubric points: (1) distinguishes the novel from a mere ghost/enchantment tale by emphasizing the novelty of the situation rather than spectral effects, and (2) explains that the impossible physical premise is a device to explore human passions more comprehensively than ordinary realistic incidents. The sub-distinction between manner (supernatural effects) and purpose (psychological exploration) is explicit.",
+          "claim_precision": "The answer demonstrates sharp textual precision, anchoring each point to specific phrases ('affords a point of view,' 'human passions,' 'ordinary relations of existing events'). The characterization of the impossible premise as a 'lens' and 'vehicle' rather than an end in itself directly captures the author's logic."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q01",
+      "questionOrdinal": 1,
+      "condition": "smart_scan_tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2093,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 458,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is grounded in the anchor passage. The assistant accurately paraphrases 'mere tale of spectres or enchantment' as relying on external supernatural apparatus, correctly identifies the 'impossible as a physical fact' qualifier, and faithfully represents the core claim that the impossible premise affords 'a point of view to the imagination for the delineating of human passions more comprehensive and commanding than any which the ordinary relations of existing events can yield.'",
+          "chunk_relevance": "The anchor passage directly addresses the question and requires no supplementary retrieval; the absence of tool excerpts is appropriate given the passage-local condition and the sufficiency of the provided text.",
+          "answer_completeness": "The response fully addresses both gold rubric points: (1) distinguishes the novel from mere ghost tales by emphasizing novelty and psychological depth over spectre effects, and (2) explains how the impossible premise functions as a device to explore human passions more comprehensively than ordinary realistic situations. The paradox of using the impossible to reveal the human is also articulated.",
+          "claim_precision": "The answer avoids boilerplate and maintains sharp textual specificity throughout, tying interpretive language ('vehicle for exploring,' 'lens,' 'paradox') directly to the vocabulary and logic of the passage. Terms like 'external, mechanical horror' and 'intrinsic psychological horror' are precise glosses on the source distinction, not generic abstractions."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q01",
+      "questionOrdinal": 1,
+      "condition": "tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1996,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 410,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly grounded in the anchor passage. The answer accurately paraphrases the distinction between 'spectres or enchantment' and the use of an 'impossible' premise as a 'point of view' for exploring 'human passions,' with no invented or unsupported details.",
+          "chunk_relevance": "The anchor passage directly addresses the question and contains the exact distinction the prompt asks about; no retrieval was needed, and the single available source is maximally relevant.",
+          "answer_completeness": "The answer covers both gold rubric points: (1) distinguishes from ghost/enchantment tales by emphasizing the novelty of situation, and (2) explains that the impossible premise serves as a device to explore human passions more comprehensively than ordinary events. The interpretation of 'point of view' as a vantage point for psychological depth adds nuance.",
+          "claim_precision": "The answer uses sharp, textually anchored language ('point of view,' 'impossible premise,' 'human passions') and avoids generic boilerplate. Specific examples (ambition, guilt, horror at consequences) are precise and tied to the work's psychological aims, though not explicitly quoted from the passage."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q04",
+      "questionOrdinal": 4,
+      "condition": "passage_only",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1986,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 398,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly anchored to the passage: the shift from 'ignoble and almost forgotten sources' to a 'torrent which has swept away all my hopes and joys' is quoted or closely paraphrased, and the interpretation of retrospective bitterness and tragic inevitability flows directly from Victor's own language.",
+          "chunk_relevance": "The anchor passage is the sole source of evidence and is entirely on-target; no retrieval noise or off-topic material present.",
+          "answer_completeness": "The answer fully addresses both sub-parts: (1) the mood shift from ignoble origins to destructive torrent, and (2) how this foreshadows tragic tone and retrospective self-recrimination rather than plot specifics. The elegiac voice and inevitability motifs are well developed.",
+          "claim_precision": "The analysis is sharp and textually rooted: 'ignoble and almost forgotten' is quoted, the torrent image is unpacked, and the distinction between tone (elegiac, self-recriminating, marked by inevitability) and plot vagueness is precisely articulated with specific textual hooks."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q04",
+      "questionOrdinal": 4,
+      "condition": "smart_scan_tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2122,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 473,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly grounded in the anchor passage. The assistant accurately traces the metaphor's progression ('ignoble and almost forgotten' → 'swelling' → 'torrent'), quotes verbatim ('swept away all my hopes and joys'), and correctly identifies the tonal shift from obscurity to overwhelm without inventing plot or textual details.",
+          "chunk_relevance": "No retrieval was performed, which is appropriate given that the anchor passage contains the complete metaphor and the question is passage-local. The condition permits evaluation of chunk_relevance as 5 when no retrieval is needed and none was supplied.",
+          "answer_completeness": "The response fully addresses both gold rubric points: (1) the image shift from 'ignoble' origins to a 'swelling torrent,' and (2) the foreshadowing of *tone* (devastation, fatalism, retrospective dread) rather than plot specifics. It also explores the implicit sub-part—*how* mood differs from plot—with sophisticated analysis of Gothic confession and narrative voice.",
+          "claim_precision": "The answer demonstrates sharp textual specificity: it parses individual phrases ('ignoble,' 'swelling as it proceeded,' 'torrent'), links them to emotional valence (shame, loss of agency, inevitability), and grounds the larger argument in precise language from the passage. The distinction between mood forecasting and plot forecasting is articulated with clarity tied directly to what the text does and omits."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q04",
+      "questionOrdinal": 4,
+      "condition": "tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3029,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 631,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.5999999999999996,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 4,
+          "chunk_relevance": 1,
+          "answer_completeness": 4,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The answer is well-grounded in the anchor passage: 'ignoble and almost forgotten sources,' 'swelling as it proceeded,' 'torrent,' and 'swept away all my hopes and joys' are all directly present. The interpretation of mood shift (from humble origins to overwhelming power) and the emphasis on emotional/tonal rather than plot-driven foreshadowing are supported by the metaphorical language and the first-person retrospective frame ('I would account to myself').",
+          "chunk_relevance": "The two retrieved chunks describe Victor's happy childhood and his discovery of occult science, but they do not directly address the river metaphor or its mood/tonal significance. They provide biographical context for Victor but are largely tangential to the specific textual analysis of the passage in question. The retrieval does not meaningfully support or contextualize the metaphor evaluation.",
+          "answer_completeness": "The answer covers both core points: the mood shift from small/ignoble to overwhelming torrent, and the foreshadowing of tragic tone over plot detail. It also adds a layer of analysis about the psychological retrospective frame and the speaker's sense of entrapment, which enriches the response. Minor omission: could have been more explicit about the word 'ignoble' as a marker of shame/smallness, but the concept is present.",
+          "claim_precision": "The answer is sharply precise and textually grounded. Phrases like 'ignoble and almost forgotten,' 'swelling,' 'swept away all my hopes and joys' are all directly quoted or closely paraphrased. The interpretation—that the metaphor foregrounds emotional escalation rather than narrative plot events—is clearly supported by the language and the retrospective narrative stance ('I would account to myself'). No vague boilerplate; each claim is tied to specific textual details."
+        },
+        "violations": [
+          "Retrieval problem: The tool excerpts (chunks 1 and 2) are off-topic for this passage-local question about a specific metaphor. They provide biographical background but do not help evaluate or contextualize the river metaphor's mood shift or tonal foreshadowing. This is a retrieval noise issue, not an answer quality issue."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q06",
+      "questionOrdinal": 6,
+      "condition": "passage_only",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1856,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 527,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.4500000000000002,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 1,
+          "chunk_relevance": 1,
+          "answer_completeness": 2,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant provides a detailed quoted passage claiming Ernest explains the discovery of the picture in Justine's pocket, but this quotation is not present in ALLOWED_EVIDENCE (only the anchor passage is provided, which contains no such details). The assistant has fabricated or misremembered a direct quote.",
+          "chunk_relevance": "No retrieved tool excerpts were provided, and the anchor passage alone does not contain information about physical evidence or Ernest's narration of the crime. The retrieval is fundamentally insufficient for answering a question explicitly asking about 'Ernest's preceding narration.'",
+          "answer_completeness": "While the answer identifies the correct object (the picture/miniature), it cannot be verified against ALLOWED_EVIDENCE and relies entirely on unsupported quoted text. The answer lacks grounding in the actual permitted material.",
+          "claim_precision": "The answer is presented with false specificity through an invented quotation. Without access to the actual text, the claim appears precise but is in fact fabricated."
+        },
+        "violations": [
+          "Fabricated quotation: The assistant attributes a lengthy direct quote to Ernest explaining the discovery of the picture in Justine's pocket, but this text does not appear in the anchor passage or any retrieved excerpts.",
+          "Insufficient retrieval: The condition is passage_only and the question explicitly asks about 'Ernest's preceding narration,' which would require retrieved text from elsewhere in the book. No retrieval was performed or returned, making the task impossible to answer faithfully from the anchor passage alone.",
+          "Unsupported textual facts: The entire substantive claim (the picture being found in Justine's pocket, the servant's discovery, the motive explanation) is presented as fact via quotation but is not grounded in ALLOWED_EVIDENCE."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q06",
+      "questionOrdinal": 6,
+      "condition": "smart_scan_tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2672,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 491,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.75,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 4,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The answer is rigorously grounded in the retrieved text. The quotation about 'the picture of my mother, which had been judged to be the temptation of the murderer' is directly taken from Chunk 1, and the detail about its discovery in Justine's pocket is accurately supported by the same passage.",
+          "chunk_relevance": "The retrieved excerpt is perfectly targeted: it contains Ernest's narration of the discovery of the portrait in Justine's pocket and explicitly identifies it as the physical evidence leading to her arrest. No irrelevant filler is present.",
+          "answer_completeness": "The answer identifies the key physical evidence (the picture/miniature) and explains its role in tying Justine to the crime. However, it could have been slightly more explicit that this was William's miniature/portrait of Caroline (though the gold rubric hints at this specificity, the retrieved text calls it 'the picture of my mother,' creating a minor ambiguity that the answer does not fully clarify).",
+          "claim_precision": "The answer is sharply precise, quoting directly from the text and specifying exactly where and how the evidence was found. The language matches the grain of the source material without vague generalizations."
+        },
+        "violations": [
+          "Minor note: The gold rubric hints that the picture is 'a miniature/picture of Caroline,' but the retrieved text says 'the picture of my mother.' The answer quotes the latter phrase accurately but does not explicitly clarify that 'my mother' refers to Caroline Beaufort, though this is implicit in the context of the retrieved passage."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q06",
+      "questionOrdinal": 6,
+      "condition": "tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2648,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 423,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.5,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 3,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The answer is rigorously grounded in the retrieved text, accurately citing the exact discovery of the picture in Justine's pocket and its role as evidence.",
+          "chunk_relevance": "The retrieved chunk is directly on-target, containing Ernest's narration of the discovery and its role in Justine's arrest—exactly what the question asks for.",
+          "answer_completeness": "The answer identifies the picture correctly but omits a key detail from the gold rubric: the picture is specifically identified as a miniature of William (or Caroline, depending on interpretation of which portrait is meant). The retrieved text mentions both 'the picture of my mother' and earlier references 'a miniature of William,' creating some ambiguity that the answer does not clarify.",
+          "claim_precision": "The answer is sharply precise, directly quoting the relevant passage and specifying how and where the evidence was found."
+        },
+        "violations": [
+          "The answer does not clarify the identity of the picture—the gold rubric expects mention that it was a miniature/picture of Caroline (William's possession), but the retrieved text says 'the picture of my mother.' The answer accepts the text as-is without resolving this potential discrepancy or noting that the miniature of William mentioned moments earlier may be the conflated evidence item."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q07",
+      "questionOrdinal": 7,
+      "condition": "passage_only",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1825,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 316,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The answer is fully grounded in the anchor passage: Ernest is explicitly identified as the speaker who exclaims 'Good God, Papa!' and the claim about Victor knowing the murderer is directly quoted from the text.",
+          "chunk_relevance": "The anchor passage contains all necessary information to answer the question; no retrieval was needed and none was provided, which is appropriate for a passage-only condition.",
+          "answer_completeness": "The response identifies Ernest as the speaker and accurately states the shocking claim he repeats (Victor's knowledge of William's murderer), covering both key points from the gold rubric.",
+          "claim_precision": "The answer is textually precise, anchoring the identification of Ernest to his direct quotation and clearly articulating what claim he is relaying without vague or overreaching language."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q07",
+      "questionOrdinal": 7,
+      "condition": "smart_scan_tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1878,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 311,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The answer is fully grounded in the anchor passage. It correctly identifies Ernest as the speaker, accurately quotes his exclamation, and precisely captures Victor's claim about knowing the murderer's identity.",
+          "chunk_relevance": "The anchor passage directly answers the question and contains all necessary information; no retrieval was needed, and the passage is entirely on-target.",
+          "answer_completeness": "The response addresses both parts of the question: who burst in (Ernest) and what shocking claim he repeated (Victor knows who murdered William). It also contextualizes the moment effectively.",
+          "claim_precision": "The answer is sharply specific, distinguishing between Ernest as the speaker and Victor as the original claimant, and grounding the dramatic impact in the exact textual moment described in the anchor."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q07",
+      "questionOrdinal": 7,
+      "condition": "tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2394,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 494,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.4499999999999997,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 3,
+          "answer_completeness": 3,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The answer correctly identifies Ernest and the claim about knowing the murderer, but introduces unsupported narrative details about 'Victor's attempt to reassure his father' and 'denying knowledge of the murderer' that are not present in the anchor passage and contradict the immediate context shown.",
+          "chunk_relevance": "Retrieved chunk provides later dialogue about Justine's accusation and Victor's declaration of her innocence, which contextualizes the scene but is not the immediate exchange; the anchor passage itself fully answers the question.",
+          "answer_completeness": "Addresses the core question (who burst in and what claim) but adds speculative interpretation about Victor's prior statements and narrative sequencing not supported by the anchor passage.",
+          "claim_precision": "The answer conflates the immediate moment (Ernest's outburst in the anchor) with a later sequence involving Justine's arrest; vague phrasing like 'as the surrounding context makes clear' masks unsupported inference rather than precise textual grounding."
+        },
+        "violations": [
+          "The anchor passage shows Ernest exclaiming immediately upon his father's entry, with no prior exchange about Victor denying knowledge. The claim that Ernest's words cut through 'Victor's attempt to reassure his father' is fabricated.",
+          "The answer imports details about 'incriminating evidence against Justine Moritz' from the retrieved chunk, but this happens in a later dialogue, not at the moment Ernest burst in as the question asks.",
+          "The narrative framing (Ernest contradicting Victor, introducing evidence) misrepresents the anchor's straightforward report that Ernest announces Victor's claim directly."
+        ]
+      }
+    },
+    {
+      "stableKey": "frankenstein_q09",
+      "questionOrdinal": 9,
+      "condition": "passage_only",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1831,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 364,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The answer correctly identifies Justine Moritz and accurately paraphrases the anchor passage's emotional content: Alphonse's regret at discovering depravity and ingratitude in someone he valued highly, grounded entirely in the provided anchor text.",
+          "chunk_relevance": "No tool retrieval was provided, and none was necessary under the passage_only condition. The anchor passage alone contains sufficient context (via the prior exchange reference) to answer the question, making the retrieval score optimal for this scenario.",
+          "answer_completeness": "The answer fully addresses the prompt: it names Justine and explains the emotional context of Alphonse's lament—his shock at discovering betrayal from a trusted household member—aligning with both gold rubric hints.",
+          "claim_precision": "The answer is sharply precise, directly anchoring to the specific phrase 'depravity and ingratitude' from the anchor and clearly connecting it to the family's sense of violated trust, with no vague or overbroad claims."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q09",
+      "questionOrdinal": 9,
+      "condition": "smart_scan_tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2278,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 457,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The assistant correctly identifies Justine as the subject of Alphonse's lament and grounds this identification in the retrieved context, which explicitly describes Justine's accusation, the evidence (portrait found in her pocket), and the family's belief in her guilt. The answer accurately represents the emotional and contextual dimensions present in both the anchor and retrieved text.",
+          "chunk_relevance": "The retrieved excerpts are highly pertinent, providing the prior exchange that establishes Justine's identity and the circumstances of the accusation (murder of William, portrait evidence, her confused behavior). This directly answers the prompt's request to identify the name from 'the prior exchange, not in this single sentence,' and contextualizes why Alphonse would lament her 'depravity and ingratitude.'",
+          "answer_completeness": "The response fully addresses the question: it identifies whose depravity Alphonse is lamenting (Justine), explains how the name appears in the prior exchange, and provides the family context (shock at discovering a trusted member's apparent guilt). It covers the gold rubric points about Justine's identity and the family's reaction.",
+          "claim_precision": "The answer is sharply precise, tying specific claims to textual evidence: the portrait discovery, Justine's confusion, Victor's declaration of her innocence, and Alphonse's response to this dramatic reversal. The language mirrors the text's emotional register without overreach."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q09",
+      "questionOrdinal": 9,
+      "condition": "tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2370,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 419,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The answer correctly identifies Justine Moritz as the subject of Alphonse's lament and is fully grounded in the retrieved evidence. The prior exchange in Chunk 1 explicitly names Justine and establishes her accusation, and the anchor passage's reference to 'depravity and ingratitude in one I valued so highly' aligns with the family's perception of her betrayal.",
+          "chunk_relevance": "The retrieved excerpt is highly pertinent, providing the necessary prior context that names Justine and establishes her accusation of murder, which directly answers which person the father is lamenting in the anchor sentence.",
+          "answer_completeness": "The answer fully addresses the prompt by identifying Justine by name and explaining the basis for the father's lament (the accusation and the family's sense of betrayal). It also fulfills the gold rubric points by reflecting both the identification and the shock at the trusted household member's apparent guilt.",
+          "claim_precision": "The answer is sharply precise, correctly anchoring the reference to Justine and noting the distinction between her actual innocence and what the family mistakenly believes. The qualification 'or rather, what he believes to be hers' demonstrates textual awareness of the irony central to the scene."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q03",
+      "questionOrdinal": 3,
+      "condition": "passage_only",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2165,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 398,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly grounded in the anchor passage: the father's dismissal as 'sad trash,' Victor's prior enthusiasm, and Victor's explicit hypothetical about what a fuller explanation of obsolete principles and modern science would have achieved. No inventions or unsupported attributions.",
+          "chunk_relevance": "No tool retrieval was performed, but none was needed; the entire passage is self-contained in the anchor text and the question asks for passage-only analysis. The anchor fully supports the answer.",
+          "answer_completeness": "The response addresses both gold rubric points: (1) the father's dismissal lacks explanatory reasoning and is therefore rhetorically ineffective, and (2) Victor explicitly states a fuller explanation would have redirected him toward modern science. The answer also contextualizes the failure by invoking Victor's prior emotional investment, which deepens the analysis.",
+          "claim_precision": "Claims are tightly anchored to specific textual details ('sad trash,' 'new light,' 'bound with joy') and directly engage Victor's own retrospective reasoning about what would have worked. The analysis of rhetorical backfire is precise and textually specific, not generic."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q03",
+      "questionOrdinal": 3,
+      "condition": "smart_scan_tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2242,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 455,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly grounded in the anchor passage. The answer accurately captures Victor's explicit conditional ('should certainly have thrown Agrippa aside') and correctly identifies the father's approach as dismissive without explanation ('sad trash' + no reasoning). The psychological reading of the backfire effect is tightly tied to Victor's own stated counterfactual.",
+          "chunk_relevance": "The anchor passage is perfectly sufficient and directly addresses the question. No tool retrieval was needed; the passage itself contains both the father's dismissal and Victor's explicit reflection on what would have worked instead. The passage is the locus of the answer.",
+          "answer_completeness": "The answer fully addresses the prompt's core question (why the dismissal backfires rhetorically) and engages both parts of the implied comparison: what the father actually did vs. what would have worked. It also explains the psychological mechanism (authority without explanation invites defiance from an intellectually hungry mind), which is implicit in Victor's description.",
+          "claim_precision": "The analysis is sharp and textually specific. Phrases like 'operates through pure authority rather than explanation,' the identification of the conditional ('should certainly have thrown Agrippa aside'), and the observation that contempt 'leaves the book's allure intact' are all directly supported by precise language in the passage. The insight about the father's carelessness as a 'kind of challenge' is a well-justified inference from the evidence."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "frankenstein_q03",
+      "questionOrdinal": 3,
+      "condition": "tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2218,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 412,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is tightly grounded in the anchor passage. Victor's exact words ('sad trash,' 'imagination warmed as it was') are quoted and correctly interpreted. The counterfactual about what a fuller explanation would have achieved is drawn directly from the anchor text.",
+          "chunk_relevance": "No tool retrieval was performed, but none was needed: the entire answer is passage-local and all claims derive from the anchor. The condition is passage_only, and chunk_relevance scores 5 because the task did not require elsewhere-in-book evidence and the answer stays within the anchor boundaries.",
+          "answer_completeness": "The answer fully addresses the prompt's core question: why the father's dismissal backfires (brief, unexplanatory) and how Victor's own description reveals this (he states explicitly that explanation would have redirected him). Both gold rubric hints are covered with precision and nuance.",
+          "claim_precision": "The answer avoids boilerplate and ties every interpretive move to specific phrases: 'sad trash' (the bare dismissal), 'imagination warmed as it was' (the psychological vulnerability), and the counterfactual structure of Victor's conditional statement. Literary analysis is sharp and textually rooted."
+        },
+        "violations": []
+      }
+    }
+  ],
+  "incomplete": false
+}

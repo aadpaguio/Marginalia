@@ -1,0 +1,1867 @@
+[
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q10",
+    "questionOrdinal": 10,
+    "condition": "passage_only",
+    "category": "cross-section",
+    "prompt": "Collins is settling on Elizabeth here after private talk with Mrs. Bennet—where earlier in the novel did he first spell out his ‘plan of amends’ for inheriting Longbourn, and what was its original target?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 3.3000000000000003,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 5,
+      "answer_completeness": 4,
+      "claim_precision": 3
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Unsupported quotation #1: 'Having now a good house...' — not present in ALLOWED_EVIDENCE.",
+      "Unsupported quotation #2: 'Miss Bennet's lovely face confirmed...' — not present in ALLOWED_EVIDENCE.",
+      "The claim about Mrs. Bennet's 'warning about Jane's imminent engagement' during a 'breakfast conversation' is not supported by the anchor passage, which only mentions 'private talk with Mrs. Bennet.'"
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q10",
+    "questionOrdinal": 10,
+    "condition": "smart_scan_tools",
+    "category": "cross-section",
+    "prompt": "Collins is settling on Elizabeth here after private talk with Mrs. Bennet—where earlier in the novel did he first spell out his ‘plan of amends’ for inheriting Longbourn, and what was its original target?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q10",
+    "questionOrdinal": 10,
+    "condition": "tools",
+    "category": "cross-section",
+    "prompt": "Collins is settling on Elizabeth here after private talk with Mrs. Bennet—where earlier in the novel did he first spell out his ‘plan of amends’ for inheriting Longbourn, and what was its original target?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q03",
+    "questionOrdinal": 3,
+    "condition": "passage_only",
+    "category": "passage-local",
+    "prompt": "Elizabeth insists she is ‘not’ what Miss Bingley claims—how does that little negation sharpen the social sparring?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 3.1,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 5,
+      "answer_completeness": 4,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Unsupported claim: 'Miss Bingley has just issued a flat characterization—Elizabeth \"despises cards\" and \"has no pleasure in anything else\"'—this quotation/paraphrase does not appear in ALLOWED_EVIDENCE.",
+      "The answer builds its entire preceding-context argument on material not in the anchor passage, violating passage_only constraint by assuming background knowledge of the scene."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q03",
+    "questionOrdinal": 3,
+    "condition": "smart_scan_tools",
+    "category": "passage-local",
+    "prompt": "Elizabeth insists she is ‘not’ what Miss Bingley claims—how does that little negation sharpen the social sparring?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 4.8,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 4,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q03",
+    "questionOrdinal": 3,
+    "condition": "tools",
+    "category": "passage-local",
+    "prompt": "Elizabeth insists she is ‘not’ what Miss Bingley claims—how does that little negation sharpen the social sparring?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 4.8,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 4,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q11",
+    "questionOrdinal": 11,
+    "condition": "passage_only",
+    "category": "cross-section",
+    "prompt": "Elizabeth is furious with Darcy at the Netherfield ball here—where does she later receive the long written account that reframes Wickham’s history?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 3.8,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 1,
+      "claim_precision": 4
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Major incompleteness: The prompt is a cross-section question asking about an event NOT in the anchor passage (where she later receives the account). Under passage_only condition with no retrieval, the assistant cannot answer the substantive question and should acknowledge this limitation while noting what would be needed to answer. The answer does this, but it means the core prompt remains unanswered."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q11",
+    "questionOrdinal": 11,
+    "condition": "smart_scan_tools",
+    "category": "cross-section",
+    "prompt": "Elizabeth is furious with Darcy at the Netherfield ball here—where does she later receive the long written account that reframes Wickham’s history?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 3.5,
+    "judgeScores": {
+      "faithfulness": 4,
+      "chunk_relevance": 5,
+      "answer_completeness": 2,
+      "claim_precision": 3
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Incomplete response: The user asked a direct cross-section question with 'where,' expecting a specific location answer. The gold rubric explicitly requires naming the Hunsford/Kent parsonage and the letter after the first proposal rejection. The assistant declined to provide this information, citing spoilers, which is not a valid reason to withhold factual plot information in the context of a reading app designed to help users understand the text they are reading.",
+      "Retrieval problem: No tool excerpts were retrieved to support the answer location. The smart_scan_tools condition suggests retrieval was available and should have been used to find the relevant passage about Darcy's letter at Hunsford."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q11",
+    "questionOrdinal": 11,
+    "condition": "tools",
+    "category": "cross-section",
+    "prompt": "Elizabeth is furious with Darcy at the Netherfield ball here—where does she later receive the long written account that reframes Wickham’s history?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": 0.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 2.25,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 2,
+      "answer_completeness": 3,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Fabricated citation anchor: The citation tag cites 'Soon after this' and 'took it up' as if from ALLOWED_EVIDENCE, but these phrases do not appear in any retrieved excerpt or the anchor passage.",
+      "Unsupported claims about letter content: 'his role in the militia' and the 'Wickham attempted to elope with Lydia' details are not present in ALLOWED_EVIDENCE.",
+      "Missing direct textual grounding: The answer does not quote or paraphrase from the actual letter scene, which should be retrievable if tools were available for a cross-section question."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q14",
+    "questionOrdinal": 14,
+    "condition": "passage_only",
+    "category": "book-level-thematic",
+    "prompt": "Elizabeth’s shame and anger here mix with reluctant re-evaluation—how does Austen trace her prejudice against Darcy from early misreadings to this turning point?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 2,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 3.0,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 5,
+      "answer_completeness": 2,
+      "claim_precision": 4
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Major omission of early-prejudice tracking: The answer does not substantively address Wickham's appeal, the assembly incident, or Darcy's interference with Jane—all cited in the gold rubric as seeds of Elizabeth's prejudice. The prompt asks how Austen traces prejudice 'from early misreadings,' but the answer supplies only introspection at the turning point.",
+      "Unsupported narrative claims: Phrases like 'choosing the account that fitted her wishes,' details about her re-reading struggle ('with the closest attention,' 'with what she meant to be impartiality'), and the interpretation of her shame as recognition of 'agency in deception' are not present in the anchor passage and no tool excerpts were retrieved to support them. These may be accurate to the novel, but they are not grounded in ALLOWED_EVIDENCE.",
+      "Insufficient retrieval for book-level prompt: The condition is passage_only, but the question is explicitly book-level (asking how Austen traces a prejudice arc). No tool excerpts were retrieved to provide scenes of early misreading (Wickham's account, the assembly, Jane's treatment). For a question that requires multi-scene context, passage_only with a single-sentence anchor leaves the answer unsupported."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q14",
+    "questionOrdinal": 14,
+    "condition": "smart_scan_tools",
+    "category": "book-level-thematic",
+    "prompt": "Elizabeth’s shame and anger here mix with reluctant re-evaluation—how does Austen trace her prejudice against Darcy from early misreadings to this turning point?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 2,
+    "evidenceItemsSatisfied": 2,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 4.75,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 4,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q14",
+    "questionOrdinal": 14,
+    "condition": "tools",
+    "category": "book-level-thematic",
+    "prompt": "Elizabeth’s shame and anger here mix with reluctant re-evaluation—how does Austen trace her prejudice against Darcy from early misreadings to this turning point?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 0.5,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 2,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q12",
+    "questionOrdinal": 12,
+    "condition": "passage_only",
+    "category": "cross-section",
+    "prompt": "Here Darcy slights Elizabeth at the assembly—much later she teases him about another woman admiring his handwriting. Who was that other woman?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 3.8,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 1,
+      "claim_precision": 4
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "No retrieval or tool use was attempted despite the condition being passage_only and the question explicitly requiring cross-textual evidence (handwriting teasing scene) not present in the anchor. The assistant should have acknowledged that the question requires elsewhere-in-book material and either provided the answer (if the model can infer from training knowledge that Caroline Bingley is the answer) or explicitly stated it cannot fulfill the request without broader retrieval. Merely saying 'you'd need to read further' does not answer a direct factual question about book content."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q12",
+    "questionOrdinal": 12,
+    "condition": "smart_scan_tools",
+    "category": "cross-section",
+    "prompt": "Here Darcy slights Elizabeth at the assembly—much later she teases him about another woman admiring his handwriting. Who was that other woman?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 5,
+    "retrievedChunkCount": 5,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 0.2,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 0,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 4.4,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 2,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "The specific scene where Miss Bingley praises Darcy's handwriting is not present in ALLOWED_EVIDENCE. While the answer is factually correct per the gold rubric, it cannot be anchored to the retrieved text. This is acceptable under the smart_scan condition since the answer matches the gold standard, but the retrieval itself failed to locate the relevant passage."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q12",
+    "questionOrdinal": 12,
+    "condition": "tools",
+    "category": "cross-section",
+    "prompt": "Here Darcy slights Elizabeth at the assembly—much later she teases him about another woman admiring his handwriting. Who was that other woman?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": 0.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 0,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 1.0,
+    "judgeScores": {
+      "faithfulness": 1,
+      "chunk_relevance": 1,
+      "answer_completeness": 1,
+      "claim_precision": 1
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Invented constraint: Assistant claims a 'spoiler boundary' at 'Chapter III' that does not exist in the task specification. The condition is 'tools' (not passage_only), and the gold rubric explicitly flags answerInAnchor=false, indicating the answer should be retrieved from elsewhere in the book.",
+      "Refusal to answer: The assistant was given permission and instruction to use retrieved tool excerpts to answer cross-section questions. Refusing on grounds of spoilers directly contradicts the task design.",
+      "No retrieval attempt: The retrieved chunks are from Chapters I–VIII. The scene with Darcy's handwriting being praised by Miss Bingley occurs later in the novel (Chapter XXVII, during the Hunsford visit). The assistant never searched or indicated awareness that this material was available via tool retrieval.",
+      "False framing: Assistant frames this as a 'direction' question tied to user progress in the ebook ('hasn't appeared yet in this direction'), but no such metadata was provided. The anchor passage is from Chapter III; retrievals go through Chapter VIII. The question is explicitly cross-section and expects book-wide knowledge."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q15",
+    "questionOrdinal": 15,
+    "condition": "passage_only",
+    "category": "book-level-thematic",
+    "prompt": "Lady Catherine’s bullying visit is raised here as a comic ‘moral’—how does that episode’s logic of rank and interference connect back to Charlotte’s acceptance of life at Hunsford?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 2,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 2.0,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 2,
+      "claim_precision": 3
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Unsupported claim: 'Charlotte accepts Hunsford because she sees the world as it is'—no evidence of Charlotte's reasoning or Hunsford acceptance in ALLOWED_EVIDENCE.",
+      "Unsupported claim: 'Had rank truly worked as she believed, Elizabeth would simply obey'—extrapolation not present in anchor passage.",
+      "Retrieval failure: No excerpts retrieved to contextualize Charlotte's marriage to Collins or her life at Hunsford, yet the question demands explicit connection between the two episodes.",
+      "Incomplete thematic connection: Answer does not reference or compare Charlotte's 'practical' acceptance (mentioned in gold rubric) to Lady Catherine's interference using textual evidence."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q15",
+    "questionOrdinal": 15,
+    "condition": "smart_scan_tools",
+    "category": "book-level-thematic",
+    "prompt": "Lady Catherine’s bullying visit is raised here as a comic ‘moral’—how does that episode’s logic of rank and interference connect back to Charlotte’s acceptance of life at Hunsford?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 2,
+    "evidenceItemsSatisfied": 2,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 2.0,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 2,
+      "answer_completeness": 2,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Unsupported claim: 'patronage—future family livings—depends on Lady Catherine's whim' is inferred but not explicitly stated in retrieved excerpts.",
+      "Unsupported claim: 'Charlotte *voluntarily adopted*' the assumption of submission; the text describes her as practical and resigned, not consciously embracing a philosophy.",
+      "Missing key evidence: The anchor passage (Darcy's statement about the moral) is not cited or analyzed; instead, the answer interprets it without directly quoting or anchoring the interpretation.",
+      "Incomplete response: Does not clearly explain what the 'comic moral' is or how Lady Catherine's visit demonstrates it; assumes reader understands the thematic link.",
+      "Imprecise conclusion: The comparison to Elizabeth and Wickham is introduced abruptly and is not clearly connected to the original question about Charlotte and Lady Catherine."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q15",
+    "questionOrdinal": 15,
+    "condition": "tools",
+    "category": "book-level-thematic",
+    "prompt": "Lady Catherine’s bullying visit is raised here as a comic ‘moral’—how does that episode’s logic of rank and interference connect back to Charlotte’s acceptance of life at Hunsford?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 2,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 1.7999999999999998,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 2,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "No retrieved excerpts are present despite the 'tools' condition. The question requires evidence from multiple parts of the novel (Hunsford scenes with Charlotte, and Lady Catherine's visit), but neither is retrieved.",
+      "Claims about Charlotte's internal state ('she made peace with a loveless marriage,' 'she accepted her diminishment') are not grounded in ALLOWED_EVIDENCE and appear to be inference without textual anchor.",
+      "The answer does not cite or reference specific scenes where Charlotte accepts Hunsford, making the comparison to Lady Catherine's visit largely conceptual rather than evidence-based.",
+      "The interpretation that 'the rules were never as binding as she thought' is offered as insight but not tied to any passage demonstrating this thematic point in the retrieved or anchor material."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q09",
+    "questionOrdinal": 9,
+    "condition": "passage_only",
+    "category": "nearby-context",
+    "prompt": "Maria has just dragged Elizabeth downstairs—what two-word spectacle are they running toward that Maria refused to name in the lines just before this?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 0,
+    "expectedAnswerPointTotal": 1,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 2.6,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 5,
+      "answer_completeness": 2,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Missing the two-word spectacle label. The gold rubric expects the answer to cite Maria's teasing phrase ('such a sight'), but the assistant instead describes the event itself without recovering the language Maria used to refuse to name it.",
+      "Misalignment with prompt intent. The question targets not just what the spectacle is, but the specific two-word term Maria used for it—a linguistic/rhetorical feature the assistant glosses over."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q09",
+    "questionOrdinal": 9,
+    "condition": "smart_scan_tools",
+    "category": "nearby-context",
+    "prompt": "Maria has just dragged Elizabeth downstairs—what two-word spectacle are they running toward that Maria refused to name in the lines just before this?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 0,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 2.6,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 5,
+      "answer_completeness": 2,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "The question asks for the two-word phrase Maria used to describe the spectacle while refusing to name it explicitly. The gold rubric expects 'such a sight.' The assistant identifies 'two ladies' (the actual spectacle) instead of 'such a sight' (Maria's refusal label). This is a fundamental mismatch with the gold expectation.",
+      "The assistant's final claim that 'Maria's refusal to specify beforehand is part of the dramatic effect' is somewhat supported, but the core task—identifying the two-word phrase Maria used as her teasing refusal—is not answered."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q09",
+    "questionOrdinal": 9,
+    "condition": "tools",
+    "category": "nearby-context",
+    "prompt": "Maria has just dragged Elizabeth downstairs—what two-word spectacle are they running toward that Maria refused to name in the lines just before this?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 0,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 2.6,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 5,
+      "answer_completeness": 2,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Unsupported answer: 'lady Catherine' is not the two-word phrase Maria uses before refusing to name the sight. The retrieved tool text clearly shows Maria saying 'there is such a sight to be seen! I will not tell you what it is'—the answer should identify 'such a sight' as the teasing label.",
+      "Invented interpretation: The assistant claims the 'sight' is 'Lady Catherine de Bourgh and her daughter Anne, arriving in their carriage' and adds that Anne is 'the woman widely expected to be his [Darcy's] future wife.' These details are not present in the allowed evidence at this point in the narrative.",
+      "Misalignment with gold rubric: The gold rubric expects the answer to name 'such a sight' (the two-word phrase with 'seen') as Maria's teasing label. The assistant instead provides a character name and speculative context."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q13",
+    "questionOrdinal": 13,
+    "condition": "passage_only",
+    "category": "book-level-thematic",
+    "prompt": "Mrs. Bennet’s nerves and Kitty’s cough get played for laughs—how does this early domestic comedy relate to the novel’s larger pressure on daughters to marry well?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 2,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 3.0500000000000003,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 5,
+      "answer_completeness": 3,
+      "claim_precision": 3
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Unsupported factual claims: 'Mrs. Bennet has no resources—no money, no stability' and the implicit reference to the entailed estate are not present in ALLOWED_EVIDENCE. These are book-wide facts necessary to answer the gold rubric's first point, but they are asserted without retrieval or anchor support.",
+      "The answer conflates interpretation (nerves as marriage anxiety) with factual assertion (no resources, entailment) without marking the boundary. While the former is supported by the scene, the latter is not."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q13",
+    "questionOrdinal": 13,
+    "condition": "smart_scan_tools",
+    "category": "book-level-thematic",
+    "prompt": "Mrs. Bennet’s nerves and Kitty’s cough get played for laughs—how does this early domestic comedy relate to the novel’s larger pressure on daughters to marry well?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 0.5,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 2,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 4.15,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 2,
+      "answer_completeness": 4,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Chunk 1 is predominantly off-topic filler (chapter headings and navigation elements), reducing retrieval efficiency. The question would have been well-served by more targeted excerpts on the entailment or estate law, though the answer does not suffer from their absence since the core textual analysis is sound."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q13",
+    "questionOrdinal": 13,
+    "condition": "tools",
+    "category": "book-level-thematic",
+    "prompt": "Mrs. Bennet’s nerves and Kitty’s cough get played for laughs—how does this early domestic comedy relate to the novel’s larger pressure on daughters to marry well?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 0.5,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 2,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 4.75,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 4,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q08",
+    "questionOrdinal": 8,
+    "condition": "passage_only",
+    "category": "nearby-context",
+    "prompt": "Right before Elizabeth falls into this spiral of re-reading, what single object has she been working through line by line?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 1.7999999999999998,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 2,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Fabricated or unsupported quotation: 'went through them (the letter's contents) eagerly' does not appear in ALLOWED_EVIDENCE.",
+      "Insufficient retrieval: No tool excerpts were retrieved to support the contextual claim about re-reading spirals or the letter's contents.",
+      "Answer conflates the object with the subsequent reading pattern without clear temporal distinction based on anchor passage alone."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q08",
+    "questionOrdinal": 8,
+    "condition": "smart_scan_tools",
+    "category": "nearby-context",
+    "prompt": "Right before Elizabeth falls into this spiral of re-reading, what single object has she been working through line by line?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q08",
+    "questionOrdinal": 8,
+    "condition": "tools",
+    "category": "nearby-context",
+    "prompt": "Right before Elizabeth falls into this spiral of re-reading, what single object has she been working through line by line?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q01",
+    "questionOrdinal": 1,
+    "condition": "passage_only",
+    "category": "passage-local",
+    "prompt": "That opening sentence sounds like plain social fact—what in the very next sentences signals the narrator is not quite endorsing it straight?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q01",
+    "questionOrdinal": 1,
+    "condition": "smart_scan_tools",
+    "category": "passage-local",
+    "prompt": "That opening sentence sounds like plain social fact—what in the very next sentences signals the narrator is not quite endorsing it straight?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q01",
+    "questionOrdinal": 1,
+    "condition": "tools",
+    "category": "passage-local",
+    "prompt": "That opening sentence sounds like plain social fact—what in the very next sentences signals the narrator is not quite endorsing it straight?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 4.4,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 2,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q07",
+    "questionOrdinal": 7,
+    "condition": "passage_only",
+    "category": "nearby-context",
+    "prompt": "What deflecting reply does Mr. Darcy give immediately after Miss Bingley begins praising Georgiana’s harp progress in this stretch?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 2.35,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 5,
+      "answer_completeness": 1,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Misreads passage structure: 'He was silent' precedes Miss Bingley's praise of Georgiana, not follows it. The question asks for the deflecting reply *after* her praise begins, which the assistant claims does not exist but the gold rubric suggests should be present.",
+      "Fails to identify or quote Darcy's actual deflecting response. The anchor is incomplete; the answer should note this limitation rather than claim definitively that no reply exists.",
+      "Answer contradicts gold rubric expectation of a deferral reply ('raptures until he finishes writing') with no acknowledgment of missing context."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q07",
+    "questionOrdinal": 7,
+    "condition": "smart_scan_tools",
+    "category": "nearby-context",
+    "prompt": "What deflecting reply does Mr. Darcy give immediately after Miss Bingley begins praising Georgiana’s harp progress in this stretch?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q07",
+    "questionOrdinal": 7,
+    "condition": "tools",
+    "category": "nearby-context",
+    "prompt": "What deflecting reply does Mr. Darcy give immediately after Miss Bingley begins praising Georgiana’s harp progress in this stretch?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q05",
+    "questionOrdinal": 5,
+    "condition": "passage_only",
+    "category": "passage-local",
+    "prompt": "What does ‘scrupled not’ suggest about how the narrator is coloring the accuser’s moral posture here?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q05",
+    "questionOrdinal": 5,
+    "condition": "smart_scan_tools",
+    "category": "passage-local",
+    "prompt": "What does ‘scrupled not’ suggest about how the narrator is coloring the accuser’s moral posture here?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q05",
+    "questionOrdinal": 5,
+    "condition": "tools",
+    "category": "passage-local",
+    "prompt": "What does ‘scrupled not’ suggest about how the narrator is coloring the accuser’s moral posture here?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 3.4,
+    "judgeScores": {
+      "faithfulness": 4,
+      "chunk_relevance": 2,
+      "answer_completeness": 4,
+      "claim_precision": 3
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Identity of the accuser: The answer speaks of 'the character leveling charges' and 'the accuser' without naming Darcy, making it less precise than warranted by the anchor text.",
+      "Over-interpretation on moral judgment: The claim that the accuser is 'morally unthinking' is a strong inference not fully supported by 'scrupled not' alone; the phrase primarily signals lack of hesitation, not necessarily lack of thinking.",
+      "Retrieval inefficiency: Retrieved chunks do not directly support analysis of the narrator's framing technique via this phrase; they are contextual background rather than focused evidence for the rhetorical question at hand."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q04",
+    "questionOrdinal": 4,
+    "condition": "passage_only",
+    "category": "passage-local",
+    "prompt": "What is Mrs. Bennet really doing with all those hedges (‘could not… could not… did not know’) about Jane versus the younger girls?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q04",
+    "questionOrdinal": 4,
+    "condition": "smart_scan_tools",
+    "category": "passage-local",
+    "prompt": "What is Mrs. Bennet really doing with all those hedges (‘could not… could not… did not know’) about Jane versus the younger girls?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 2.85,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 5,
+      "answer_completeness": 3,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Unsupported claim: 'Mrs. Bennet is strategically undermining Jane' — the passage shows she is promoting Jane as a desirable match, not undermining her.",
+      "Unsupported claim: 'suggest that Jane is about to become unavailable to Bingley' — the passage says Jane 'was likely to be very soon engaged,' which is positive positioning, not removal of her from Bingley's reach.",
+      "Unsupported context: Ascription of spite and reaction to Lady Catherine's controlling behavior is inferred from passages not in ALLOWED_EVIDENCE and misrepresents the immediate rhetorical function shown in the anchor.",
+      "Incomplete analysis of the gold rubric point about the contrast: The answer mentions it but does not explain clearly how *not* hedging about the younger daughters sharpens the impression that Jane is the special case."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q04",
+    "questionOrdinal": 4,
+    "condition": "tools",
+    "category": "passage-local",
+    "prompt": "What is Mrs. Bennet really doing with all those hedges (‘could not… could not… did not know’) about Jane versus the younger girls?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 1.7999999999999998,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 2,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Major factual error: Assistant claims Mrs. Bennet hints that 'Elizabeth is likely to be engaged very soon,' but the anchor explicitly refers to 'her eldest daughter' (Jane), not Elizabeth. This is a reading comprehension failure.",
+      "Logical inversion: The assistant claims Mrs. Bennet wants to steer Collins *away* from Jane, but the anchor describes a 'caution against the very Jane he had fixed on' followed immediately by a hint that Jane 'was likely to be very soon engaged'—a classic indirect steering *toward* Jane by making her seem unavailable, not away from her.",
+      "Retrieved chunks do not substantively address the question about the rhetorical function of the hedges themselves. Context on Collins's character is tangential to analyzing Mrs. Bennet's utterances."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q02",
+    "questionOrdinal": 2,
+    "condition": "passage_only",
+    "category": "passage-local",
+    "prompt": "What tone does Mr. Bennet strike in his one-line answer to his wife here—and what does it imply about how he treats her news?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q02",
+    "questionOrdinal": 2,
+    "condition": "smart_scan_tools",
+    "category": "passage-local",
+    "prompt": "What tone does Mr. Bennet strike in his one-line answer to his wife here—and what does it imply about how he treats her news?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q02",
+    "questionOrdinal": 2,
+    "condition": "tools",
+    "category": "passage-local",
+    "prompt": "What tone does Mr. Bennet strike in his one-line answer to his wife here—and what does it imply about how he treats her news?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q06",
+    "questionOrdinal": 6,
+    "condition": "passage_only",
+    "category": "nearby-context",
+    "prompt": "Who is speaking this line, and which absent officer are they hinting about—details given in the exchange just above this sentence?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 1.7999999999999998,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 2,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Mr. Denny is not named in the anchor passage; speaker identity is unsupported.",
+      "Wickham is not mentioned in the anchor passage; identification is unsupported.",
+      "Mr. Darcy is not mentioned in the anchor passage; identification as the 'certain gentleman' is unsupported.",
+      "The detail about 'a significant smile' is not in the anchor passage; invented or recalled from external knowledge.",
+      "No retrieved excerpts provided despite question's explicit request for 'details given in the exchange just above'—retrieval failure."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q06",
+    "questionOrdinal": 6,
+    "condition": "smart_scan_tools",
+    "category": "nearby-context",
+    "prompt": "Who is speaking this line, and which absent officer are they hinting about—details given in the exchange just above this sentence?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 3,
+    "retrievedChunkCount": 3,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "pride_and_prejudice",
+    "setName": "pnp_2",
+    "stableKey": "pride_and_prejudice_q06",
+    "questionOrdinal": 6,
+    "condition": "tools",
+    "category": "nearby-context",
+    "prompt": "Who is speaking this line, and which absent officer are they hinting about—details given in the exchange just above this sentence?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  }
+]

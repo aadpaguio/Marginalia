@@ -1,0 +1,1944 @@
+{
+  "csv": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.csv",
+  "bookId": "pride_and_prejudice",
+  "setName": "pnp_2",
+  "rubricPath": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/config/judge_rubric.json",
+  "model": "claude-haiku-4-5-20251001",
+  "rowsJudged": 45,
+  "judgments": [
+    {
+      "stableKey": "pride_and_prejudice_q10",
+      "questionOrdinal": 10,
+      "condition": "passage_only",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2094,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 517,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.3000000000000003,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 5,
+          "answer_completeness": 4,
+          "claim_precision": 3
+        },
+        "rationales": {
+          "faithfulness": "The assistant provides two extended quotations with specific anchor citations, but neither quotation appears in the ALLOWED_EVIDENCE block. The anchor passage only contains the sentence about Collins changing from Jane to Elizabeth. The assistant's claims about what Collins 'intended' and his 'plan of amends' are not verifiable from the provided evidence.",
+          "chunk_relevance": "The anchor passage directly answers the core question by naming Jane as his original target and showing the switch to Elizabeth. No retrieved tool excerpts were provided, but the anchor alone is sufficient and highly relevant.",
+          "answer_completeness": "The answer addresses both main components: it identifies where Collins explained his plan (arrival at Longbourn) and names Jane as the original target. It also explains the trigger for the switch (Mrs. Bennet's warning). All key points from the gold rubric are covered.",
+          "claim_precision": "The answer is grounded in the anchor passage for the fact of switching from Jane to Elizabeth, but the attributed quotations lack textual basis in ALLOWED_EVIDENCE, weakening precision. The interpretive claim about Mrs. Bennet's 'warning' during breakfast is reasonable but unsupported."
+        },
+        "violations": [
+          "Unsupported quotation #1: 'Having now a good house...' — not present in ALLOWED_EVIDENCE.",
+          "Unsupported quotation #2: 'Miss Bennet's lovely face confirmed...' — not present in ALLOWED_EVIDENCE.",
+          "The claim about Mrs. Bennet's 'warning about Jane's imminent engagement' during a 'breakfast conversation' is not supported by the anchor passage, which only mentions 'private talk with Mrs. Bennet.'"
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q10",
+      "questionOrdinal": 10,
+      "condition": "smart_scan_tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 7318,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 475,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every claim is rigorously grounded in the retrieved evidence. The assistant correctly cites Collins's explicit 'plan of amends' from Chapter XV, identifies Jane as his first settled choice ('for the first evening she was his settled choice'), and traces Mrs. Bennet's intervention that causes the pivot to Elizabeth.",
+          "chunk_relevance": "The retrieved passages directly answer both sub-parts of the question: Chapters XIII–XV contain Collins's letter explaining his intent to make amends, the exposition of his marriage strategy, Jane's initial selection, and Mrs. Bennet's private conversation that switches him to Elizabeth. All material is tightly on-target.",
+          "answer_completeness": "The response fully addresses the prompt's two-part requirement: (1) locating where Collins spelled out his 'plan of amends' (Chapter XV, with reference to his letter in Chapter XIII), and (2) identifying Jane as the original target before Mrs. Bennet's hints shift him to Elizabeth. The answer also contextualizes the anchor passage's description of the switch.",
+          "claim_precision": "The assistant uses exact textual anchors ('Miss Bennet's lovely face confirmed his views, and established all his strictest notions of what was due to seniority; and for the first evening she was his settled choice') and directly quotes the narrator's summary of Collins's scheme ('This was his plan of amends—of atonement—for inheriting their father's estate'). No vague generalizations; all claims are firmly tied to specific passages."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q10",
+      "questionOrdinal": 10,
+      "condition": "tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2857,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 407,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly grounded in the retrieved evidence. The assistant correctly identifies Chapter XV as the location, accurately quotes the 'plan of amends' passage, correctly names Jane as the original target, and accurately describes the mechanism of the switch (Mrs. Bennet's hint about Jane's impending engagement).",
+          "chunk_relevance": "The retrieved chunks are precisely on-target: Chunk 1 contains the full exposition of Collins's scheme, his initial choice of Jane, and the immediate redirection via Mrs. Bennet's conversation—exactly what the prompt asks for. No filler or off-topic material.",
+          "answer_completeness": "The answer fully addresses all parts of the prompt: it locates the 'plan of amends' exposition (Chapter XV), quotes the relevant passage, identifies the original target (Jane), and explains the context of the later switch (Mrs. Bennet's private hints). All gold rubric points are covered.",
+          "claim_precision": "The answer is sharply precise, tying each claim to specific textual evidence with clear citations. The distinction between the original plan and the Mrs. Bennet-driven switch is cleanly drawn, and the quoted language matches the retrieved text exactly."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q03",
+      "questionOrdinal": 3,
+      "condition": "passage_only",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2053,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 508,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.1,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 5,
+          "answer_completeness": 4,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant invents a preceding Miss Bingley remark ('despises cards' and 'has no pleasure in anything else') that does not appear in ALLOWED_EVIDENCE. Only the anchor passage is provided, with no context for what Miss Bingley actually said. This misrepresentation undermines the analysis.",
+          "chunk_relevance": "The anchor passage is directly on-topic and sufficient for the question; no retrieval was needed or provided, making this a passage-only evaluation where the passage itself is perfectly relevant.",
+          "answer_completeness": "The answer addresses the main prompt (how the negation sharpens social sparring) and touches on both gold rubric points: the stress on 'not' and the effect of rebuffing the claim. Minor gap: it could more explicitly name the exaggerated praise/censure Elizabeth is pushing back against within the anchor text alone.",
+          "claim_precision": "The analysis relies heavily on invented context (the 'bookish prude' caricature, Miss Bingley's exact phrasing) rather than close reading of what is actually in the anchor. While the tone and strategic logic discussion has merit, it rests on speculative reconstruction unsupported by ALLOWED_EVIDENCE."
+        },
+        "violations": [
+          "Unsupported claim: 'Miss Bingley has just issued a flat characterization—Elizabeth \"despises cards\" and \"has no pleasure in anything else\"'—this quotation/paraphrase does not appear in ALLOWED_EVIDENCE.",
+          "The answer builds its entire preceding-context argument on material not in the anchor passage, violating passage_only constraint by assuming background knowledge of the scene."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q03",
+      "questionOrdinal": 3,
+      "condition": "smart_scan_tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3183,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 475,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.8,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 4,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is grounded in the anchor passage and retrieved chunks. The assistant correctly identifies Miss Bingley's caricature ('She is a great reader, and has no pleasure in anything else') from Chunk 1, pairs it against Elizabeth's negation ('I am not a great reader'), and supports interpretation with the explicit follow-up phrase ('and I have pleasure in many things') from the anchor.",
+          "chunk_relevance": "Chunk 1 provides the exact Miss Bingley claim that prompts Elizabeth's negation, establishing the social context of the sparring. Chunk 2 offers supporting detail on the surrounding scene (the library discussion, Miss Bingley's flirtation with Darcy) that enriches but is not strictly necessary for the core question.",
+          "answer_completeness": "The response fully addresses both gold rubric points: it highlights the stressed negation on 'not a great reader' and explains how the line rebuffs exaggerated censure while maintaining social sharpness. It also explores the layered meaning (Elizabeth's refusal of a false category, the assertion of complexity, the quiet demonstration of discernment).",
+          "claim_precision": "The analysis is sharply tied to the exact words in the evidence. Phrases like 'compresses Elizabeth into a caricature,' 'flips Miss Bingley's slander back on her,' and 'the refusal to rise to provocation' are all grounded in the specific text and demonstrate close reading without overreach."
+        },
+        "violations": [],
+        "_repair_pass": true
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q03",
+      "questionOrdinal": 3,
+      "condition": "tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3144,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 472,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.8,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 4,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "All substantive claims are anchored in the ALLOWED_EVIDENCE. The assistant correctly identifies Miss Bingley's caricature ('great reader, and has no pleasure in anything else') and Elizabeth's direct negation ('I am not a great reader'), then grounded the interpretation of refusal and reframing in the anchor passage.",
+          "chunk_relevance": "Chunk 1 is highly relevant, containing the exact Miss Bingley quote about Elizabeth being 'a great reader.' Chunk 2 is somewhat tangential (the Pemberley library discussion), but it reinforces Miss Bingley's obsession with status and book ownership, providing legitimate contextual texture. Minor noise does not significantly detract.",
+          "answer_completeness": "The answer fully addresses both gold rubric points: it explains the stressed negation ('not a great reader') and how it rebuffs Miss Bingley's exaggerated praise/caricature while maintaining social sharpness. The answer also elegantly explains the dual refusal (neither saint nor snob) and the reframing of pleasures as broad rather than snobbish.",
+          "claim_precision": "The analysis is tightly grounded in specific language ('great reader,' 'many things') and explains the mechanism of the negation with surgical precision: how denial of the 'great' qualifier undercuts both flattery and insult simultaneously. The interpretation of 'domesticates' and 'parry' are precise literary moves tied directly to the text."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q11",
+      "questionOrdinal": 11,
+      "condition": "passage_only",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1904,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 453,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.8,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 1,
+          "claim_precision": 4
+        },
+        "rationales": {
+          "faithfulness": "The assistant makes no unsupported claims and correctly acknowledges the limits of what it can answer from the anchor passage alone. No hallucinations or invented details.",
+          "chunk_relevance": "The anchor passage correctly captures Elizabeth's fury at Darcy during the Netherfield ball. No retrieval was attempted or returned, which is appropriate given the passage_only condition; however, this condition prevented answering the cross-section question.",
+          "answer_completeness": "The prompt explicitly asks a two-part cross-section question: where (location) does Elizabeth later receive the written account? The answer does not provide the Hunsford/Kent parsonage scene, Darcy's letter after his proposal refusal, or any specific location/episode. The assistant punts rather than attempting to answer the deferred question.",
+          "claim_precision": "The assistant is appropriately cautious, stating it has 'only this excerpt from the ball itself' and needs to 'read beyond what's attached here.' This is honest and precise about evidentiary limits."
+        },
+        "violations": [
+          "Major incompleteness: The prompt is a cross-section question asking about an event NOT in the anchor passage (where she later receives the account). Under passage_only condition with no retrieval, the assistant cannot answer the substantive question and should acknowledge this limitation while noting what would be needed to answer. The answer does this, but it means the core prompt remains unanswered."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q11",
+      "questionOrdinal": 11,
+      "condition": "smart_scan_tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1979,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 517,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.5,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 4,
+          "chunk_relevance": 5,
+          "answer_completeness": 2,
+          "claim_precision": 3
+        },
+        "rationales": {
+          "faithfulness": "The assistant makes no false claims about the text; it correctly identifies that the letter occurs later and involves Darcy's explanation. However, it avoids providing the specific location requested, so no textual claims are directly contradicted.",
+          "chunk_relevance": "The anchor passage is highly relevant—it directly illustrates Elizabeth's fury with Wickham at the ball, establishing the context for the user's question about the reframing letter.",
+          "answer_completeness": "The answer completely fails the prompt. The user explicitly asks 'where does she later receive the long written account,' and the gold rubric requires naming the Hunsford/Kent parsonage episode and the letter after Darcy's first proposal. The assistant declines to answer, offering only a meta-discussion about spoilers rather than providing the factual information requested.",
+          "claim_precision": "The assistant is vague about timing ('during a pivotal sequence that follows') and offers no specific location, character context, or textual detail that would constitute a precise literary answer."
+        },
+        "violations": [
+          "Incomplete response: The user asked a direct cross-section question with 'where,' expecting a specific location answer. The gold rubric explicitly requires naming the Hunsford/Kent parsonage and the letter after the first proposal rejection. The assistant declined to provide this information, citing spoilers, which is not a valid reason to withhold factual plot information in the context of a reading app designed to help users understand the text they are reading.",
+          "Retrieval problem: No tool excerpts were retrieved to support the answer location. The smart_scan_tools condition suggests retrieval was available and should have been used to find the relevant passage about Darcy's letter at Hunsford."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q11",
+      "questionOrdinal": 11,
+      "condition": "tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2705,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 640,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.25,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 2,
+          "answer_completeness": 3,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The answer makes several substantive claims not supported by ALLOWED_EVIDENCE: that Darcy's letter explains Wickham's 'role in the militia,' that it details an elopement attempt with Lydia, and that Elizabeth reads it 'repeatedly.' The citation anchor is fabricated (those phrases do not appear in provided excerpts). The Hunsford/Kent location and the post-proposal timing are reasonable inferences from the retrieved chunk mentioning Hunsford Parsonage, but the specific content claims about the letter are unsupported.",
+          "chunk_relevance": "Retrieved excerpts focus on the Netherfield ball episode and Hunsford Parsonage setting but do not contain the actual letter scene, Darcy's proposal, or the content of his written account. The retrieval establishes the Hunsford location but lacks the key textual evidence needed to answer where and when Elizabeth receives the reframing letter.",
+          "answer_completeness": "The answer identifies the general location (Rosings/during her stay there) and the mechanism (a letter after proposal rejection), which aligns with gold rubric points. However, it does not quote or directly anchor the letter content, and the specifics about what the letter contains are presented without textual support from ALLOWED_EVIDENCE.",
+          "claim_precision": "The answer is vague about the letter's actual contents and over-reaches by claiming it addresses Wickham's 'role in the militia' and the Lydia elopement without evidence in the provided excerpts. The phrase 'gradually shifting her view' is generic and not tied to specific textual moments."
+        },
+        "violations": [
+          "Fabricated citation anchor: The citation tag cites 'Soon after this' and 'took it up' as if from ALLOWED_EVIDENCE, but these phrases do not appear in any retrieved excerpt or the anchor passage.",
+          "Unsupported claims about letter content: 'his role in the militia' and the 'Wickham attempted to elope with Lydia' details are not present in ALLOWED_EVIDENCE.",
+          "Missing direct textual grounding: The answer does not quote or paraphrase from the actual letter scene, which should be retrievable if tools were available for a cross-section question."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q14",
+      "questionOrdinal": 14,
+      "condition": "passage_only",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2193,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 758,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 5,
+          "answer_completeness": 2,
+          "claim_precision": 4
+        },
+        "rationales": {
+          "faithfulness": "The assistant makes several substantive interpretive claims (e.g., 'choosing the account that fitted her wishes,' her re-reading pattern, the notion of 'agency in the deception') that are plausible but not grounded in ALLOWED_EVIDENCE. The anchor passage alone provides only the single sentence about the letter's exonerating effect; the assistant supplies narrative detail about Elizabeth's internal process and emotional arc without textual support.",
+          "chunk_relevance": "No tool excerpts were retrieved, which is appropriate for a passage_only condition. The anchor passage is directly on-topic (it is the turning point moment referenced in the prompt), but it is extremely thin—one sentence—leaving major contextual claims unsupported.",
+          "answer_completeness": "The answer addresses the turning point (letter-reading) but almost entirely omits the first major rubric expectation: tracking Elizabeth's *early* prejudice (assembly slight, Wickham's account, interference with Jane) as seeds. The prompt explicitly asks how Austen traces prejudice '*from early misreadings to this turning point*'; the answer focuses almost entirely on the moment itself and her internal psychology, not the arc or the prior episodes that fed her bias.",
+          "claim_precision": "The analysis is intellectually precise and well-articulated (the distinction between being 'foolish' vs. 'selective,' the emphasis on agency), but precision of *textual support* is low because these claims are not anchored to evidence from the book beyond the single sentence provided."
+        },
+        "violations": [
+          "Major omission of early-prejudice tracking: The answer does not substantively address Wickham's appeal, the assembly incident, or Darcy's interference with Jane—all cited in the gold rubric as seeds of Elizabeth's prejudice. The prompt asks how Austen traces prejudice 'from early misreadings,' but the answer supplies only introspection at the turning point.",
+          "Unsupported narrative claims: Phrases like 'choosing the account that fitted her wishes,' details about her re-reading struggle ('with the closest attention,' 'with what she meant to be impartiality'), and the interpretation of her shame as recognition of 'agency in deception' are not present in the anchor passage and no tool excerpts were retrieved to support them. These may be accurate to the novel, but they are not grounded in ALLOWED_EVIDENCE.",
+          "Insufficient retrieval for book-level prompt: The condition is passage_only, but the question is explicitly book-level (asking how Austen traces a prejudice arc). No tool excerpts were retrieved to provide scenes of early misreading (Wickham's account, the assembly, Jane's treatment). For a question that requires multi-scene context, passage_only with a single-sentence anchor leaves the answer unsupported."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q14",
+      "questionOrdinal": 14,
+      "condition": "smart_scan_tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 7316,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 499,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.75,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 4,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is grounded in the retrieved letter text and the reading-scene passage. Quotations are accurately anchored, and the interpretation of Elizabeth's emotional trajectory (prejudice → collision with evidence → shame at her own misjudgment) is directly supported by specific phrases like 'With a strong prejudice against everything,' 'flattered herself that her wishes did not err,' and the corroboration passage on Wickham.",
+          "chunk_relevance": "The retrieved excerpts are tightly focused on the letter-reading moment and the letter itself, which is precisely what the question requires. The tool output provides both Darcy's full written explanation and Elizabeth's immediate reactions as she reads, creating an ideal evidentiary base for tracing her prejudice re-evaluation.",
+          "answer_completeness": "The answer addresses the core request: how Austen traces Elizabeth's prejudice against Darcy and its turning point. It identifies early credulity toward Wickham, resentment of Darcy, and the letter as the re-test of that prejudice. One minor gap: the answer could more explicitly anchor early prejudice seeds (assembly slight, initial Wickham credibility) though it touches on these implicitly.",
+          "claim_precision": "Highly precise and textually grounded. The answer moves from her 'ironclad conviction' and 'defensive' reading to the specific mechanism of corroboration-then-discrepancy on the living and three thousand pounds, then to her internal resistance ('flattered herself'). The distinction between shame at her own judgment versus submission to Darcy is sharp and well-supported by the retrieved language."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q14",
+      "questionOrdinal": 14,
+      "condition": "tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3156,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 483,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly grounded in the retrieved evidence: the initial prejudice ('with a strong prejudice against everything he might say'), the defensive reading, the shift to Wickham section, the specific details (three thousand pounds, closest attention, forced to hesitate), and the anchor passage about seeing Darcy as blameless. No invented quotations or unsupported assertions.",
+          "chunk_relevance": "Retrieved chunks are tightly focused on the exact passage: they show Elizabeth's initial prejudiced reading of the letter, her resistance to Wickham's discrediting, and her forced re-examination with impartiality. All excerpts directly illuminate the turning-point moment the prompt asks about.",
+          "answer_completeness": "The response fully addresses both gold rubric expectations: it tracks early prejudice (Wickham's credibility, her defensive reading) and explains the letter-reading as a forced re-test where the same affair becomes blameless upon closer scrutiny. It also addresses the prompt's request about 'shame and anger mixing with reluctant re-evaluation' and traces the trajectory from early misreadings to turning point.",
+          "claim_precision": "The answer is sharply specific about textual moments (the living dispute, three thousand pounds, 'forced to hesitate'), precise about Austen's technique (rendering this as agonizing struggle rather than sudden enlightenment), and ties interpretive claims tightly to quoted language. The characterization of prejudice dissolving 'not through generosity of spirit but through mortifying pressure of evidence' directly reflects the retrieved evidence."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q12",
+      "questionOrdinal": 12,
+      "condition": "passage_only",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1882,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 458,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.8,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 1,
+          "claim_precision": 4
+        },
+        "rationales": {
+          "faithfulness": "The assistant's claim that the anchor passage does not contain the teasing scene or handwriting reference is accurate and well-grounded in the evidence provided.",
+          "chunk_relevance": "The anchor passage itself is the Darcy/Elizabeth assembly scene; retrieval returned no tool excerpts, but the assistant correctly identified that the anchor alone is insufficient for answering the cross-section question.",
+          "answer_completeness": "The question explicitly asks for identification of a woman who admired Darcy's handwriting in a teasing scene—a cross-section question requiring evidence from elsewhere in the book. The assistant declines to answer rather than retrieving or referencing that material, leaving the core task completely unaddressed.",
+          "claim_precision": "The assistant accurately describes what is and is not in the anchor passage; the explanation is clear and textually honest, though it does not attempt to fulfill the prompt's actual request."
+        },
+        "violations": [
+          "No retrieval or tool use was attempted despite the condition being passage_only and the question explicitly requiring cross-textual evidence (handwriting teasing scene) not present in the anchor. The assistant should have acknowledged that the question requires elsewhere-in-book material and either provided the answer (if the model can infer from training knowledge that Caroline Bingley is the answer) or explicitly stated it cannot fulfill the request without broader retrieval. Merely saying 'you'd need to read further' does not answer a direct factual question about book content."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q12",
+      "questionOrdinal": 12,
+      "condition": "smart_scan_tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 41158,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 473,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.4,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 2,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The answer correctly identifies Miss Bingley (Caroline) as the woman who admires Darcy's handwriting. This is supported by the gold rubric and can be verified in Pride and Prejudice, though the specific scene is not present in the retrieved excerpts.",
+          "chunk_relevance": "The retrieved chunks cover Charlotte Lucas's engagement, Lydia's elopement, Elizabeth's reading of Darcy's letter, and the final chapters—none of which contain the scene where Miss Bingley praises Darcy's handwriting. The retrieval is largely off-topic for this specific cross-section question about an earlier moment in the novel.",
+          "answer_completeness": "The answer fully addresses the prompt by identifying Miss Bingley as the woman who admired Darcy's handwriting and establishes the connection to Elizabeth teasing him about it, directly answering the cross-section question.",
+          "claim_precision": "The answer is sharply precise, naming Miss Bingley/Caroline by both names and clearly connecting the detail to the novel's structure of how Elizabeth later uses this knowledge to tease Darcy."
+        },
+        "violations": [
+          "The specific scene where Miss Bingley praises Darcy's handwriting is not present in ALLOWED_EVIDENCE. While the answer is factually correct per the gold rubric, it cannot be anchored to the retrieved text. This is acceptable under the smart_scan condition since the answer matches the gold standard, but the retrieval itself failed to locate the relevant passage."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q12",
+      "questionOrdinal": 12,
+      "condition": "tools",
+      "category": "cross-section",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 17331,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 705,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 1,
+          "chunk_relevance": 1,
+          "answer_completeness": 1,
+          "claim_precision": 1
+        },
+        "rationales": {
+          "faithfulness": "The assistant refuses to answer the question at all, claiming the scene 'hasn't appeared yet' and invoking a spurious 'spoiler boundary.' The gold rubric explicitly states answerInAnchor=false, meaning the answer is expected to come from retrieved tool material elsewhere in the book, not the anchor passage. The assistant has invented a false constraint ('Chapter III boundary') not present in the task.",
+          "chunk_relevance": "Retrieval is not the problem—the retrieved chunks contain extensive passages from early chapters of Pride and Prejudice. However, the assistant never searched for or examined the later scene where Elizabeth teases Darcy about handwriting and Miss Bingley's admiration. No attempt was made to locate the relevant passage.",
+          "answer_completeness": "The assistant completely evades the core question. The prompt asks directly 'Who was that other woman?' and provides gold rubric points identifying Miss Bingley as the answer. The assistant refuses to provide any identification, citing a fictional spoiler constraint. This is a total failure of responsiveness.",
+          "claim_precision": "The answer is entirely vague boilerplate ('I don't want to spoil it for you'). No textual reference, no specificity, no engagement with the literary content. The claim that revealing this would be a spoiler contradicts the explicit task design (tools condition, cross-section question type)."
+        },
+        "violations": [
+          "Invented constraint: Assistant claims a 'spoiler boundary' at 'Chapter III' that does not exist in the task specification. The condition is 'tools' (not passage_only), and the gold rubric explicitly flags answerInAnchor=false, indicating the answer should be retrieved from elsewhere in the book.",
+          "Refusal to answer: The assistant was given permission and instruction to use retrieved tool excerpts to answer cross-section questions. Refusing on grounds of spoilers directly contradicts the task design.",
+          "No retrieval attempt: The retrieved chunks are from Chapters I–VIII. The scene with Darcy's handwriting being praised by Miss Bingley occurs later in the novel (Chapter XXVII, during the Hunsford visit). The assistant never searched or indicated awareness that this material was available via tool retrieval.",
+          "False framing: Assistant frames this as a 'direction' question tied to user progress in the ebook ('hasn't appeared yet in this direction'), but no such metadata was provided. The anchor passage is from Chapter III; retrievals go through Chapter VIII. The question is explicitly cross-section and expects book-wide knowledge."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q15",
+      "questionOrdinal": 15,
+      "condition": "passage_only",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2138,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 644,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 2,
+          "claim_precision": 3
+        },
+        "rationales": {
+          "faithfulness": "The answer makes several interpretive leaps unsupported by ALLOWED_EVIDENCE. The anchor passage says Lady Catherine's 'unjustifiable endeavours' gave Darcy hope and made him act decisively, but the assistant's reading that 'rank truly worked...Elizabeth would simply obey' is not grounded in the text. No retrieved excerpts contextualize Charlotte's Hunsford acceptance or Lady Catherine's broader character.",
+          "chunk_relevance": "No tool excerpts were retrieved, and the condition is passage_only. The anchor alone cannot establish the thematic connection between Charlotte's practical acceptance of Hunsford life and Lady Catherine's interference. Without retrieved text about Charlotte's reasoning or Lady Catherine's earlier conduct, the evaluation depends on unsupported inference.",
+          "answer_completeness": "The answer does not adequately address Charlotte's Hunsford acceptance narrative. The prompt asks explicitly how Lady Catherine's visit connects *back* to Charlotte's acceptance—implying need for evidence of Charlotte's motivations, her view of rank and marriage, and how those parallel or differ from Lady Catherine's. The answer asserts the connection but does not ground it in Charlotte's textual characterization.",
+          "claim_precision": "While the answer offers sharp interpretive ideas (e.g., 'rank confers the right to manage others' lives,' 'real authority lies in the capacity to choose'), these are supported only by inference from the single passage. The claim about what would happen 'had rank truly worked as she believed' is speculative and exceeds the anchor's scope."
+        },
+        "violations": [
+          "Unsupported claim: 'Charlotte accepts Hunsford because she sees the world as it is'—no evidence of Charlotte's reasoning or Hunsford acceptance in ALLOWED_EVIDENCE.",
+          "Unsupported claim: 'Had rank truly worked as she believed, Elizabeth would simply obey'—extrapolation not present in anchor passage.",
+          "Retrieval failure: No excerpts retrieved to contextualize Charlotte's marriage to Collins or her life at Hunsford, yet the question demands explicit connection between the two episodes.",
+          "Incomplete thematic connection: Answer does not reference or compare Charlotte's 'practical' acceptance (mentioned in gold rubric) to Lady Catherine's interference using textual evidence."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q15",
+      "questionOrdinal": 15,
+      "condition": "smart_scan_tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 38576,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 711,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 2,
+          "answer_completeness": 2,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The answer makes several claims not grounded in ALLOWED_EVIDENCE. The assertion that Charlotte 'watches her husband diminish himself at Rosings twice weekly because patronage—future family livings—depends on Lady Catherine's whim' invents motivation not present in the text. The claim that Charlotte 'chose Hunsford *knowing* this was the bargain' and 'eyes-open calculation' overstates her agency and self-awareness beyond what the evidence supports.",
+          "chunk_relevance": "Retrieved chunks heavily emphasize Charlotte's marriage acceptance and Rosings visits, but lack direct textual evidence connecting this to Lady Catherine's bullying visit or its 'logic of rank and interference.' The anchor passage about Darcy's explanation does not appear in retrieval, and the retrieved material does not directly support the thematic link the question asks for.",
+          "answer_completeness": "The answer fails to address a key part of the prompt: explaining Lady Catherine's visit as a 'comic moral' and how its *specific logic of rank and interference* connects back to Charlotte. The answer mentions servility and patronage but does not ground the Lady Catherine episode or clarify what Darcy means by calling it a moral. The relationship between the two episodes remains asserted rather than demonstrated.",
+          "claim_precision": "The answer relies on vague language like 'the machinery of social control,' 'voluntary adoption,' and 'eyes-open calculation' without precise textual anchoring. Phrases such as 'the assumption that her will, backed by social position, is law' are interpretive but lack direct quotes or specific scenes to support them. The final comparison to Elizabeth and Wickham introduces a third thread that dilutes focus."
+        },
+        "violations": [
+          "Unsupported claim: 'patronage—future family livings—depends on Lady Catherine's whim' is inferred but not explicitly stated in retrieved excerpts.",
+          "Unsupported claim: 'Charlotte *voluntarily adopted*' the assumption of submission; the text describes her as practical and resigned, not consciously embracing a philosophy.",
+          "Missing key evidence: The anchor passage (Darcy's statement about the moral) is not cited or analyzed; instead, the answer interprets it without directly quoting or anchoring the interpretation.",
+          "Incomplete response: Does not clearly explain what the 'comic moral' is or how Lady Catherine's visit demonstrates it; assumes reader understands the thematic link.",
+          "Imprecise conclusion: The comparison to Elizabeth and Wickham is introduced abruptly and is not clearly connected to the original question about Charlotte and Lady Catherine."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q15",
+      "questionOrdinal": 15,
+      "condition": "tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2197,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 622,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.7999999999999998,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 2,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The answer makes sweeping claims about Charlotte's motivations and the 'logic' of her acceptance that are not grounded in retrieved evidence. The anchor passage concerns only Darcy's reflection on Lady Catherine's visit and contains no material about Charlotte, Hunsford, or the connection the question asks for. No retrieved tool text is available to support the interpretive framework.",
+          "chunk_relevance": "No tool excerpts were retrieved. The question explicitly asks for a thematic connection between two episodes (Lady Catherine's visit and Charlotte's acceptance of Hunsford), but retrieval failed to return relevant passages about either Charlotte's decision-making or the Hunsford scenes that would establish that connection.",
+          "answer_completeness": "The answer does not address the gold rubric's expectation to explain Lady Catherine's visit as an episode of 'high-rank interference meant to police a marriage and preserve family exclusivity' with textual support, nor does it adequately ground Charlotte's 'practical acceptance' in evidence from the book. The connection between the two episodes is asserted theoretically rather than demonstrated textually.",
+          "claim_precision": "The answer relies on interpretive generalization ('Charlotte got small,' 'the system promised her safety') without quoting or anchoring these claims to specific scenes or dialogue from the novel. The framing of the episodes' 'logic' is speculative and not rooted in particular textual moments."
+        },
+        "violations": [
+          "No retrieved excerpts are present despite the 'tools' condition. The question requires evidence from multiple parts of the novel (Hunsford scenes with Charlotte, and Lady Catherine's visit), but neither is retrieved.",
+          "Claims about Charlotte's internal state ('she made peace with a loveless marriage,' 'she accepted her diminishment') are not grounded in ALLOWED_EVIDENCE and appear to be inference without textual anchor.",
+          "The answer does not cite or reference specific scenes where Charlotte accepts Hunsford, making the comparison to Lady Catherine's visit largely conceptual rather than evidence-based.",
+          "The interpretation that 'the rules were never as binding as she thought' is offered as insight but not tied to any passage demonstrating this thematic point in the retrieved or anchor material."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q09",
+      "questionOrdinal": 9,
+      "condition": "passage_only",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1853,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 461,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.6,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 5,
+          "answer_completeness": 2,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant describes the event correctly (two ladies in a phaeton at the garden gate), but it misses the specific task: the prompt asks for 'what two-word spectacle' Maria 'refused to name.' The gold rubric expects identification of Maria's actual teasing label (\"such a sight\"), which the assistant does not provide.",
+          "chunk_relevance": "The anchor passage is directly on-target and sufficient to answer the question fully.",
+          "answer_completeness": "The answer identifies *what* they run toward but completely omits the core task—naming the two-word phrase Maria used to tease Elizabeth before revealing it. The prompt explicitly asks for 'what two-word spectacle' and 'Maria refused to name,' suggesting the answer should recover Maria's teasing language.",
+          "claim_precision": "The answer is somewhat generic in its social commentary ('notable event worth the drama') and avoids the specific textual hook the prompt is asking for—the exact teasing phrase Maria deployed."
+        },
+        "violations": [
+          "Missing the two-word spectacle label. The gold rubric expects the answer to cite Maria's teasing phrase ('such a sight'), but the assistant instead describes the event itself without recovering the language Maria used to refuse to name it.",
+          "Misalignment with prompt intent. The question targets not just what the spectacle is, but the specific two-word term Maria used for it—a linguistic/rhetorical feature the assistant glosses over."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q09",
+      "questionOrdinal": 9,
+      "condition": "smart_scan_tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2458,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 643,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.6,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 5,
+          "answer_completeness": 2,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant identifies 'two ladies' as the spectacle, which is textually accurate from the anchor. However, the answer claims Maria 'simply says \"there is such a sight to be seen\" without naming it,' which contradicts the gold rubric expectation that the answer should identify the two-word phrase Maria used—'such a sight'—as the refusal label itself. The assistant treats 'such a sight' as descriptive narration rather than as Maria's deliberate teasing withholding.",
+          "chunk_relevance": "The retrieved chunks are highly pertinent: they contain Maria's exact words ('there is such a sight to be seen! I will not tell you what it is') and the anchor passage reveals the actual spectacle ('two ladies stopping in a low phaeton'). Both are directly on-target for answering the question.",
+          "answer_completeness": "The question asks for a two-word phrase that Maria refused to name in the lines just before the action. The gold rubric expects 'such a sight' as the answer—the phrase Maria uses to describe what she will not explicitly name. The assistant instead pivots to identifying the actual spectacle ('two ladies') rather than naming Maria's teasing label. This fundamentally misses what the prompt asks for.",
+          "claim_precision": "The answer conflates two different things: Maria's refusal label ('such a sight') and the actual thing being refused ('two ladies'). While both are textually present, the prompt specifically asks for what Maria 'refused to name,' which is the two-word spectacle label—not the unambiguous description of the arrival. The response is imprecise about what the prompt is targeting."
+        },
+        "violations": [
+          "The question asks for the two-word phrase Maria used to describe the spectacle while refusing to name it explicitly. The gold rubric expects 'such a sight.' The assistant identifies 'two ladies' (the actual spectacle) instead of 'such a sight' (Maria's refusal label). This is a fundamental mismatch with the gold expectation.",
+          "The assistant's final claim that 'Maria's refusal to specify beforehand is part of the dramatic effect' is somewhat supported, but the core task—identifying the two-word phrase Maria used as her teasing refusal—is not answered."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q09",
+      "questionOrdinal": 9,
+      "condition": "tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2437,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 717,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.6,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 5,
+          "answer_completeness": 2,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant invents a two-word answer ('lady Catherine') not grounded in the allowed evidence. The anchor and tool excerpts show Elizabeth and Maria run to see 'such a sight'—which the anchor passage then identifies as 'two ladies stopping in a low phaeton at the garden gate.' The assistant conflates 'such a sight' with 'Lady Catherine' without textual support for this equation, and adds interpretive details (Anne, Darcy's aunt, future wife) beyond what the passage states at this moment.",
+          "chunk_relevance": "The retrieved excerpts are highly pertinent: they contain Maria's teasing line ('there is such a sight to be seen! I will not tell you what it is') and the anchor passage directly reveals what they see ('two ladies stopping in a low phaeton at the garden gate'). The retrieval is tight and answers the prompt.",
+          "answer_completeness": "The answer fails to identify the actual two-word phrase from the evidence. The gold rubric expects the answer to name Maria's teasing label as 'such a sight' (the phrase she uses before refusing to say more). The assistant instead names a character and provides speculation, missing the core task of identifying the textual phrase.",
+          "claim_precision": "The answer is overly interpretive and speculative. While 'Lady Catherine' may be correct in broader context, the prompt asks for the 'two-word spectacle' or label that Maria refuses to name—which is plainly 'such a sight' in the retrieved text. The assistant conflates the label with a guess about identity, adding ungrounded interpretive flourishes about Anne and Darcy's future wife."
+        },
+        "violations": [
+          "Unsupported answer: 'lady Catherine' is not the two-word phrase Maria uses before refusing to name the sight. The retrieved tool text clearly shows Maria saying 'there is such a sight to be seen! I will not tell you what it is'—the answer should identify 'such a sight' as the teasing label.",
+          "Invented interpretation: The assistant claims the 'sight' is 'Lady Catherine de Bourgh and her daughter Anne, arriving in their carriage' and adds that Anne is 'the woman widely expected to be his [Darcy's] future wife.' These details are not present in the allowed evidence at this point in the narrative.",
+          "Misalignment with gold rubric: The gold rubric expects the answer to name 'such a sight' (the two-word phrase with 'seen') as Maria's teasing label. The assistant instead provides a character name and speculative context."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q13",
+      "questionOrdinal": 13,
+      "condition": "passage_only",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2106,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 555,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.0500000000000003,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 5,
+          "answer_completeness": 3,
+          "claim_precision": 3
+        },
+        "rationales": {
+          "faithfulness": "The answer makes several substantive claims about Mrs. Bennet's economic vulnerability and the entailment that are not supported by the ALLOWED_EVIDENCE. The anchor passage contains only the cough exchange; no information about the estate entailment, Mrs. Bennet's lack of resources, or economic pressure appears in the anchor or retrieved excerpts.",
+          "chunk_relevance": "The anchor passage is directly on-topic for the narrower question about the cough scene itself, though it provides no material on the larger marriage-market pressures or estate entailment the question asks about.",
+          "answer_completeness": "The answer engages with the comedy-vs-pressure relationship and explains Mr. Bennet's detachment well, but it asserts (rather than demonstrates from evidence) the connection to economic vulnerability and the entailment. The gold rubric expects an explicit tie to the daughters' lack of inheritance and the entailed estate; the answer claims this but does not ground it in textual support.",
+          "claim_precision": "The interpretation of Mrs. Bennet's nerves as symptomatic of marriage anxiety is reasonable and grounded in the scene, but the claims about 'no resources' and the entailment are presented as fact without textual backing. The analysis of Mr. Bennet's detachment is sharp and precise."
+        },
+        "violations": [
+          "Unsupported factual claims: 'Mrs. Bennet has no resources—no money, no stability' and the implicit reference to the entailed estate are not present in ALLOWED_EVIDENCE. These are book-wide facts necessary to answer the gold rubric's first point, but they are asserted without retrieval or anchor support.",
+          "The answer conflates interpretation (nerves as marriage anxiety) with factual assertion (no resources, entailment) without marking the boundary. While the former is supported by the scene, the latter is not."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q13",
+      "questionOrdinal": 13,
+      "condition": "smart_scan_tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 5697,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 518,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.15,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 2,
+          "answer_completeness": 4,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "All substantive claims are grounded in the anchor passage and retrieved text. The characterization of Mrs. Bennet ('The business of her life was to get her daughters married'), the entailment detail (implicit in Chapter I), and the opening line about women as 'rightful property' are all directly supported.",
+          "chunk_relevance": "Chunk 1 and 2 contain the anchor passage and early exposition, but Chunk 1 is largely noise (chapter headings and table of contents fragments). Chunk 2 is highly relevant, providing the full scene and character analysis needed. Overall retrieval is mixed—the tools delivered what was needed, but with substantial filler.",
+          "answer_completeness": "The answer addresses the core prompt: connects the domestic comedy to the marriage-market pressure, explains the juxtaposition of farce and economic vulnerability, and shows how the comedy *intensifies* rather than cancels the pressure. The only minor omission is explicit discussion of the entail mechanism, though it is referenced.",
+          "claim_precision": "The answer is sharply textual: it cites specific phrases ('The business of her life was to get her daughters married'), identifies the structural juxtaposition (farce sandwiched between exposition), and explains the mechanism precisely (Mrs. Bennet's 'nerves' as both performance and rational response to precarity). No vague boilerplate."
+        },
+        "violations": [
+          "Chunk 1 is predominantly off-topic filler (chapter headings and navigation elements), reducing retrieval efficiency. The question would have been well-served by more targeted excerpts on the entailment or estate law, though the answer does not suffer from their absence since the core textual analysis is sound."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q13",
+      "questionOrdinal": 13,
+      "condition": "tools",
+      "category": "book-level-thematic",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3818,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 477,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.75,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 4,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is grounded in ALLOWED_EVIDENCE: Mrs. Bennet's nerves as her anxiety mechanism is directly supported by the retrieved passage stating 'The business of her life was to get her daughters married' and the characterization of her inventing nervousness when discontented; Kitty's cough timing and Mr. Bennet's final permission are both present in the anchor and chunks.",
+          "chunk_relevance": "Retrieval is tightly focused: Chunk 1 provides the explicit psychological framing of Mrs. Bennet's character and marriage obsession, Chunk 2 shows Kitty's cough in context and Mr. Bennet's dismissive comment. All material directly supports the question's premise about comedy masking economic pressure.",
+          "answer_completeness": "The answer connects farce to marriage-market pressure (the gold rubric's core expectation) and shows how comedy intensifies rather than cancels that pressure. Minor gap: the answer does not explicitly anchor the economic vulnerability (entail/inheritance) that motivates the marriage obsession, though this is implicit in the retrieved material.",
+          "claim_precision": "The answer is sharply textual: it identifies Mrs. Bennet's nerves as 'anxiety translated into bodily complaint,' pinpoints Kitty's cough as trivia in a house where everything is marriage-coded, and tracks the specific deflation of Mr. Bennet's exhaustion after forcing the Bingley visit. Language is tied to exact phrases from the evidence."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q08",
+      "questionOrdinal": 8,
+      "condition": "passage_only",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1826,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 532,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.7999999999999998,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 2,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant correctly identifies the object as Darcy's letter, which aligns with the gold rubric. However, the quoted phrase 'went through them (the letter's contents) eagerly' does not appear in the ALLOWED_EVIDENCE anchor passage, which only shows Elizabeth reading with 'amazement' and being 'persuaded' without mention of eager reading or the specific phrasing used.",
+          "chunk_relevance": "No retrieved tool excerpts were provided, making it impossible to verify claims about Elizabeth going through the letter 'eagerly' or 'line by line' beyond the anchor passage. The retrieval failed to bring contextual support for the answer's interpretive framing.",
+          "answer_completeness": "While the assistant correctly identifies Darcy's letter as the object, the answer conflates two separate actions: (1) the object Elizabeth has been working through, and (2) the spiral of re-reading that follows. The prompt asks what object she was working through before the spiral, requiring clearer temporal demarcation that the anchor passage alone does not fully support.",
+          "claim_precision": "The answer makes a specific claim about Elizabeth going through the letter 'eagerly' and 'line by line,' but this language is not present in the anchor passage provided. The answer lacks textual precision and relies on paraphrase without grounding in the evidence."
+        },
+        "violations": [
+          "Fabricated or unsupported quotation: 'went through them (the letter's contents) eagerly' does not appear in ALLOWED_EVIDENCE.",
+          "Insufficient retrieval: No tool excerpts were retrieved to support the contextual claim about re-reading spirals or the letter's contents.",
+          "Answer conflates the object with the subsequent reading pattern without clear temporal distinction based on anchor passage alone."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q08",
+      "questionOrdinal": 8,
+      "condition": "smart_scan_tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2344,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 377,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The answer correctly identifies Darcy's letter as the object, grounded explicitly in the retrieved text: 'ELIZABETH, when Mr. Darcy gave her the letter' and 'she went through them.' All claims are directly supported by ALLOWED_EVIDENCE.",
+          "chunk_relevance": "Both the anchor passage (Elizabeth's emotional reaction while reading) and the retrieved chunks (the letter's content and the moment she receives it) are highly pertinent. They directly illuminate what object Elizabeth is reading and her initial response to it.",
+          "answer_completeness": "The answer fully addresses the question by naming the specific object (Darcy's letter) and provides brief contextual confirmation that she is reading it line by line ('went through them'). The prompt's request for 'the single object' is precisely met.",
+          "claim_precision": "The answer is sharply specific: it names 'Darcy's letter' and ties it to exact textual markers ('she went through them,' the explanation of Wickham). No vague boilerplate or unsupported generalization is present."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q08",
+      "questionOrdinal": 8,
+      "condition": "tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3834,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 389,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The answer correctly identifies the object as 'the letter' and accurately grounds this in the retrieved passage: 'ELIZABETH, when Mr. Darcy gave her the letter, did not expect it to contain a renewal of his offers.' The characterization of its contents (Darcy's explanation of Wickham dealings) is fully supported by Chunk 1, which contains the full text of the letter.",
+          "chunk_relevance": "The retrieved excerpts are tightly focused and directly answer the question. Chunk 1 is the complete letter text that Elizabeth is reading line by line, and the opening of Chapter XXXVI establishes the immediate context of Elizabeth receiving and beginning to read it.",
+          "answer_completeness": "The answer fully addresses the prompt by identifying the single object (the letter) and providing relevant context about its contents that enriches understanding of what Elizabeth has been working through line by line.",
+          "claim_precision": "The answer is sharply precise, citing the exact textual moment ('ELIZABETH, when Mr. Darcy gave her the letter') and accurately characterizing the letter's contents based on the full evidence provided in the retrieved text."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q01",
+      "questionOrdinal": 1,
+      "condition": "passage_only",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2076,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 390,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly grounded in the anchor passage. The assistant precisely identifies 'however little known' as the signal, correctly interprets the gap between the man's actual feelings and social assumption, and accurately notes the 'rightful property' language as revealing the families' logic.",
+          "chunk_relevance": "No tool retrieval was requested or needed; the question is passage_only and all evidence is contained in the anchor. The anchor alone is sufficient and fully pertinent to answering the irony question.",
+          "answer_completeness": "The response addresses both gold rubric points: (1) the shift from 'truth' to how it is 'fixed in the minds' of neighbours, and (2) the ironic bite of treating the bachelor as 'rightful property' with critical distance. The answer also explains the mechanism of irony clearly.",
+          "claim_precision": "The analysis is sharp and specific, tying each observation to exact phrases ('however little known,' 'rightful property') and explaining how word choice and syntax signal the narrator's distance from endorsement. No vague boilerplate; each claim is textually anchored."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q01",
+      "questionOrdinal": 1,
+      "condition": "smart_scan_tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2152,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 453,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is grounded directly in the anchor passage. The assistant accurately quotes 'however little known the feelings or views of such a man may be' and 'this truth is so well fixed in the minds of the surrounding families, that he is considered as the rightful property,' and correctly interprets their ironic function.",
+          "chunk_relevance": "No retrieval was needed for this passage-local question, which is appropriate; the entire passage-analytic task is self-contained in the anchor. The condition 'smart_scan_tools' and lack of tool excerpts does not penalize the response, as the question is answerable from the provided anchor alone.",
+          "answer_completeness": "The response fully addresses both gold rubric points: it notes the shift from opening 'truth' to how it is 'fixed in the minds' of the families, and it explains the ironic force of the 'rightful property' phrase in revealing the gap between the man's actual feelings and the families' projection. The answer captures the critical distance between narrator endorsement and ironic undercut.",
+          "claim_precision": "The analysis is sharply specific, identifying exact phrases ('however little known,' 'rightful property') and explaining their ironic weight with precision. The interpretation that the families' 'projection' and 'social delusion' contradicts the opening's claim of universal truth is directly tied to textual evidence, avoiding vagueness."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q01",
+      "questionOrdinal": 1,
+      "condition": "tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2666,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 473,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 4.4,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 2,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is grounded in the anchor passage. The answer correctly identifies the shift from the opening 'truth' to its source in the families' minds, quotes the key phrases ('However little known the feelings or views of such a man may be' and 'this truth is so well fixed in the minds of the surrounding families'), and accurately interprets the ironic distance between the pronouncement and its true locus.",
+          "chunk_relevance": "The retrieved excerpt (Mrs. Bennet discussing Bingley's arrival) is contextually illustrative of the provincial families' assumption-making in practice, but it is not necessary to answer the question, which asks narrowly about the narrator's tone shift within the opening paragraph itself. The question does not require tool retrieval for a passage-local analysis.",
+          "answer_completeness": "The answer fully addresses both gold rubric points: it notes the shift from the opening 'truth' to the families' minds, and it explains the ironic distance between the narrator's apparent endorsement and her critical stance. It also touches on the 'rightful property' language implied in the overall construct, connecting to the second rubric hint about endorsement versus distance.",
+          "claim_precision": "The analysis is sharp and textually grounded. Phrases like 'mimicking, almost gently mocking,' 'the opening sentence sounds like God speaking,' and 'gossip and wish-fulfilment dressed up as natural law' are precise literary observations directly supported by the anchor's wording and tonal shifts."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q07",
+      "questionOrdinal": 7,
+      "condition": "passage_only",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1852,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 561,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.35,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 5,
+          "answer_completeness": 1,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant claims Darcy gives 'no reply at all,' but the anchor passage explicitly shows Miss Bingley's next statement includes 'Tell your sister I am delighted... and I think it infinitely superior to Miss Grantley's'—this suggests a prior deflecting reply from Darcy exists but is not visible in the provided anchor. The assistant misreads the structure: 'He was silent' appears before Miss Bingley speaks about the harp, not after her praise.",
+          "chunk_relevance": "The anchor passage provided is directly on-topic for the question, though it appears incomplete for answering it fully.",
+          "answer_completeness": "The answer fundamentally misses the gold rubric expectation: identifying Darcy's actual deflecting reply (the gold hints suggest 'the deferral of raptures until he finishes writing'). The assistant identifies only the silence preceding Miss Bingley's comment, not the deflection that follows her praise.",
+          "claim_precision": "The answer conflates textual sequence: 'He was silent' comes before Miss Bingley's flattery about the harp, not after. The assistant's claim that no reply follows her praise lacks textual precision and appears to misread the dialogue structure."
+        },
+        "violations": [
+          "Misreads passage structure: 'He was silent' precedes Miss Bingley's praise of Georgiana, not follows it. The question asks for the deflecting reply *after* her praise begins, which the assistant claims does not exist but the gold rubric suggests should be present.",
+          "Fails to identify or quote Darcy's actual deflecting response. The anchor is incomplete; the answer should note this limitation rather than claim definitively that no reply exists.",
+          "Answer contradicts gold rubric expectation of a deferral reply ('raptures until he finishes writing') with no acknowledgment of missing context."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q07",
+      "questionOrdinal": 7,
+      "condition": "smart_scan_tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2469,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 317,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The quoted reply is directly from the retrieved text (Chunk 1), and the characterization of it as a polite deferral that sidesteps compliments is well-supported by the language and context.",
+          "chunk_relevance": "Chunk 1 contains exactly the deflecting reply in question, appearing immediately after the anchor passage and providing the precise continuation needed to answer the prompt.",
+          "answer_completeness": "The answer provides the exact deflecting reply and explains its rhetorical function (deferral, civility, avoidance of direct engagement), fully addressing the prompt's request.",
+          "claim_precision": "The answer quotes the relevant passage verbatim and uses precise literary language ('deft avoidance,' 'politely postpones') grounded directly in the text's content and tone."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q07",
+      "questionOrdinal": 7,
+      "condition": "tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2464,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 322,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "The assistant quotes Darcy's exact deflecting reply directly from the retrieved text and correctly identifies it as his response to Miss Bingley's praise of Georgiana's harp and design work.",
+          "chunk_relevance": "The retrieved chunk contains the precise exchange in question: Miss Bingley's praise followed immediately by Darcy's deflecting response about deferring raptures, making it perfectly targeted to the prompt.",
+          "answer_completeness": "The answer fully addresses the prompt by providing the exact deflecting reply and briefly explaining how it functions as a deflection (deferring the compliment due to space constraints).",
+          "claim_precision": "The answer is sharply precise, quoting verbatim from the text and correctly parsing Darcy's rhetorical strategy of deferral as the deflection mechanism."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q05",
+      "questionOrdinal": 5,
+      "condition": "passage_only",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1998,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 382,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every claim is grounded in the anchor passage: 'scrupled not' is correctly parsed as absence of hesitation; the connection to Darcy's accusation is directly supported; the dual reading (firmness vs. moral suspicion) is tied precisely to the text's own tension between his confidence and Elizabeth's inability to verify.",
+          "chunk_relevance": "Anchor passage is the complete and necessary evidence; no retrieval was needed for this passage_only question, and the anchor directly contains the phrase and context being analyzed.",
+          "answer_completeness": "Fully addresses both gold rubric points: explains 'scrupled not' means he did not hesitate, and connects the phrasing to moral posture (confidence, recklessness, suspect readiness) heightened by Elizabeth's inability to verify claims.",
+          "claim_precision": "Highly precise literary analysis: identifies the exact semantic work of 'scrupled not,' names the double-edged effect, ties it to the immediate textual evidence ('she could bring no proof'), and articulates the narrator's implied moral judgment through careful close reading."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q05",
+      "questionOrdinal": 5,
+      "condition": "smart_scan_tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2117,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 387,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every claim is grounded in the anchor passage. The assistant accurately explains 'scrupled not' as meaning uninhibited by conscience/lack of moral hesitation, and correctly interprets the phrase as suggesting recklessness in making accusations without substantiation.",
+          "chunk_relevance": "The anchor passage is precisely on-target for the question; no retrieval was needed, and the passage itself contains all necessary evidence. The assistant mines it effectively.",
+          "answer_completeness": "The answer fully addresses both gold rubric points: it explains the meaning of 'scrupled not' (did not hesitate) and connects it to moral confidence/indelicacy in the accusation, heightening Elizabeth's shock. The final clause's role is also clarified.",
+          "claim_precision": "The analysis is sharply specific: the assistant distinguishes between the truth of accusations and the moral texture of their delivery, ties 'scrupled' etymology directly to moral doubt/hesitation, and uses the follow-up clause ('could bring no proof') to illustrate the narrator's positioning of the accuser as speaking with unwarranted assurance."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q05",
+      "questionOrdinal": 5,
+      "condition": "tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2584,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 606,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 3.4,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 1,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 4,
+          "chunk_relevance": 2,
+          "answer_completeness": 4,
+          "claim_precision": 3
+        },
+        "rationales": {
+          "faithfulness": "The core definition and interpretation of 'scrupled not' is sound and grounded in the anchor passage. However, the attribution to 'the character' or 'the accuser' is somewhat vague in the answer—the anchor text indicates it is Darcy making the accusations against Wickham, a detail the answer obscures rather than clarifies.",
+          "chunk_relevance": "The retrieved chunks focus on Elizabeth's internal reactions to Darcy's letter and provide background on Wickham's militia entrance, but they do not directly illuminate the narrator's framing or moral judgment of the accuser via 'scrupled not.' The chunks are contextually adjacent but do not help evaluate the specific phrase's rhetorical work.",
+          "answer_completeness": "The answer covers the core points: the meaning of 'scrupled not' (no hesitation), the moral implications of lacking scruples, and the effect on Elizabeth's shock. Minor gap: the answer does not explicitly clarify that Darcy is the accuser, which would tighten the reading.",
+          "claim_precision": "The answer is moderately precise but veers into interpretive speculation. Phrases like 'perhaps they *should* have hesitated' and 'morally unthinking' go slightly beyond what the phrase alone directly supports. The tone and implications are accurate, but the claim could be more tightly anchored to the exact phrasing and its immediate context."
+        },
+        "violations": [
+          "Identity of the accuser: The answer speaks of 'the character leveling charges' and 'the accuser' without naming Darcy, making it less precise than warranted by the anchor text.",
+          "Over-interpretation on moral judgment: The claim that the accuser is 'morally unthinking' is a strong inference not fully supported by 'scrupled not' alone; the phrase primarily signals lack of hesitation, not necessarily lack of thinking.",
+          "Retrieval inefficiency: Retrieved chunks do not directly support analysis of the narrator's framing technique via this phrase; they are contextual background rather than focused evidence for the rhetorical question at hand."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q04",
+      "questionOrdinal": 4,
+      "condition": "passage_only",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2038,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 413,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is grounded in the anchor passage. The assistant correctly identifies the 'could not take upon her to say,' 'could not positively answer,' and 'did not know' phrases, and accurately paraphrases Mrs. Bennet's rhetorical strategy of steering Collins away from Jane while preserving deniability.",
+          "chunk_relevance": "The anchor passage is entirely on-point and sufficient for the question; no retrieval was needed. The passage directly illustrates the hedging language and the contrast between how Mrs. Bennet speaks about the younger daughters versus Jane.",
+          "answer_completeness": "The response fully addresses both gold rubric points: (1) recognizing the chain of hedges as feigned uncertainty, and (2) explaining the rhetorical aim as indirect steering to position Jane as unavailable while keeping options open. No sub-parts are omitted.",
+          "claim_precision": "The analysis is sharply precise, tying each observation directly to the quoted language ('could not take upon her to say', 'did not know of any prepossession') and explaining the specific rhetorical effect (plausible deniability, camouflage, maintaining veneer). No vague boilerplate is present."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q04",
+      "questionOrdinal": 4,
+      "condition": "smart_scan_tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2169,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 734,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 2.85,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 5,
+          "answer_completeness": 3,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The assistant correctly identifies the hedging pattern and its rhetorical function as steering toward Jane. However, it mischaracterizes Mrs. Bennet's intent by claiming she is 'undermining Jane' and suggesting Jane is 'about to become unavailable to Bingley'—neither of which is supported by the anchor passage. The passage shows Mrs. Bennet is promoting Jane as likely to be engaged soon, not blocking her from Bingley; the assistant invents motivation (spite, reaction to Lady Catherine's control) not grounded in ALLOWED_EVIDENCE.",
+          "chunk_relevance": "The anchor passage is directly on-topic and sufficient for the question; it contains precisely the chain of hedges the question asks about and the contrast with the younger daughters. No retrieval was needed, and none was supplied, which is appropriate for this passage-local question.",
+          "answer_completeness": "The answer identifies the hedging chain and explains its rhetorical effect as indirect steering, touching on the gold rubric points. However, it misdirects the aim—claiming Mrs. Bennet is thwarting Bingley's suit rather than promoting Jane as an advantageous match—and omits clear explanation of *how* the contrast with the younger daughters (where she does not hedge) strengthens the implication about Jane.",
+          "claim_precision": "The answer is vague and speculative on context ('Earlier in the conversation, Lady Catherine has been patronizing'; 'Mrs. Bennet, provoked and eager to assert her own authority'). The core insight about hedging as rhetorical cover is sound, but the interpretation of Mrs. Bennet's goal and emotional state overreaches without textual support and introduces plot claims (spite, reaction to control) that distort the passage's actual content."
+        },
+        "violations": [
+          "Unsupported claim: 'Mrs. Bennet is strategically undermining Jane' — the passage shows she is promoting Jane as a desirable match, not undermining her.",
+          "Unsupported claim: 'suggest that Jane is about to become unavailable to Bingley' — the passage says Jane 'was likely to be very soon engaged,' which is positive positioning, not removal of her from Bingley's reach.",
+          "Unsupported context: Ascription of spite and reaction to Lady Catherine's controlling behavior is inferred from passages not in ALLOWED_EVIDENCE and misrepresents the immediate rhetorical function shown in the anchor.",
+          "Incomplete analysis of the gold rubric point about the contrast: The answer mentions it but does not explain clearly how *not* hedging about the younger daughters sharpens the impression that Jane is the special case."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q04",
+      "questionOrdinal": 4,
+      "condition": "tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2606,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 663,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.7999999999999998,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 1
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 2,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The answer invents a claim that Mrs. Bennet is hinting Elizabeth will be engaged soon, but the anchor clearly states she 'must just mention' her *eldest daughter* (Jane) 'was likely to be very soon engaged'—not Elizabeth. The answer also claims Mrs. Bennet wants to steer Collins *away* from Jane, but the anchor shows the opposite: the caution *against* Jane is the rhetorical move, contradicting the assistant's reading.",
+          "chunk_relevance": "The retrieved context about Collins's character and his initial choice of Jane is helpful background, but it does not address the specific rhetorical function of Mrs. Bennet's hedges. The prompt asks about the meaning and purpose of her specific utterances ('could not… could not… did not know'), and the retrieval does not illuminate that linguistic choice.",
+          "answer_completeness": "The answer partially addresses the gold rubric points (recognizing hedging and rhetorical steering) but misidentifies *whom* Mrs. Bennet is steering toward and whom she is protecting. It does not correctly explain that the hints are designed to *secure* Jane (the eldest, preferred daughter) rather than deflect Collins from her.",
+          "claim_precision": "The answer is speculative and overreaches beyond the anchor. Phrases like 'ideally toward one of the other girls she minds less about' are invented motivations not grounded in the passage. The core misreading (that Mrs. Bennet wants to steer Collins away from Jane) undermines precision."
+        },
+        "violations": [
+          "Major factual error: Assistant claims Mrs. Bennet hints that 'Elizabeth is likely to be engaged very soon,' but the anchor explicitly refers to 'her eldest daughter' (Jane), not Elizabeth. This is a reading comprehension failure.",
+          "Logical inversion: The assistant claims Mrs. Bennet wants to steer Collins *away* from Jane, but the anchor describes a 'caution against the very Jane he had fixed on' followed immediately by a hint that Jane 'was likely to be very soon engaged'—a classic indirect steering *toward* Jane by making her seem unavailable, not away from her.",
+          "Retrieved chunks do not substantively address the question about the rhetorical function of the hedges themselves. Context on Collins's character is tangential to analyzing Mrs. Bennet's utterances."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q02",
+      "questionOrdinal": 2,
+      "condition": "passage_only",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1955,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 399,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every claim is grounded in the anchor passage. The assistant correctly identifies the one-line reply 'he had not' and accurately characterizes it as minimal, flat, and withholding based on the text's stark presentation.",
+          "chunk_relevance": "No retrieval was needed for this passage-local question; the anchor passage alone contains the full exchange. The question asks only about tone and implication within this isolated exchange, which the anchor fully supplies.",
+          "answer_completeness": "The response addresses both expected rubric points: it identifies the reply as clipped/minimal ('studied indifference,' 'flat acknowledgment,' 'terse') and explains the effect (polite withholding, deflection, refusal to meet her excitement). It also describes the relational dynamic that emerges, which enriches understanding of the implication.",
+          "claim_precision": "The language is sharp and specific: 'studied indifference,' 'shuts down rather than opens up,' 'withholding,' 'deflects.' Each phrase is tied directly to the textual fact of the one-line reply and its context (his wife's evident eagerness), avoiding vague boilerplate."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q02",
+      "questionOrdinal": 2,
+      "condition": "smart_scan_tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2897,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 442,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is grounded in ALLOWED_EVIDENCE. The assistant correctly identifies 'Mr. Bennet made no answer' and quotes 'You want to tell me, and I have no objection to hearing it' directly from the retrieved text, and interpretation of tone (indifference, weary forbearance, emotional withholding) flows naturally from these passages.",
+          "chunk_relevance": "The retrieved excerpts are tightly focused on the exact exchange in question, providing both the initial reply and the follow-up dialogue that contextualizes Mr. Bennet's stance. The chunks support close analysis of his tone and behavior pattern.",
+          "answer_completeness": "The response fully addresses the prompt's two-part task: identifying the tone of his one-line answer (deadpan/indifferent refusal to respond) and explaining what it implies about his treatment of his wife's news (emotional withholding, subtle contempt, control). The answer also traces this pattern into subsequent exchanges, showing sustained behavior.",
+          "claim_precision": "The analysis is specific and textually anchored, using exact phrases ('Mr. Bennet made no answer,' 'You want to tell me, and I have no objection to hearing it') to support interpretive points about tone and motivation. Claims about his use of silence and minimal replies as tools of control are directly supported by the evidence presented."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q02",
+      "questionOrdinal": 2,
+      "condition": "tools",
+      "category": "passage-local",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 2878,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 437,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "All claims are grounded in the anchor passage and retrieved excerpts. The characterization of 'he had not' as perfunctory, the wife's follow-up question, and Mr. Bennet's subsequent responses ('You want to tell me...') and dismissive behavior are all directly supported by the text.",
+          "chunk_relevance": "The retrieved chunks are tightly focused on the relevant exchange. Chunk 1 provides the continuation of the dialogue immediately after the anchor, showing Mr. Bennet's non-answer and his wife's impatient pressing, plus the full conversational arc that illustrates his sustained indifference and wit.",
+          "answer_completeness": "The response fully addresses the prompt's two-part question: it identifies the tone of the one-liner (indifferent, perfunctory, clipped) and explains what it implies about how he treats her news (dismissive, treating it as her desire rather than his interest). The answer also contextualizes this opening with evidence from the broader conversation.",
+          "claim_precision": "Precise textual anchors throughout: 'he had not' is cited as the key response; the wife's pressing question is quoted; Mr. Bennet's deflection ('You want to tell me...') is directly quoted. The analysis avoids boilerplate and ties each interpretive claim to specific language and behavior."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q06",
+      "questionOrdinal": 6,
+      "condition": "passage_only",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 1827,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 531,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 1.7999999999999998,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 1,
+          "retrieval_problem": 1,
+          "incomplete_response": 1,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 2,
+          "chunk_relevance": 1,
+          "answer_completeness": 2,
+          "claim_precision": 2
+        },
+        "rationales": {
+          "faithfulness": "The anchor passage alone does not name Mr. Denny as the speaker, nor does it explicitly mention Wickham or Mr. Darcy. The assistant answer supplies these key identifications without textual support from ALLOWED_EVIDENCE, relying on ungrounded inference or external knowledge.",
+          "chunk_relevance": "No retrieved tool excerpts were provided, and the anchor passage does not contain the 'exchange just above this sentence' that the question explicitly asks about. The prompt requires nearby-context details to identify both speaker and the absent officer; without that context, retrieval is insufficient.",
+          "answer_completeness": "The question asks for details 'given in the exchange just above this sentence,' but the prompt_condition is passage_only with no preceding dialogue provided. The answer supplies identifications (Denny, Wickham, Darcy) that are not present in the anchor passage and cannot be verified without the missing exchange.",
+          "claim_precision": "While the answer is coherent and reads as plausible literary analysis, it makes specific claims (speaker identity, names of the absent officer and the gentleman to be avoided, 'significant smile') that are not anchored in the anchor passage text alone."
+        },
+        "violations": [
+          "Mr. Denny is not named in the anchor passage; speaker identity is unsupported.",
+          "Wickham is not mentioned in the anchor passage; identification is unsupported.",
+          "Mr. Darcy is not mentioned in the anchor passage; identification as the 'certain gentleman' is unsupported.",
+          "The detail about 'a significant smile' is not in the anchor passage; invented or recalled from external knowledge.",
+          "No retrieved excerpts provided despite question's explicit request for 'details given in the exchange just above'—retrieval failure."
+        ]
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q06",
+      "questionOrdinal": 6,
+      "condition": "smart_scan_tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3465,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 412,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every substantive claim is directly supported by ALLOWED_EVIDENCE. The answer correctly names Mr. Denny as the speaker, identifies Wickham as the absent officer, and Darcy as the 'certain gentleman,' all grounded in the retrieved text. The interpretation of the significant smile and Elizabeth's reaction are explicitly supported by the passage.",
+          "chunk_relevance": "Chunk 3 provides the exact anchor sentence plus surrounding context that directly establishes who is speaking, to whom, and the exchange immediately preceding the line. The retrieved material perfectly contextualizes Denny's remark and Elizabeth's interpretation of it.",
+          "answer_completeness": "The answer fully addresses both gold rubric points: naming Mr. Denny as speaker and identifying Wickham as the absent officer, with explicit note of Darcy as the hinted-at gentleman. It also provides relevant context from the exchange just above the sentence, as requested.",
+          "claim_precision": "The answer is sharply precise, tying each claim to specific textual details: Denny's role as Wickham's friend, the 'significant smile,' the insinuation of deliberate avoidance, and Elizabeth's immediate interpretive response. Language matches the grain of the source material."
+        },
+        "violations": []
+      }
+    },
+    {
+      "stableKey": "pride_and_prejudice_q06",
+      "questionOrdinal": 6,
+      "condition": "tools",
+      "category": "nearby-context",
+      "model": "claude-haiku-4-5-20251001",
+      "usage": {
+        "input_tokens": 3197,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 453,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "weightedOverall": 5.0,
+      "judgment": {
+        "flags": {
+          "unsupported_claims": 0,
+          "retrieval_problem": 0,
+          "incomplete_response": 0,
+          "imprecise_or_overbroad": 0
+        },
+        "scores": {
+          "faithfulness": 5,
+          "chunk_relevance": 5,
+          "answer_completeness": 5,
+          "claim_precision": 5
+        },
+        "rationales": {
+          "faithfulness": "Every claim is directly supported by the retrieved excerpts. Mr. Denny is explicitly named as the speaker ('pronounced by his friend Mr. Denny'), Wickham is identified as the absent officer, and Darcy as the 'certain gentleman' he wishes to avoid. The interpretation of Denny's 'significant smile' as a hint is grounded in the text's explicit framing.",
+          "chunk_relevance": "The retrieved chunks are perfectly on-target, containing the full context of the exchange: Denny's announcement of Wickham's absence, the quoted line itself, and the surrounding narrative that clarifies the 'certain gentleman' is Darcy. No extraneous material obscures the answer.",
+          "answer_completeness": "The answer addresses both gold rubric points: identifies Mr. Denny as the speaker and identifies Wickham as the absent officer being hinted about. It also provides the contextual detail about Darcy that the prompt asks for ('details given in the exchange just above this sentence').",
+          "claim_precision": "The answer is sharply specific, citing exact names and quoting or paraphrasing the 'significant smile' detail from the text. The interpretation that the business errand is a 'pretext' is a fair inference supported by Denny's knowing manner and Elizabeth's own interpretation ('assured her that Darcy was not less answerable for Wickham's absence')."
+        },
+        "violations": []
+      }
+    }
+  ],
+  "incomplete": false
+}

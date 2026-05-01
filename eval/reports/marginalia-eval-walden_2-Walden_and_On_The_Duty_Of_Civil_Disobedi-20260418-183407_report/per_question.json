@@ -1,0 +1,1863 @@
+[
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q06",
+    "questionOrdinal": 6,
+    "condition": "passage_only",
+    "category": "nearby-context",
+    "prompt": "He asks what a warmed man wants next—what list of things does he immediately refuse as the wrong kind of ‘more warmth’?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 0,
+    "expectedAnswerPointTotal": 1,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q06",
+    "questionOrdinal": 6,
+    "condition": "smart_scan_tools",
+    "category": "nearby-context",
+    "prompt": "He asks what a warmed man wants next—what list of things does he immediately refuse as the wrong kind of ‘more warmth’?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 0,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q06",
+    "questionOrdinal": 6,
+    "condition": "tools",
+    "category": "nearby-context",
+    "prompt": "He asks what a warmed man wants next—what list of things does he immediately refuse as the wrong kind of ‘more warmth’?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": 0.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 0,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 4.8,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 4,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q15",
+    "questionOrdinal": 15,
+    "condition": "passage_only",
+    "category": "book-level-thematic",
+    "prompt": "He asks why families ‘run out’ and nations are ‘enervated’ by luxury—trace how his answers in Economy echo his later praise of wildness, beans, and unmarked paths.",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 2.8000000000000003,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 5,
+      "answer_completeness": 2,
+      "claim_precision": 3
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Unsupported synthesis claim: The answer asserts that beans and unmarked paths are 'the practical instantiation' of the philosopher's refusal to live like contemporaries, but provides no evidence from those later sections of Walden. This is a critical gap given the prompt's explicit instruction to trace the echo across sections.",
+      "Missing retrieval for book-level question: Although condition is passage_only, the prompt is fundamentally book-level-thematic, asking to connect Economy to later sections. The assistant supplies no retrieved text from those later sections and provides no citations to them, making the synthesis unverifiable.",
+      "Incomplete response: The answer addresses only the immediate anchor passage and does not fulfill the second part of the prompt's expected answer points: 'Makes the link as synthesis (multiple sections), not a single correct sentence.' The claimed links are asserted without evidence."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q15",
+    "questionOrdinal": 15,
+    "condition": "smart_scan_tools",
+    "category": "book-level-thematic",
+    "prompt": "He asks why families ‘run out’ and nations are ‘enervated’ by luxury—trace how his answers in Economy echo his later praise of wildness, beans, and unmarked paths.",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 0.5,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 4.75,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 4,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q15",
+    "questionOrdinal": 15,
+    "condition": "tools",
+    "category": "book-level-thematic",
+    "prompt": "He asks why families ‘run out’ and nations are ‘enervated’ by luxury—trace how his answers in Economy echo his later praise of wildness, beans, and unmarked paths.",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 0.5,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 4.1,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 4,
+      "answer_completeness": 3,
+      "claim_precision": 4
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Incomplete treatment of the specific later sections: the prompt asks to trace 'wildness, beans, and unmarked paths,' but the answer names them without substantively showing how those sections *echo* or *resolve* the Economy critique. A more complete response would retrieve and contrast passages from later chapters (e.g., the bean-field chapter, discussions of wildness) with the luxury diagnosis to show the thematic continuity."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q13",
+    "questionOrdinal": 13,
+    "condition": "passage_only",
+    "category": "book-level-thematic",
+    "prompt": "He half-jokes about Walden as a place for “business” because of the railroad and ice trade—how does that glancing mention of the railroad tie his pond experiment to the wider noise and hurry he critiques elsewhere?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 1.5499999999999998,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 1,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Unsupported claims about 'frenetic, far-flung commercial entanglement' and 'constant scrambling'—these interpretations are not in the anchor and no retrieval supports them.",
+      "Missing required evidence per gold rubric: no citation of at least one non-anchor locale where railroad/commerce/hurry imagery appears elsewhere in the book.",
+      "Vague reference to 'lead-up passage' without specification or textual grounding.",
+      "Condition passage_only with zero retrieval: answer cannot fulfill the book-level thematic requirement to cite multiple sections."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q13",
+    "questionOrdinal": 13,
+    "condition": "smart_scan_tools",
+    "category": "book-level-thematic",
+    "prompt": "He half-jokes about Walden as a place for “business” because of the railroad and ice trade—how does that glancing mention of the railroad tie his pond experiment to the wider noise and hurry he critiques elsewhere?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 4.55,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 4,
+      "answer_completeness": 4,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q13",
+    "questionOrdinal": 13,
+    "condition": "tools",
+    "category": "book-level-thematic",
+    "prompt": "He half-jokes about Walden as a place for “business” because of the railroad and ice trade—how does that glancing mention of the railroad tie his pond experiment to the wider noise and hurry he critiques elsewhere?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 2.8749999999999996,
+    "judgeScores": {
+      "faithfulness": 4,
+      "chunk_relevance": 2,
+      "answer_completeness": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Missing second gold rubric point: no citation of a non-anchor passage where hurry/commerce/railroad imagery appears elsewhere in the text, despite the question and rubric explicitly requiring it.",
+      "Retrieval did not surface railroad or noise/hurry passages from elsewhere in Walden that would support the thematic connection the question asks about."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q12",
+    "questionOrdinal": 12,
+    "condition": "passage_only",
+    "category": "cross-section",
+    "prompt": "He is arguing about clothing and shelter as defenses against cold—where does he revisit ice, water, and bathing as a different kind of bodily discipline?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "needs_review",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 3.8,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 1,
+      "claim_precision": 4
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Retrieval failure: The prompt is a cross-section question requiring identification of a later locus in the book. No tool retrieval was attempted or provided; the assistant should have either requested a smart_scan/search for 'cold water', 'bathing', 'ice' or other relevant keywords, or explicitly flagged that retrieval tools were unavailable. Instead, it defaults to 'I don't have access' without attempting retrieval.",
+      "Incomplete response: The gold rubric expects identification of at least one later passage where cold water/bathing becomes deliberate practice. The assistant provides zero answer to this core requirement."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q12",
+    "questionOrdinal": 12,
+    "condition": "smart_scan_tools",
+    "category": "cross-section",
+    "prompt": "He is arguing about clothing and shelter as defenses against cold—where does he revisit ice, water, and bathing as a different kind of bodily discipline?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 3,
+    "retrievedChunkCount": 3,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "needs_review",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 2.0,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 2,
+      "answer_completeness": 2,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Misrepresentation: The assistant claims Thoreau presents the cold water immersion as 'its own kind of hardening' and beneficial discipline, but the text indicates the laborer needed warming afterward, not that cold water was therapeutic.",
+      "Fabricated interpretation: No support for the claim that this passage represents 'bodily resilience' as a deliberate practice or revisits the clothing/shelter discussion in a new key.",
+      "Incomplete answer: The question asks where Thoreau revisits ice, water, and bathing 'as a different kind of bodily discipline'—implying intentional practice. The answer provides only one accidental immersion anecdote, not a deliberate practice or multiple loci.",
+      "Retrieval failure: The retrieved text is 30+ pages of Economy chapter with no mention of deliberate cold-water bathing, ice swimming, or related practice. If such a passage exists, it was not retrieved."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q12",
+    "questionOrdinal": 12,
+    "condition": "tools",
+    "category": "cross-section",
+    "prompt": "He is arguing about clothing and shelter as defenses against cold—where does he revisit ice, water, and bathing as a different kind of bodily discipline?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 3,
+    "retrievedChunkCount": 3,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "needs_review",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 1.5499999999999998,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 1,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "No answer provided: The assistant explicitly states 'I'm not finding it' and does not supply any passage, locus, or evidence addressing ice/water/bathing as bodily discipline.",
+      "Unsupported meta-claim: The assertion that the answer 'might be earlier' or 'in another section' is speculative and not grounded in ALLOWED_EVIDENCE.",
+      "Retrieval failure: The tool excerpts do not contain passages about bathing, cold water immersion, or ice as deliberate practices. The question required cross-sectional retrieval of a passage not present in the anchor; retrieval did not successfully locate it.",
+      "Incomplete response: No completion of the gold rubric expectation to 'name at least one later locus where cold water / ice / bathing becomes a deliberate practice.'"
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q09",
+    "questionOrdinal": 9,
+    "condition": "passage_only",
+    "category": "nearby-context",
+    "prompt": "He pivots from New England cold to ‘Elysian’ summer—what transition phrase opens that pivot a few lines above this sentence?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 1.8,
+    "judgeScores": {
+      "faithfulness": 1,
+      "chunk_relevance": 5,
+      "answer_completeness": 1,
+      "claim_precision": 1
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Fabricated quotation: 'The grand necessity, then, for our bodies, is to keep warm' does not appear in ALLOWED_EVIDENCE.",
+      "Failure to identify the correct opening transition phrase from the anchor passage: 'The summer, in some climates, makes possible to man a sort of Elysian life.'",
+      "The answer misses the straightforward textual task: naming the phrase 'a few lines above' the Elysian reference, which is the anchor passage's opening sentence itself."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q09",
+    "questionOrdinal": 9,
+    "condition": "smart_scan_tools",
+    "category": "nearby-context",
+    "prompt": "He pivots from New England cold to ‘Elysian’ summer—what transition phrase opens that pivot a few lines above this sentence?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 3,
+    "retrievedChunkCount": 3,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": 0.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 3.3,
+    "judgeScores": {
+      "faithfulness": 4,
+      "chunk_relevance": 5,
+      "answer_completeness": 2,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "The answer equivocates on what the 'transition phrase' is. The question asks for the phrase that opens the pivot, which should be the opening words of the sentence 'The summer, in some climates, makes possible to man a sort of Elysian life.' Instead, the answer muddies this by suggesting the preceding sentence 'better marks' the pivot point, which is not what was asked.",
+      "The answer presents 'The summer, in some climates, makes' as the transition phrase, but this is technically the beginning of a longer sentence—the full phrase is 'The summer, in some climates, makes possible to man a sort of Elysian life.' The answer should clarify whether it is citing the opening words or the full opening clause."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q09",
+    "questionOrdinal": 9,
+    "condition": "tools",
+    "category": "nearby-context",
+    "prompt": "He pivots from New England cold to ‘Elysian’ summer—what transition phrase opens that pivot a few lines above this sentence?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": 0.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 2.6,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 5,
+      "answer_completeness": 2,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "The assistant claims the poor-man sentence comes 'immediately before the Elysian passage,' but Chunk 2 shows multiple sentences intervening (about keeping warm, beds, birds' nests, etc.), making this factually incorrect.",
+      "The answer does not clearly identify which specific transition phrase 'a few lines above' the Elysian sentence opens the pivot—it conflates the pivot sentence itself with what comes before it.",
+      "The gold rubric expects the answer to name the pivot sentence ('The summer, in some climates…'), which the assistant does, but the prompt specifically asks for the transition phrase 'a few lines above' that sentence, which is not clearly addressed."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q14",
+    "questionOrdinal": 14,
+    "condition": "passage_only",
+    "category": "book-level-thematic",
+    "prompt": "He praises voluntary poverty as a vantage point—how does that ideal interact with his portraits of real poverty in the book (e.g. the ‘Poor Man’)?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 2.0,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 2,
+      "claim_precision": 3
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Fabricated quotation: 'poor man' who 'is wont to complain that this is a cold world'—not in anchor or retrieved texts.",
+      "Fabricated reference to 'ancient philosophers' passage and claim they are 'poorer in outward riches' yet 'so rich in inward'—not supported.",
+      "Fabricated quotation about men who 'go to the other side of the globe...in order that they may live,—that is, keep comfortably warm'—not in ALLOWED_EVIDENCE.",
+      "Gold rubric requires 'at least one portrait of real poverty elsewhere in the book (e.g., laboring poor / John Field–type material).' The answer alludes to such material but does not ground specific references to actual textual passages or characters with anchors to ALLOWED_EVIDENCE.",
+      "Condition is passage_only with no retrieved excerpts; answer supplies book-wide factual claims about specific passages and characters as if verified when they are not present in ALLOWED_EVIDENCE."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q14",
+    "questionOrdinal": 14,
+    "condition": "smart_scan_tools",
+    "category": "book-level-thematic",
+    "prompt": "He praises voluntary poverty as a vantage point—how does that ideal interact with his portraits of real poverty in the book (e.g. the ‘Poor Man’)?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 0.5,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 3.3499999999999996,
+    "judgeScores": {
+      "faithfulness": 4,
+      "chunk_relevance": 2,
+      "answer_completeness": 3,
+      "claim_precision": 4
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Gold rubric expects reference to 'at least one portrait of real poverty elsewhere in the book (e.g., laboring poor / John Field–type material).' The retrieved chunks do not include sustained portraits of John Field or other laborers; the answer infers the Poor Man as the only example but lacks supporting material from elsewhere in the book. Retrieval was insufficient for the full book-level scope of the question."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q14",
+    "questionOrdinal": 14,
+    "condition": "tools",
+    "category": "book-level-thematic",
+    "prompt": "He praises voluntary poverty as a vantage point—how does that ideal interact with his portraits of real poverty in the book (e.g. the ‘Poor Man’)?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 2.2,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 2,
+      "answer_completeness": 2,
+      "claim_precision": 3
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "The assistant invokes the 'John Field, the Irish laborer' passage and claims it shows Field and his family in 'a self-perpetuating cycle of labor and consumption' and that 'Thoreau tries to offer an alternative vision of voluntary simplicity, but Field cannot imagine it.' None of this narrative detail is present in ALLOWED_EVIDENCE. This is a substantive, textual hallucination.",
+      "The question itself suggests the user may have selected a 'Poor Man' passage as anchor, but the provided anchor is only the philosophical statement about voluntary poverty. The retrieval did not return any portrait of real poverty matching the question's prompt. The assistant proceeded as though the Field passage were known, creating unsupported claims.",
+      "While the general philosophical framing (voluntary vs. involuntary poverty as a contrast) can be inferred from the anchor and retrieved chunks, the specific character analysis and narrative details about John Field are fabricated."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q10",
+    "questionOrdinal": 10,
+    "condition": "passage_only",
+    "category": "cross-section",
+    "prompt": "Here he is still cataloguing daily costs—where later in Walden does he report what he actually paid for his cabin boards and borrowed axe, down to cents?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 1.5499999999999998,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 1,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Retrieval failure: No tool excerpts provided despite clear need for the later Economy/cost accounting section of Walden; the question cannot be answered from the anchor passage alone.",
+      "Incomplete: Does not provide the specific location (chapter, section, or page reference) of the itemized cost table.",
+      "Unsupported thematic claim: States that the passage 'establishes the principle' for a later 'reckoning' without textual grounding.",
+      "Missing specificity: Does not report any actual figures (cents, prices for boards, axe cost) as the prompt explicitly requests."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q10",
+    "questionOrdinal": 10,
+    "condition": "smart_scan_tools",
+    "category": "cross-section",
+    "prompt": "Here he is still cataloguing daily costs—where later in Walden does he report what he actually paid for his cabin boards and borrowed axe, down to cents?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 0.5,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 4.05,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 2,
+      "claim_precision": 4
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "The prompt specifically asks for costs of the cabin boards AND the borrowed axe, 'down to cents.' While the answer delivers the boards' cost ($8.03½) with precision, it does not definitively answer whether Thoreau assigned a monetary value to the borrowed axe in his accounting. The assistant notes the axe was borrowed and not counted in the $28.12½ total, but this is acknowledged rather than directly answering the 'down to cents' requirement for the axe itself. The gold rubric expects itemized detail on both items; the incomplete treatment of the axe cost violates that expectation."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q10",
+    "questionOrdinal": 10,
+    "condition": "tools",
+    "category": "cross-section",
+    "prompt": "Here he is still cataloguing daily costs—where later in Walden does he report what he actually paid for his cabin boards and borrowed axe, down to cents?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 0.5,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 1.4,
+    "judgeScores": {
+      "faithfulness": 1,
+      "chunk_relevance": 2,
+      "answer_completeness": 1,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "CRITICAL: The assistant does not answer the question. It explicitly admits the specific itemized cost section has not been retrieved ('I haven't yet retrieved it precisely') and offers no location, no specific costs, and no penny-level figures.",
+      "The answer pivots to meta-analysis of Thoreau's rhetorical strategy rather than fulfilling the cross-section prompt, which requires identifying where later in Walden the costs are reported.",
+      "The assistant invents a rhetorical interpretation ('Thoreau is building his theoretical argument about necessity before revealing the practical numbers—this rhetorical structure strengthens his point') that is not grounded in the retrieved evidence.",
+      "Retrieval failed to capture the Economy chapter's 'Cost of my House' section, which is the standard location of this accounting in Walden and should have been targeted by the tool."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q03",
+    "questionOrdinal": 3,
+    "condition": "passage_only",
+    "category": "passage-local",
+    "prompt": "How does he sharpen the joke about ‘professors of philosophy’ versus ‘philosophers’?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q03",
+    "questionOrdinal": 3,
+    "condition": "smart_scan_tools",
+    "category": "passage-local",
+    "prompt": "How does he sharpen the joke about ‘professors of philosophy’ versus ‘philosophers’?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q03",
+    "questionOrdinal": 3,
+    "condition": "tools",
+    "category": "passage-local",
+    "prompt": "How does he sharpen the joke about ‘professors of philosophy’ versus ‘philosophers’?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 3.95,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 1,
+      "answer_completeness": 4,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Retrieved excerpts are largely irrelevant noise for a passage-local question about how Thoreau structures a joke in the anchor text. The tool retrieval added no value and should have been minimal or absent for this task."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q11",
+    "questionOrdinal": 11,
+    "condition": "passage_only",
+    "category": "cross-section",
+    "prompt": "This paragraph scolds ‘the mass of men’—where does he later describe his own experiment living beside the pond in concrete, seasonal terms?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 3.8,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 1,
+      "claim_precision": 4
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Retrieval failure: No tool excerpts were provided to search the text for later pond-dwelling narrative. The question is explicitly cross-sectional (asking where a later section appears), requiring retrieval of candidate sections from elsewhere in Walden. The assistant was not equipped with retrieved evidence and declined to answer rather than request or infer from context.",
+      "Incomplete response: The prompt asked for a concrete location (chapter/section) where seasonal or pond-life details appear. The assistant provides no answer to this, only a statement that more text is needed. For a passage_only condition with no retrieval, this is appropriate epistemic honesty, but it leaves the user's question entirely unaddressed."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q11",
+    "questionOrdinal": 11,
+    "condition": "smart_scan_tools",
+    "category": "cross-section",
+    "prompt": "This paragraph scolds ‘the mass of men’—where does he later describe his own experiment living beside the pond in concrete, seasonal terms?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 1.5499999999999998,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 1,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Assistant asserts that the concrete seasonal narration is in sections following 'Economy' without any retrieved evidence to support this location claim.",
+      "No retrieval was attempted despite smart_scan_tools condition and the question clearly requiring elsewhere-in-book evidence (it asks 'where does he later describe').",
+      "The assistant defers the actual answer with a permission request rather than using available tools to fetch the relevant section, failing to deliver what the prompt asks for.",
+      "The answer provides no concrete chapter/section title, no seasonal details, no textual anchors—only a generic statement about content being 'ahead'."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q11",
+    "questionOrdinal": 11,
+    "condition": "tools",
+    "category": "cross-section",
+    "prompt": "This paragraph scolds ‘the mass of men’—where does he later describe his own experiment living beside the pond in concrete, seasonal terms?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 2.0,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 2,
+      "answer_completeness": 2,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Unsupported claim: 'he describes his journey to Walden and begins his account of what he calls \"transacting some private business\"'—this phrase appears in the retrieved text but is not followed by seasonal/concrete description in the provided excerpts.",
+      "Unsupported claim: 'discussing clothing, shelter, food, and fuel in ways that contrast sharply with the impoverished rich'—while clothing and shelter are discussed in the retrieved text, the answer does not show how these discussions are grounded in the actual pond experiment or seasonal observation.",
+      "Vague and unanchored: 'The most explicit seasonal grounding of his actual experiment comes somewhat further into the chapter'—no chapter name, section title, or specific location is provided; this fails the gold rubric expectation to identify the section ('Where I Lived…' and nearby pond-life narration).",
+      "Retrieval gap: The retrieved excerpts do not contain the concrete seasonal narrative the question asks for. The answer discusses content not visible in ALLOWED_EVIDENCE, suggesting either hallucination or reliance on outside knowledge."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q01",
+    "questionOrdinal": 1,
+    "condition": "passage_only",
+    "category": "passage-local",
+    "prompt": "Thoreau stacks negations about ‘comforts’—what rhetorical effect does ‘not only not indispensable, but positive hindrances’ produce?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 3.0500000000000003,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 5,
+      "answer_completeness": 3,
+      "claim_precision": 3
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Unsupported inventions: The assistant claims 'Thoreau's examples show people exhausting themselves in trade across the globe' and describes 'the luxuriously rich are unnaturally hot'—*cooked*. These are not in the anchor passage and no retrieved evidence was provided. Under passage_only condition, this is a clear hallucination of textual support.",
+      "Incomplete secondary element: The answer does not explicitly unpack what 'hindrances to the elevation of mankind' means or how the rhetorical effect serves that specific moral claim, which is central to understanding the stakes of the negations."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q01",
+    "questionOrdinal": 1,
+    "condition": "smart_scan_tools",
+    "category": "passage-local",
+    "prompt": "Thoreau stacks negations about ‘comforts’—what rhetorical effect does ‘not only not indispensable, but positive hindrances’ produce?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q01",
+    "questionOrdinal": 1,
+    "condition": "tools",
+    "category": "passage-local",
+    "prompt": "Thoreau stacks negations about ‘comforts’—what rhetorical effect does ‘not only not indispensable, but positive hindrances’ produce?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q07",
+    "questionOrdinal": 7,
+    "condition": "passage_only",
+    "category": "nearby-context",
+    "prompt": "What concrete implements and ‘studious’ extras does he rank just after true necessaries in this paragraph?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q07",
+    "questionOrdinal": 7,
+    "condition": "smart_scan_tools",
+    "category": "nearby-context",
+    "prompt": "What concrete implements and ‘studious’ extras does he rank just after true necessaries in this paragraph?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q07",
+    "questionOrdinal": 7,
+    "condition": "tools",
+    "category": "nearby-context",
+    "prompt": "What concrete implements and ‘studious’ extras does he rank just after true necessaries in this paragraph?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q02",
+    "questionOrdinal": 2,
+    "condition": "passage_only",
+    "category": "passage-local",
+    "prompt": "What layered image is he building with birds’ nests, moles, and ‘shelter within a shelter’—and who is the ‘poor man’ complaining of cold?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 2.8000000000000003,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 5,
+      "answer_completeness": 2,
+      "claim_precision": 3
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Unsupported hedging: The assistant claims 'The poor man is not identified yet in the passage,' directly contradicting the anchor, which states 'The poor man is wont to complain that this is [a cold world].' The poor man is identified in the anchor as the complainer about coldness.",
+      "Incomplete response: The second part of the prompt asks 'who is the poor man complaining of cold?' The answer should identify him as the figure Thoreau introduces as complaining 'this is a cold world'—a complaint about human dependence on elaborate shelter compared to animals. The assistant evades this."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q02",
+    "questionOrdinal": 2,
+    "condition": "smart_scan_tools",
+    "category": "passage-local",
+    "prompt": "What layered image is he building with birds’ nests, moles, and ‘shelter within a shelter’—and who is the ‘poor man’ complaining of cold?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 4.8,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 4,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q02",
+    "questionOrdinal": 2,
+    "condition": "tools",
+    "category": "passage-local",
+    "prompt": "What layered image is he building with birds’ nests, moles, and ‘shelter within a shelter’—and who is the ‘poor man’ complaining of cold?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 4.8,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 4,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q08",
+    "questionOrdinal": 8,
+    "condition": "passage_only",
+    "category": "nearby-context",
+    "prompt": "What seasonal contrast does he set up right before this claim that fuel is ‘unnecessary’ in some climates?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 3.3000000000000003,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 5,
+      "answer_completeness": 4,
+      "claim_precision": 3
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Unsupported quotations: 'the poor man is wont to complain that this is a cold world' and 'The summer, in some climates, makes possible to man a sort of Elysian life' are presented as direct text but do not appear in ALLOWED_EVIDENCE. Under passage_only condition with no retrieval, these claims require anchor support.",
+      "The answer invents textual evidence not present in the provided anchor passage, which is a significant faithfulness failure."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q08",
+    "questionOrdinal": 8,
+    "condition": "smart_scan_tools",
+    "category": "nearby-context",
+    "prompt": "What seasonal contrast does he set up right before this claim that fuel is ‘unnecessary’ in some climates?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q08",
+    "questionOrdinal": 8,
+    "condition": "tools",
+    "category": "nearby-context",
+    "prompt": "What seasonal contrast does he set up right before this claim that fuel is ‘unnecessary’ in some climates?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q04",
+    "questionOrdinal": 4,
+    "condition": "passage_only",
+    "category": "passage-local",
+    "prompt": "What work does the seed / root metaphor do in distinguishing two ways of living?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q04",
+    "questionOrdinal": 4,
+    "condition": "smart_scan_tools",
+    "category": "passage-local",
+    "prompt": "What work does the seed / root metaphor do in distinguishing two ways of living?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q04",
+    "questionOrdinal": 4,
+    "condition": "tools",
+    "category": "passage-local",
+    "prompt": "What work does the seed / root metaphor do in distinguishing two ways of living?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 4.2,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 1,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Retrieval problem: Retrieved chunks 1 and 2 are substantially irrelevant to the question about the seed/root metaphor. They discuss philosophy, luxury, and labor philosophy but contain no reference to plants, seeds, roots, or the metaphorical distinction asked about. The retrieval tool was available but returned off-topic material; this is a retrieval failure rather than an answer failure."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q05",
+    "questionOrdinal": 5,
+    "condition": "passage_only",
+    "category": "passage-local",
+    "prompt": "Who are the two groups bracketed off with long dashes before he says he speaks ‘mainly to the mass of men’?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q05",
+    "questionOrdinal": 5,
+    "condition": "smart_scan_tools",
+    "category": "passage-local",
+    "prompt": "Who are the two groups bracketed off with long dashes before he says he speaks ‘mainly to the mass of men’?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "walden",
+    "setName": "walden_2",
+    "stableKey": "walden_q05",
+    "questionOrdinal": 5,
+    "condition": "tools",
+    "category": "passage-local",
+    "prompt": "Who are the two groups bracketed off with long dashes before he says he speaks ‘mainly to the mass of men’?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 1,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 4.8,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 4,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  }
+]

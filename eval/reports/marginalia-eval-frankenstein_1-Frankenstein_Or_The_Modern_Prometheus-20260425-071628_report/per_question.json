@@ -1,0 +1,1866 @@
+[
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q08",
+    "questionOrdinal": 8,
+    "condition": "passage_only",
+    "category": "nearby-context",
+    "prompt": "Elizabeth’s speech ends with a conditional about ‘joy’—what legal proceeding is scheduled for the same day, stated just above in Ernest’s account?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 2.85,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 5,
+      "answer_completeness": 3,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Fabricated quotation: The assistant presents 'She is to be tried to-day' with a citation anchor, but this exact phrase does not appear in the ALLOWED_EVIDENCE (the anchor passage). The citation is false.",
+      "Misattribution: The answer attributes the trial-timing statement to 'Your father' (Ernest), but no such statement from Ernest appears in the ALLOWED_EVIDENCE provided.",
+      "Missing textual support for timing: The anchor passage does not state when the trial occurs; the assistant supplies the 'to-day' detail without evidence."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q08",
+    "questionOrdinal": 8,
+    "condition": "smart_scan_tools",
+    "category": "nearby-context",
+    "prompt": "Elizabeth’s speech ends with a conditional about ‘joy’—what legal proceeding is scheduled for the same day, stated just above in Ernest’s account?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q08",
+    "questionOrdinal": 8,
+    "condition": "tools",
+    "category": "nearby-context",
+    "prompt": "Elizabeth’s speech ends with a conditional about ‘joy’—what legal proceeding is scheduled for the same day, stated just above in Ernest’s account?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q02",
+    "questionOrdinal": 2,
+    "condition": "passage_only",
+    "category": "passage-local",
+    "prompt": "How does Victor contrast ‘emulation’ with the method that actually motivated his studies?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 3.65,
+    "judgeScores": {
+      "faithfulness": 3,
+      "chunk_relevance": 5,
+      "answer_completeness": 4,
+      "claim_precision": 3
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "The final sentence ('That appetite is his true engine, not the desire to beat a schoolmate at it') and the phrase about Victor investigating facts as a 'secret' he desires to discover are not present in the anchor passage and rely on knowledge assumed from elsewhere in the book, violating the passage_only condition.",
+      "The statement about Victor respecting 'his own curiosity' rather than 'imposing external competition' is interpretive and slightly overextends the anchor's claim that studies were 'never forced.'"
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q02",
+    "questionOrdinal": 2,
+    "condition": "smart_scan_tools",
+    "category": "passage-local",
+    "prompt": "How does Victor contrast ‘emulation’ with the method that actually motivated his studies?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 2.65,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 4,
+      "answer_completeness": 3,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Misattribution: The quotation about Elizabeth not being 'incited to apply herself to drawing, that her companions might not outstrip her' is from the retrieved chunk (Chunk 2), not a statement by Victor in the anchor about his own contrast. The assistant presents it as if Victor is directly describing emulation in this phrase, but Victor's actual contrast between emulation and his method is in the anchor passage alone.",
+      "Incomplete grounding: The anchor passage explicitly states 'by some means we always had an end placed in view, which excited us to ardour in the prosecution of them,' but the assistant does not directly quote or clearly anchor to this 'ardour' language, which is central to the gold rubric.",
+      "Overreach: The final sentence about Romantic philosophy is speculation not grounded in the anchor or retrieved material."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q02",
+    "questionOrdinal": 2,
+    "condition": "tools",
+    "category": "passage-local",
+    "prompt": "How does Victor contrast ‘emulation’ with the method that actually motivated his studies?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q12",
+    "questionOrdinal": 12,
+    "condition": "passage_only",
+    "category": "cross-section",
+    "prompt": "On this ‘dreary night of November’ the experiment succeeds—where much later does Victor admit destroying the second being before completion, and why does that matter to the plot?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 3.8,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 1,
+      "claim_precision": 4
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "No retrieval was performed despite a cross-section question that explicitly requires evidence from 'much later' in the book (the Orkney sequence). The condition is passage_only, but the question itself demands book-wide factual information (where and why Victor destroys the female creature). The assistant correctly refuses to invent this information, but no attempt was made to retrieve the necessary passages. Given that tools were available, retrieval_problem = 1 is appropriate.",
+      "The answer does not address the main task: identifying the location of Victor's admission or explaining its plot consequences (retaliation, Clerval, wedding night). incomplete_response = 1."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q12",
+    "questionOrdinal": 12,
+    "condition": "smart_scan_tools",
+    "category": "cross-section",
+    "prompt": "On this ‘dreary night of November’ the experiment succeeds—where much later does Victor admit destroying the second being before completion, and why does that matter to the plot?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 4,
+    "retrievedChunkCount": 4,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 0.5,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q12",
+    "questionOrdinal": 12,
+    "condition": "tools",
+    "category": "cross-section",
+    "prompt": "On this ‘dreary night of November’ the experiment succeeds—where much later does Victor admit destroying the second being before completion, and why does that matter to the plot?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": 0.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 1.7999999999999998,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 2,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Unsupported claim: 'Chapter IX' location not confirmed in ALLOWED_EVIDENCE.",
+      "Unsupported claim: The specific bargain ('create a female companion, and he would withdraw to South America') is not in ALLOWED_EVIDENCE.",
+      "Unsupported claim: The creature's 'wedding night' threat is referenced but not quoted or located in ALLOWED_EVIDENCE.",
+      "Unsupported claim: The sequence of murders (Clerval, Elizabeth, father) is asserted but not substantiated by any retrieved text.",
+      "Retrieval failure: No tool output contains the Orkney scene, female creature destruction, or the creature's retaliation plan. The retrieved chunks focus on the first creature's animation and Victor's fever, not the second being.",
+      "Citation artifact: The HTML comment cite tag references anchor text not present in ALLOWED_EVIDENCE ('I was possessed by a maddening rage...' does not appear in any chunk)."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q13",
+    "questionOrdinal": 13,
+    "condition": "passage_only",
+    "category": "book-level-thematic",
+    "prompt": "The preface frames the fiction as exploring ‘human passions’ more deeply than ordinary life—how does Victor’s treatment of Justine’s trial later complicate the preface’s claim about ‘domestic affection’?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 2.35,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 5,
+      "answer_completeness": 1,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Assistant admits it has not read or retrieved the trial scene and cannot answer the question directly. Under passage_only condition with no retrieved tool excerpts of the trial, the answer should either decline to answer or note the retrieval gap clearly—not proceed as if providing analysis.",
+      "No textual evidence supports claims about Victor's actions during Justine's trial. The assistant frames possibilities rather than grounding answers in evidence.",
+      "The answer pivots to a meta-question ('Does the trial scene show…?') rather than answering the user's question with available evidence.",
+      "Gold rubric explicitly expects discussion of 'Victor's failure to testify' and 'Justine's conviction'—factual outcomes not present in ALLOWED_EVIDENCE or the assistant's answer."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q13",
+    "questionOrdinal": 13,
+    "condition": "smart_scan_tools",
+    "category": "book-level-thematic",
+    "prompt": "The preface frames the fiction as exploring ‘human passions’ more deeply than ordinary life—how does Victor’s treatment of Justine’s trial later complicate the preface’s claim about ‘domestic affection’?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 4,
+    "retrievedChunkCount": 4,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 0.25,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 2.85,
+    "judgeScores": {
+      "faithfulness": 4,
+      "chunk_relevance": 4,
+      "answer_completeness": 1,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "CRITICAL: Assistant does not answer the question. Instead of providing literary analysis, it asks meta-permission ('are you comfortable with me addressing a later passage'). This is a conversational deflection, not a response.",
+      "The prompt is explicit and direct; there is no ambiguity suggesting the user wants content warnings or spoiler-proofing. The assistant over-interprets and substitutes request-for-permission for analysis.",
+      "Gold rubric expects two key analytical points: (1) Victor's failure to testify enables Justine's conviction, and (2) domestic affection is complicated by moral cowardice. The assistant supplies zero of these.",
+      "The answer is a meta-question, not a claim or interpretation grounded in the evidence. It cannot be evaluated on claim_precision because no substantive claim is made."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q13",
+    "questionOrdinal": 13,
+    "condition": "tools",
+    "category": "book-level-thematic",
+    "prompt": "The preface frames the fiction as exploring ‘human passions’ more deeply than ordinary life—how does Victor’s treatment of Justine’s trial later complicate the preface’s claim about ‘domestic affection’?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": 0.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 2.25,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 3,
+      "claim_precision": 3
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Unsupported claim: 'Victor remains silent' during trial—not in ALLOWED_EVIDENCE.",
+      "Unsupported claim: 'Justine faces execution for a murder Victor knows she didn't commit'—not retrieved or anchored.",
+      "Unsupported claim: Victor is 'paralyzed by fear of the creature's revenge'—not in ALLOWED_EVIDENCE.",
+      "Retrieval failure: Tool excerpts are biographical/compositional context, not narrative content from the trial scene. No chunks address Victor's actual conduct at Justine's trial.",
+      "Condition violation: Under 'tools' condition, substantive factual claims about plot require retrieval support or explicit caveat. The assistant narrates from private knowledge of the text without retrieving evidence of the trial itself."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q14",
+    "questionOrdinal": 14,
+    "condition": "passage_only",
+    "category": "book-level-thematic",
+    "prompt": "Victor blames his father’s cursory dismissal of Agrippa—how does parental pedagogy in this passage relate to the novel’s wider critique of overreaching science?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 4.3,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 3,
+      "claim_precision": 4
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "The answer does not adequately address the second gold rubric point: connecting the pedagogical failure to the novel's wider critique of ambition without ethical formation. The assistant notes that 'the novel may be critiquing not science itself but the failure of those in positions to educate' but does not develop how this ties to the broader novel-level warning about overreaching ambition or relational accountability that the gold rubric suggests. Under passage_only condition, this is a fair expectation if the answer claims to address the novel's 'wider critique.'"
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q14",
+    "questionOrdinal": 14,
+    "condition": "smart_scan_tools",
+    "category": "book-level-thematic",
+    "prompt": "Victor blames his father’s cursory dismissal of Agrippa—how does parental pedagogy in this passage relate to the novel’s wider critique of overreaching science?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 4.75,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 4,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Retrieval_problem flag set to 1 because no tool excerpts were retrieved despite smart_scan_tools condition being available. While the anchor passage alone is sufficient for this question, the condition suggests tools should have been used to potentially strengthen wider-novel context or corroborate the pedagogical theme elsewhere in the text. However, this is a borderline case: the question is answerable and well-answered from the anchor alone, so the retrieval gap does not materially harm answer quality."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q14",
+    "questionOrdinal": 14,
+    "condition": "tools",
+    "category": "book-level-thematic",
+    "prompt": "Victor blames his father’s cursory dismissal of Agrippa—how does parental pedagogy in this passage relate to the novel’s wider critique of overreaching science?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q05",
+    "questionOrdinal": 5,
+    "condition": "passage_only",
+    "category": "passage-local",
+    "prompt": "Victor insists he ‘know[s] the murderer’—on what grounds is he speaking here, as far as the dialogue itself reveals?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 4.5,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 3,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Incomplete response: The gold rubric expects acknowledgment of the gap between Victor's private knowledge (creature's existence/guilt) and his inability to disclose it in dialogue. The answer correctly identifies that he gives no grounds within the dialogue but does not explicitly frame this against his unstated private knowledge, which is the conceptual core of the answer."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q05",
+    "questionOrdinal": 5,
+    "condition": "smart_scan_tools",
+    "category": "passage-local",
+    "prompt": "Victor insists he ‘know[s] the murderer’—on what grounds is he speaking here, as far as the dialogue itself reveals?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 2.65,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 4,
+      "answer_completeness": 3,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Unsupported interpretive overreach: The assistant asserts Victor's knowledge is purely from 'guilty knowledge' and 'secret torment' as if these are directly evidenced by the dialogue, when in fact they are inferences about internal state not explicitly revealed in the passage.",
+      "Authorial knowledge insertion: Reference to 'the Creature' and Victor's confession of his role is not present in ALLOWED_EVIDENCE and relies on knowledge beyond the dialogue itself.",
+      "Categorical claim beyond evidence: 'No rational grounds whatsoever' overshoots; the dialogue shows lack of *articulated* grounds in scene, but the question asks what grounds the dialogue reveals, leaving room for implicit or unstated knowledge.",
+      "Incomplete framing of gold rubric: The answer does not clearly anchor to the key rubric point that 'in-scene he can only assert Justine's innocence and does not disclose the full basis to others'—this is the passage-local answer, which the assistant touches but does not center."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q05",
+    "questionOrdinal": 5,
+    "condition": "tools",
+    "category": "passage-local",
+    "prompt": "Victor insists he ‘know[s] the murderer’—on what grounds is he speaking here, as far as the dialogue itself reveals?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q11",
+    "questionOrdinal": 11,
+    "condition": "passage_only",
+    "category": "cross-section",
+    "prompt": "Victor is demanding official pursuit of his enemy here—where earlier did the creature first ask Victor for a mate, framing obligation vs. threat?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 1.7999999999999998,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 2,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Factual claim 'in the Arctic ice, near the end of his final confrontation' is not supported by ALLOWED_EVIDENCE and appears to be private knowledge of the book.",
+      "No retrieval was provided despite the question clearly requiring earlier-book evidence (the creature's demand scene), per the cross-section category.",
+      "The interpretation of Victor's rhetorical reversal, while clever, lacks precise textual anchoring to the anchor passage itself (no specific phrases quoted)."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q11",
+    "questionOrdinal": 11,
+    "condition": "smart_scan_tools",
+    "category": "cross-section",
+    "prompt": "Victor is demanding official pursuit of his enemy here—where earlier did the creature first ask Victor for a mate, framing obligation vs. threat?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 3,
+    "retrievedChunkCount": 3,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": 0.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 1.55,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 2,
+      "answer_completeness": 1,
+      "claim_precision": 1
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Answer does not locate or quote the Alpine confrontation where the creature requests a female companion.",
+      "No mention of the ethical bargain (promise of compliance/withdrawal vs. threat of vengeance) that is central to the question.",
+      "Claim that 'the creature's actual demand...comes in his own narration' is unsupported; the creature does confront Victor directly about this demand (as hinted in gold rubric and Chunk 2's reference to the creature appearing at Victor's window).",
+      "Answer is incomplete and does not address the user's cross-section question, which requires identifying where earlier in the text the mate demand occurred and what its framing was."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q11",
+    "questionOrdinal": 11,
+    "condition": "tools",
+    "category": "cross-section",
+    "prompt": "Victor is demanding official pursuit of his enemy here—where earlier did the creature first ask Victor for a mate, framing obligation vs. threat?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": 0.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 2.05,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 3,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Unsupported specificity: The answer claims the creature's demand occurs 'on the ice field near the Northern Pole' and describes the bargain as a conditional offer to 'spare his life and vanish' if Victor creates a mate—none of this is present in ALLOWED_EVIDENCE.",
+      "Retrieval failure: Retrieved chunks contain no content from the Alpine/ice confrontation where the creature first demands a mate. The question requires evidence from elsewhere in the book, but the tool retrieval did not surface it.",
+      "Fabricated textual structure: The assistant describes the creature's framing of the demand in precise terms ('obligation born of duty,' 'conditional offer') without citing or retrieving the actual words from that scene."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q10",
+    "questionOrdinal": 10,
+    "condition": "passage_only",
+    "category": "cross-section",
+    "prompt": "Victor is still a boy in this happy domestic picture—where does he later describe the November night he first infused life into his creature?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 2.05,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 3,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Fabricated or unsupported detail: 'the moment he sees the creature's eyes open' is not grounded in ALLOWED_EVIDENCE.",
+      "Missing retrieval: No tool excerpts were provided from the critical Chapter IV passage, preventing verification of the creation scene description.",
+      "Incomplete contrast: The answer acknowledges but does not develop the expected contrast between the happy childhood picture and the horror of animation."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q10",
+    "questionOrdinal": 10,
+    "condition": "smart_scan_tools",
+    "category": "cross-section",
+    "prompt": "Victor is still a boy in this happy domestic picture—where does he later describe the November night he first infused life into his creature?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 3,
+    "retrievedChunkCount": 3,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": 0.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q10",
+    "questionOrdinal": 10,
+    "condition": "tools",
+    "category": "cross-section",
+    "prompt": "Victor is still a boy in this happy domestic picture—where does he later describe the November night he first infused life into his creature?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": 0.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 1.75,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 1,
+      "claim_precision": 3
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "No evidence in ALLOWED_EVIDENCE for the claim that Victor narrates the creation scene to Walton; the retrieved text covers only childhood and does not extend to the actual creation sequence.",
+      "Missing the core required answer: the specific chapter location (Volume I, Chapter IV) where the November night creation is described.",
+      "The answer does not contrast the happy domestic picture with the horror and revulsion of the creation moment, as expected by the gold rubric.",
+      "No retrieved excerpts address the creation scene itself or the November night setting; retrieval failed to locate relevant later passages in the text."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q15",
+    "questionOrdinal": 15,
+    "condition": "passage_only",
+    "category": "book-level-thematic",
+    "prompt": "Walton’s frame narrative opens with ambition for discovery—how does Victor’s eventual warning about knowledge echo back through the nested tellers?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 1.7999999999999998,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 2,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "Unsupported claim: 'Victor warns—if he does' and 'when Victor warns' are introduced without grounding in the anchor passage, which contains no explicit warning about knowledge or ambition.",
+      "Unsupported claim: 'Victor's cautionary tale about the dangers of ambition and unchecked knowledge' is asserted as fact, but the anchor passage offers only a brief confession of loss, not a developed cautionary narrative.",
+      "Insufficient evidence: The answer requires book-level knowledge (Victor's later warnings to Walton about dangerous knowledge), but no retrieval was performed and the condition is passage_only. The anchor alone does not contain the thematic echoing the question asks about.",
+      "Speculation presented as analysis: The assistant extensively theorizes about what the warning structure 'might' do and 'becomes' without anchoring to textual instances."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q15",
+    "questionOrdinal": 15,
+    "condition": "smart_scan_tools",
+    "category": "book-level-thematic",
+    "prompt": "Walton’s frame narrative opens with ambition for discovery—how does Victor’s eventual warning about knowledge echo back through the nested tellers?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 2.0,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 1,
+      "answer_completeness": 2,
+      "claim_precision": 3
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Unsupported claim: 'Victor's warning about the dangers of unchecked knowledge'—the anchor passage does not contain Victor issuing such a warning; the assistant inverts a thematic expectation into textual fact.",
+      "Unsupported claim: 'the nested structure of the narrative (Walton to his sister, Victor to Walton, the Creature to Victor) creates a chain of testimony where each teller tries to warn'—no retrieved evidence supports that all three narrators issue warnings or that this structure is present in the passage.",
+      "Insufficient retrieval: No tool excerpts retrieved for a book-level thematic question. The anchor passage alone (one dialogue exchange) cannot establish how a warning 'echoes back through nested tellers' without evidence of the warning's occurrence and circulation elsewhere in the text.",
+      "Overreach: The assistant builds a sophisticated interpretive claim ('knowledge itself...may be unteachable through narrative alone') without textual anchor in ALLOWED_EVIDENCE."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q15",
+    "questionOrdinal": 15,
+    "condition": "tools",
+    "category": "book-level-thematic",
+    "prompt": "Walton’s frame narrative opens with ambition for discovery—how does Victor’s eventual warning about knowledge echo back through the nested tellers?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": 0.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 4.75,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 4,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q01",
+    "questionOrdinal": 1,
+    "condition": "passage_only",
+    "category": "passage-local",
+    "prompt": "What distinction is the author drawing between ‘supernatural terrors’ and the kind of ‘human passions’ she says this tale is meant to explore?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q01",
+    "questionOrdinal": 1,
+    "condition": "smart_scan_tools",
+    "category": "passage-local",
+    "prompt": "What distinction is the author drawing between ‘supernatural terrors’ and the kind of ‘human passions’ she says this tale is meant to explore?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q01",
+    "questionOrdinal": 1,
+    "condition": "tools",
+    "category": "passage-local",
+    "prompt": "What distinction is the author drawing between ‘supernatural terrors’ and the kind of ‘human passions’ she says this tale is meant to explore?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q04",
+    "questionOrdinal": 4,
+    "condition": "passage_only",
+    "category": "passage-local",
+    "prompt": "What mood shift does Victor chart in this river metaphor—how does it foreshadow tone more than plot detail?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q04",
+    "questionOrdinal": 4,
+    "condition": "smart_scan_tools",
+    "category": "passage-local",
+    "prompt": "What mood shift does Victor chart in this river metaphor—how does it foreshadow tone more than plot detail?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q04",
+    "questionOrdinal": 4,
+    "condition": "tools",
+    "category": "passage-local",
+    "prompt": "What mood shift does Victor chart in this river metaphor—how does it foreshadow tone more than plot detail?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 2,
+    "retrievedChunkCount": 2,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "retrieval_despite_passage_local"
+    ],
+    "flagsNonDedupe": [
+      "retrieval_despite_passage_local"
+    ],
+    "judgeWeightedOverall": 3.5999999999999996,
+    "judgeScores": {
+      "faithfulness": 4,
+      "chunk_relevance": 1,
+      "answer_completeness": 4,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Retrieval problem: The tool excerpts (chunks 1 and 2) are off-topic for this passage-local question about a specific metaphor. They provide biographical background but do not help evaluate or contextualize the river metaphor's mood shift or tonal foreshadowing. This is a retrieval noise issue, not an answer quality issue."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q06",
+    "questionOrdinal": 6,
+    "condition": "passage_only",
+    "category": "nearby-context",
+    "prompt": "What piece of physical evidence, mentioned in Ernest’s preceding narration, supposedly tied Justine to the crime?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 1.4500000000000002,
+    "judgeScores": {
+      "faithfulness": 1,
+      "chunk_relevance": 1,
+      "answer_completeness": 2,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Fabricated quotation: The assistant attributes a lengthy direct quote to Ernest explaining the discovery of the picture in Justine's pocket, but this text does not appear in the anchor passage or any retrieved excerpts.",
+      "Insufficient retrieval: The condition is passage_only and the question explicitly asks about 'Ernest's preceding narration,' which would require retrieved text from elsewhere in the book. No retrieval was performed or returned, making the task impossible to answer faithfully from the anchor passage alone.",
+      "Unsupported textual facts: The entire substantive claim (the picture being found in Justine's pocket, the servant's discovery, the motive explanation) is presented as fact via quotation but is not grounded in ALLOWED_EVIDENCE."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q06",
+    "questionOrdinal": 6,
+    "condition": "smart_scan_tools",
+    "category": "nearby-context",
+    "prompt": "What piece of physical evidence, mentioned in Ernest’s preceding narration, supposedly tied Justine to the crime?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 4.75,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 4,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "Minor note: The gold rubric hints that the picture is 'a miniature/picture of Caroline,' but the retrieved text says 'the picture of my mother.' The answer quotes the latter phrase accurately but does not explicitly clarify that 'my mother' refers to Caroline Beaufort, though this is implicit in the context of the retrieved passage."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q06",
+    "questionOrdinal": 6,
+    "condition": "tools",
+    "category": "nearby-context",
+    "prompt": "What piece of physical evidence, mentioned in Ernest’s preceding narration, supposedly tied Justine to the crime?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 4.5,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 3,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 1,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [
+      "The answer does not clarify the identity of the picture—the gold rubric expects mention that it was a miniature/picture of Caroline (William's possession), but the retrieved text says 'the picture of my mother.' The answer accepts the text as-is without resolving this potential discrepancy or noting that the miniature of William mentioned moments earlier may be the conflated evidence item."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q07",
+    "questionOrdinal": 7,
+    "condition": "passage_only",
+    "category": "nearby-context",
+    "prompt": "Who has just burst in with ‘Good God, Papa!’—and what shocking claim did they repeat?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q07",
+    "questionOrdinal": 7,
+    "condition": "smart_scan_tools",
+    "category": "nearby-context",
+    "prompt": "Who has just burst in with ‘Good God, Papa!’—and what shocking claim did they repeat?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q07",
+    "questionOrdinal": 7,
+    "condition": "tools",
+    "category": "nearby-context",
+    "prompt": "Who has just burst in with ‘Good God, Papa!’—and what shocking claim did they repeat?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 0.0,
+    "chunkPrecision": 0.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 2.4499999999999997,
+    "judgeScores": {
+      "faithfulness": 2,
+      "chunk_relevance": 3,
+      "answer_completeness": 3,
+      "claim_precision": 2
+    },
+    "judgeFlags": {
+      "unsupported_claims": 1,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 1
+    },
+    "judgeViolations": [
+      "The anchor passage shows Ernest exclaiming immediately upon his father's entry, with no prior exchange about Victor denying knowledge. The claim that Ernest's words cut through 'Victor's attempt to reassure his father' is fabricated.",
+      "The answer imports details about 'incriminating evidence against Justine Moritz' from the retrieved chunk, but this happens in a later dialogue, not at the moment Ernest burst in as the question asks.",
+      "The narrative framing (Ernest contradicting Victor, introducing evidence) misrepresents the anchor's straightforward report that Ernest announces Victor's claim directly."
+    ],
+    "likelyHallucination": true
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q09",
+    "questionOrdinal": 9,
+    "condition": "passage_only",
+    "category": "nearby-context",
+    "prompt": "Whose ‘depravity and ingratitude’ is Victor’s father lamenting here—the name is in the prior exchange, not in this single sentence?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [
+      "evidence_not_scored_passage_only"
+    ],
+    "flagsNonDedupe": [
+      "evidence_not_scored_passage_only"
+    ],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q09",
+    "questionOrdinal": 9,
+    "condition": "smart_scan_tools",
+    "category": "nearby-context",
+    "prompt": "Whose ‘depravity and ingratitude’ is Victor’s father lamenting here—the name is in the prior exchange, not in this single sentence?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q09",
+    "questionOrdinal": 9,
+    "condition": "tools",
+    "category": "nearby-context",
+    "prompt": "Whose ‘depravity and ingratitude’ is Victor’s father lamenting here—the name is in the prior exchange, not in this single sentence?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 1,
+    "retrievedChunkCount": 1,
+    "evidenceRecall": 1.0,
+    "chunkPrecision": 1.0,
+    "evidenceItemsTotal": 1,
+    "evidenceItemsSatisfied": 1,
+    "goldStatus": "ready",
+    "answerInAnchor": false,
+    "expectedAnswerPointHits": 1,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q03",
+    "questionOrdinal": 3,
+    "condition": "passage_only",
+    "category": "passage-local",
+    "prompt": "Why might Victor’s father’s dismissal of Agrippa backfire rhetorically—given how Victor describes his own reaction?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q03",
+    "questionOrdinal": 3,
+    "condition": "smart_scan_tools",
+    "category": "passage-local",
+    "prompt": "Why might Victor’s father’s dismissal of Agrippa backfire rhetorically—given how Victor describes his own reaction?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 0,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  },
+  {
+    "bookId": "frankenstein",
+    "setName": "frankenstein_1",
+    "stableKey": "frankenstein_q03",
+    "questionOrdinal": 3,
+    "condition": "tools",
+    "category": "passage-local",
+    "prompt": "Why might Victor’s father’s dismissal of Agrippa backfire rhetorically—given how Victor describes his own reaction?",
+    "scoreSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json",
+    "judgeSource": "/Users/arnaldpaguio/Documents/Portofolio /Marginalia/eval/results/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json",
+    "toolCallCount": 0,
+    "retrievedChunkCount": 0,
+    "evidenceRecall": null,
+    "chunkPrecision": null,
+    "evidenceItemsTotal": 0,
+    "evidenceItemsSatisfied": 0,
+    "goldStatus": "ready",
+    "answerInAnchor": true,
+    "expectedAnswerPointHits": 2,
+    "expectedAnswerPointTotal": 2,
+    "flags": [],
+    "flagsNonDedupe": [],
+    "judgeWeightedOverall": 5.0,
+    "judgeScores": {
+      "faithfulness": 5,
+      "chunk_relevance": 5,
+      "answer_completeness": 5,
+      "claim_precision": 5
+    },
+    "judgeFlags": {
+      "unsupported_claims": 0,
+      "retrieval_problem": 1,
+      "incomplete_response": 0,
+      "imprecise_or_overbroad": 0
+    },
+    "judgeViolations": [],
+    "likelyHallucination": false
+  }
+]

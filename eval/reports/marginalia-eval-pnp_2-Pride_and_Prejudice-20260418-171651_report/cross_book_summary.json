@@ -1,0 +1,456 @@
+{
+  "bookIds": [
+    "pride_and_prejudice"
+  ],
+  "bookSummaries": {
+    "pride_and_prejudice": {
+      "bookId": "pride_and_prejudice",
+      "rowCount": 45,
+      "judgeBinaryFlagIds": [
+        "unsupported_claims",
+        "retrieval_problem",
+        "incomplete_response",
+        "imprecise_or_overbroad"
+      ],
+      "judgeFlagDataRowCount": 45,
+      "meanJudgeScoresByDimension": {
+        "faithfulness": 3.8,
+        "chunk_relevance": 4.022222222222222,
+        "answer_completeness": 3.6444444444444444,
+        "claim_precision": 3.8222222222222224
+      },
+      "meanJudgeFlagRatesById": {
+        "unsupported_claims": 0.37777777777777777,
+        "retrieval_problem": 0.3333333333333333,
+        "incomplete_response": 0.26666666666666666,
+        "imprecise_or_overbroad": 0.28888888888888886
+      },
+      "meanJudgeWeightedOverall": 3.81,
+      "byCondition": {
+        "passage_only": {
+          "rows": 15,
+          "meanEvidenceRecall": null,
+          "meanChunkPrecision": null,
+          "meanJudgeWeightedOverall": 3.3733333333333335,
+          "meanJudgeScoresByDimension": {
+            "faithfulness": 3.2,
+            "chunk_relevance": 4.2,
+            "answer_completeness": 2.933333333333333,
+            "claim_precision": 3.4
+          },
+          "judgeFlagRowCount": 15,
+          "meanJudgeFlagRatesById": {
+            "unsupported_claims": 0.6,
+            "retrieval_problem": 0.4,
+            "incomplete_response": 0.4666666666666667,
+            "imprecise_or_overbroad": 0.26666666666666666
+          }
+        },
+        "smart_scan_tools": {
+          "rows": 15,
+          "meanEvidenceRecall": 0.85,
+          "meanChunkPrecision": 0.9111111111111111,
+          "meanJudgeWeightedOverall": 4.2700000000000005,
+          "meanJudgeScoresByDimension": {
+            "faithfulness": 4.333333333333333,
+            "chunk_relevance": 4.333333333333333,
+            "answer_completeness": 4.133333333333334,
+            "claim_precision": 4.266666666666667
+          },
+          "judgeFlagRowCount": 15,
+          "meanJudgeFlagRatesById": {
+            "unsupported_claims": 0.2,
+            "retrieval_problem": 0.26666666666666666,
+            "incomplete_response": 0.13333333333333333,
+            "imprecise_or_overbroad": 0.2
+          }
+        },
+        "tools": {
+          "rows": 15,
+          "meanEvidenceRecall": 0.6,
+          "meanChunkPrecision": 0.7777777777777778,
+          "meanJudgeWeightedOverall": 3.7866666666666666,
+          "meanJudgeScoresByDimension": {
+            "faithfulness": 3.8666666666666667,
+            "chunk_relevance": 3.533333333333333,
+            "answer_completeness": 3.8666666666666667,
+            "claim_precision": 3.8
+          },
+          "judgeFlagRowCount": 15,
+          "meanJudgeFlagRatesById": {
+            "unsupported_claims": 0.3333333333333333,
+            "retrieval_problem": 0.3333333333333333,
+            "incomplete_response": 0.2,
+            "imprecise_or_overbroad": 0.4
+          }
+        }
+      },
+      "byCategory": {
+        "book-level-thematic": {
+          "rows": 9,
+          "meanEvidenceRecall": 0.5833333333333334,
+          "meanChunkPrecision": 1.0,
+          "meanJudgeWeightedOverall": 3.388888888888889,
+          "meanJudgeScoresByDimension": {
+            "faithfulness": 3.3333333333333335,
+            "chunk_relevance": 3.4444444444444446,
+            "answer_completeness": 3.111111111111111,
+            "claim_precision": 3.7777777777777777
+          },
+          "judgeFlagRowCount": 9,
+          "meanJudgeFlagRatesById": {
+            "unsupported_claims": 0.5555555555555556,
+            "retrieval_problem": 0.5555555555555556,
+            "incomplete_response": 0.4444444444444444,
+            "imprecise_or_overbroad": 0.2222222222222222
+          }
+        },
+        "cross-section": {
+          "rows": 9,
+          "meanEvidenceRecall": 0.5,
+          "meanChunkPrecision": 0.44,
+          "meanJudgeWeightedOverall": 3.5611111111111113,
+          "meanJudgeScoresByDimension": {
+            "faithfulness": 3.7777777777777777,
+            "chunk_relevance": 3.888888888888889,
+            "answer_completeness": 3.0,
+            "claim_precision": 3.5555555555555554
+          },
+          "judgeFlagRowCount": 9,
+          "meanJudgeFlagRatesById": {
+            "unsupported_claims": 0.3333333333333333,
+            "retrieval_problem": 0.6666666666666666,
+            "incomplete_response": 0.4444444444444444,
+            "imprecise_or_overbroad": 0.2222222222222222
+          }
+        },
+        "nearby-context": {
+          "rows": 12,
+          "meanEvidenceRecall": 1.0,
+          "meanChunkPrecision": 1.0,
+          "meanJudgeWeightedOverall": 3.6458333333333335,
+          "meanJudgeScoresByDimension": {
+            "faithfulness": 3.5,
+            "chunk_relevance": 4.333333333333333,
+            "answer_completeness": 3.4166666666666665,
+            "claim_precision": 3.5
+          },
+          "judgeFlagRowCount": 12,
+          "meanJudgeFlagRatesById": {
+            "unsupported_claims": 0.5,
+            "retrieval_problem": 0.16666666666666666,
+            "incomplete_response": 0.25,
+            "imprecise_or_overbroad": 0.4166666666666667
+          }
+        },
+        "passage-local": {
+          "rows": 15,
+          "meanEvidenceRecall": null,
+          "meanChunkPrecision": null,
+          "meanJudgeWeightedOverall": 4.343333333333334,
+          "meanJudgeScoresByDimension": {
+            "faithfulness": 4.333333333333333,
+            "chunk_relevance": 4.2,
+            "answer_completeness": 4.533333333333333,
+            "claim_precision": 4.266666666666667
+          },
+          "judgeFlagRowCount": 15,
+          "meanJudgeFlagRatesById": {
+            "unsupported_claims": 0.2,
+            "retrieval_problem": 0.13333333333333333,
+            "incomplete_response": 0.06666666666666667,
+            "imprecise_or_overbroad": 0.26666666666666666
+          }
+        }
+      },
+      "byCategoryAndCondition": {
+        "book-level-thematic": {
+          "passage_only": {
+            "rows": 3,
+            "meanEvidenceRecall": null,
+            "meanChunkPrecision": null,
+            "meanJudgeWeightedOverall": 2.6833333333333336,
+            "meanJudgeScoresByDimension": {
+              "faithfulness": 2.0,
+              "chunk_relevance": 3.6666666666666665,
+              "answer_completeness": 2.3333333333333335,
+              "claim_precision": 3.3333333333333335
+            },
+            "judgeFlagRowCount": 3,
+            "meanJudgeFlagRatesById": {
+              "unsupported_claims": 1.0,
+              "retrieval_problem": 0.6666666666666666,
+              "incomplete_response": 0.6666666666666666,
+              "imprecise_or_overbroad": 0.0
+            }
+          },
+          "smart_scan_tools": {
+            "rows": 3,
+            "meanEvidenceRecall": 0.8333333333333334,
+            "meanChunkPrecision": 1.0,
+            "meanJudgeWeightedOverall": 3.6333333333333333,
+            "meanJudgeScoresByDimension": {
+              "faithfulness": 4.0,
+              "chunk_relevance": 3.0,
+              "answer_completeness": 3.3333333333333335,
+              "claim_precision": 4.0
+            },
+            "judgeFlagRowCount": 3,
+            "meanJudgeFlagRatesById": {
+              "unsupported_claims": 0.3333333333333333,
+              "retrieval_problem": 0.6666666666666666,
+              "incomplete_response": 0.3333333333333333,
+              "imprecise_or_overbroad": 0.3333333333333333
+            }
+          },
+          "tools": {
+            "rows": 3,
+            "meanEvidenceRecall": 0.3333333333333333,
+            "meanChunkPrecision": 1.0,
+            "meanJudgeWeightedOverall": 3.85,
+            "meanJudgeScoresByDimension": {
+              "faithfulness": 4.0,
+              "chunk_relevance": 3.6666666666666665,
+              "answer_completeness": 3.6666666666666665,
+              "claim_precision": 4.0
+            },
+            "judgeFlagRowCount": 3,
+            "meanJudgeFlagRatesById": {
+              "unsupported_claims": 0.3333333333333333,
+              "retrieval_problem": 0.3333333333333333,
+              "incomplete_response": 0.3333333333333333,
+              "imprecise_or_overbroad": 0.3333333333333333
+            }
+          }
+        },
+        "cross-section": {
+          "passage_only": {
+            "rows": 3,
+            "meanEvidenceRecall": null,
+            "meanChunkPrecision": null,
+            "meanJudgeWeightedOverall": 3.6333333333333333,
+            "meanJudgeScoresByDimension": {
+              "faithfulness": 4.0,
+              "chunk_relevance": 5.0,
+              "answer_completeness": 2.0,
+              "claim_precision": 3.6666666666666665
+            },
+            "judgeFlagRowCount": 3,
+            "meanJudgeFlagRatesById": {
+              "unsupported_claims": 0.3333333333333333,
+              "retrieval_problem": 0.6666666666666666,
+              "incomplete_response": 0.6666666666666666,
+              "imprecise_or_overbroad": 0.0
+            }
+          },
+          "smart_scan_tools": {
+            "rows": 3,
+            "meanEvidenceRecall": 0.6666666666666666,
+            "meanChunkPrecision": 0.6,
+            "meanJudgeWeightedOverall": 4.3,
+            "meanJudgeScoresByDimension": {
+              "faithfulness": 4.666666666666667,
+              "chunk_relevance": 4.0,
+              "answer_completeness": 4.0,
+              "claim_precision": 4.333333333333333
+            },
+            "judgeFlagRowCount": 3,
+            "meanJudgeFlagRatesById": {
+              "unsupported_claims": 0.0,
+              "retrieval_problem": 0.6666666666666666,
+              "incomplete_response": 0.3333333333333333,
+              "imprecise_or_overbroad": 0.0
+            }
+          },
+          "tools": {
+            "rows": 3,
+            "meanEvidenceRecall": 0.3333333333333333,
+            "meanChunkPrecision": 0.3333333333333333,
+            "meanJudgeWeightedOverall": 2.75,
+            "meanJudgeScoresByDimension": {
+              "faithfulness": 2.6666666666666665,
+              "chunk_relevance": 2.6666666666666665,
+              "answer_completeness": 3.0,
+              "claim_precision": 2.6666666666666665
+            },
+            "judgeFlagRowCount": 3,
+            "meanJudgeFlagRatesById": {
+              "unsupported_claims": 0.6666666666666666,
+              "retrieval_problem": 0.6666666666666666,
+              "incomplete_response": 0.3333333333333333,
+              "imprecise_or_overbroad": 0.6666666666666666
+            }
+          }
+        },
+        "nearby-context": {
+          "passage_only": {
+            "rows": 4,
+            "meanEvidenceRecall": null,
+            "meanChunkPrecision": null,
+            "meanJudgeWeightedOverall": 2.1375,
+            "meanJudgeScoresByDimension": {
+              "faithfulness": 2.0,
+              "chunk_relevance": 3.0,
+              "answer_completeness": 1.75,
+              "claim_precision": 2.0
+            },
+            "judgeFlagRowCount": 4,
+            "meanJudgeFlagRatesById": {
+              "unsupported_claims": 1.0,
+              "retrieval_problem": 0.5,
+              "incomplete_response": 0.75,
+              "imprecise_or_overbroad": 0.75
+            }
+          },
+          "smart_scan_tools": {
+            "rows": 4,
+            "meanEvidenceRecall": 1.0,
+            "meanChunkPrecision": 1.0,
+            "meanJudgeWeightedOverall": 4.4,
+            "meanJudgeScoresByDimension": {
+              "faithfulness": 4.25,
+              "chunk_relevance": 5.0,
+              "answer_completeness": 4.25,
+              "claim_precision": 4.25
+            },
+            "judgeFlagRowCount": 4,
+            "meanJudgeFlagRatesById": {
+              "unsupported_claims": 0.25,
+              "retrieval_problem": 0.0,
+              "incomplete_response": 0.0,
+              "imprecise_or_overbroad": 0.25
+            }
+          },
+          "tools": {
+            "rows": 4,
+            "meanEvidenceRecall": 1.0,
+            "meanChunkPrecision": 1.0,
+            "meanJudgeWeightedOverall": 4.4,
+            "meanJudgeScoresByDimension": {
+              "faithfulness": 4.25,
+              "chunk_relevance": 5.0,
+              "answer_completeness": 4.25,
+              "claim_precision": 4.25
+            },
+            "judgeFlagRowCount": 4,
+            "meanJudgeFlagRatesById": {
+              "unsupported_claims": 0.25,
+              "retrieval_problem": 0.0,
+              "incomplete_response": 0.0,
+              "imprecise_or_overbroad": 0.25
+            }
+          }
+        },
+        "passage-local": {
+          "passage_only": {
+            "rows": 5,
+            "meanEvidenceRecall": null,
+            "meanChunkPrecision": null,
+            "meanJudgeWeightedOverall": 4.62,
+            "meanJudgeScoresByDimension": {
+              "faithfulness": 4.4,
+              "chunk_relevance": 5.0,
+              "answer_completeness": 4.8,
+              "claim_precision": 4.4
+            },
+            "judgeFlagRowCount": 5,
+            "meanJudgeFlagRatesById": {
+              "unsupported_claims": 0.2,
+              "retrieval_problem": 0.0,
+              "incomplete_response": 0.0,
+              "imprecise_or_overbroad": 0.2
+            }
+          },
+          "smart_scan_tools": {
+            "rows": 5,
+            "meanEvidenceRecall": null,
+            "meanChunkPrecision": null,
+            "meanJudgeWeightedOverall": 4.53,
+            "meanJudgeScoresByDimension": {
+              "faithfulness": 4.4,
+              "chunk_relevance": 4.8,
+              "answer_completeness": 4.6,
+              "claim_precision": 4.4
+            },
+            "judgeFlagRowCount": 5,
+            "meanJudgeFlagRatesById": {
+              "unsupported_claims": 0.2,
+              "retrieval_problem": 0.0,
+              "incomplete_response": 0.0,
+              "imprecise_or_overbroad": 0.2
+            }
+          },
+          "tools": {
+            "rows": 5,
+            "meanEvidenceRecall": null,
+            "meanChunkPrecision": null,
+            "meanJudgeWeightedOverall": 3.88,
+            "meanJudgeScoresByDimension": {
+              "faithfulness": 4.2,
+              "chunk_relevance": 2.8,
+              "answer_completeness": 4.2,
+              "claim_precision": 4.0
+            },
+            "judgeFlagRowCount": 5,
+            "meanJudgeFlagRatesById": {
+              "unsupported_claims": 0.2,
+              "retrieval_problem": 0.4,
+              "incomplete_response": 0.2,
+              "imprecise_or_overbroad": 0.4
+            }
+          }
+        }
+      },
+      "flagCounts": {
+        "evidence_not_scored_passage_only": 10,
+        "retrieval_despite_passage_local": 7
+      },
+      "problemQuestionCount": 5,
+      "likelyHallucinationRowCount": 23,
+      "meanNonDedupeFlagsPerRow": 0.37777777777777777
+    }
+  },
+  "pooledMeanEvidenceRecallByCategory": {
+    "book-level-thematic": 0.5833333333333334,
+    "cross-section": 0.5,
+    "nearby-context": 1.0
+  },
+  "hardestCategoryByPooledEvidenceRecall": {
+    "category": "cross-section",
+    "mean": 0.5
+  },
+  "noisiestBooksByMeanFlagsPerRow": [
+    {
+      "bookId": "pride_and_prejudice",
+      "meanNonDedupeFlagsPerRow": 0.37777777777777777
+    }
+  ],
+  "bookIdsWithJudgeData": [
+    "pride_and_prejudice"
+  ],
+  "judgeRubricDimensionIds": [
+    "faithfulness",
+    "chunk_relevance",
+    "answer_completeness",
+    "claim_precision"
+  ],
+  "judgeBinaryFlagIds": [
+    "unsupported_claims",
+    "retrieval_problem",
+    "incomplete_response",
+    "imprecise_or_overbroad"
+  ],
+  "pooledMeanJudgeWeightedOverall": 3.81,
+  "pooledMeanJudgeScoresByDimension": {
+    "faithfulness": 3.8,
+    "chunk_relevance": 4.022222222222222,
+    "answer_completeness": 3.6444444444444444,
+    "claim_precision": 3.8222222222222224
+  },
+  "pooledMeanJudgeFlagRatesById": {
+    "unsupported_claims": 0.37777777777777777,
+    "retrieval_problem": 0.3333333333333333,
+    "incomplete_response": 0.26666666666666666,
+    "imprecise_or_overbroad": 0.28888888888888886
+  }
+}
