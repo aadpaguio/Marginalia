@@ -1,5 +1,7 @@
 # Marginalia
 
+> **Project Report:** [Read the full Marginalia report (PDF)](marginalia_report.pdf)
+
 <p align="center">
   <img src="pngs/Marginalia%20Logo_1.png" alt="Marginalia logo" width="180" />
 </p>
