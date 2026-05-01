@@ -1,9 +1,32 @@
 # Marginalia
 
+![Marginalia logo](pngs/Marginalia%20Logo_1.png)
+
 Marginalia is a local-first EPUB reader with an AI partner built into the act of reading.  
 It is designed for close reading, not speed-reading: the model starts with the selected passage, then fetches more context only when needed.
 
 Built with Tauri v2 (`Rust + React + TypeScript`) and Anthropic's Claude API under a bring-your-own-key setup.
+
+## Start Here
+
+### Download the latest pre-release (recommended)
+
+Use the published pre-release DMG (instead of building locally):
+
+1. Open [Marginalia v0.1.0-alpha pre-release](https://github.com/aadpaguio/Marginalia/releases/tag/v0.1.0-alpha)
+2. Download the `.dmg` from **Assets**
+3. Drag `Marginalia.app` into `Applications`
+4. Launch and add your Anthropic API key in **Settings**
+
+### Quick links for evaluation results
+
+If you only need benchmark outputs, start in `eval/reports/`:
+
+- Frankenstein: `eval/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628_report/`
+- Pride and Prejudice: `eval/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651_report/`
+- Walden: `eval/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407_report/`
+
+In each folder, open `report_bundle.json` for the top-level summary and `per_question.csv` for per-prompt detail.
 
 ## Product At A Glance
 
@@ -17,15 +40,15 @@ Built with Tauri v2 (`Rust + React + TypeScript`) and Anthropic's Claude API und
 
 ### Library
 
-Marginalia library view
+![Marginalia library view](pngs/library_screen.png)
 
 ### Threads Panel
 
-Marginalia threads panel
+![Marginalia threads panel](pngs/threads_panel.png)
 
 ### Memory Panel
 
-Marginalia memory panel
+![Marginalia memory panel](pngs/memory_panel.png)
 
 ## Architecture Overview
 
@@ -134,7 +157,7 @@ Each book uses a **15-prompt set** across four categories:
 We compare 3 retrieval tiers:
 
 1. **Passage-only** (no retrieval tools)
-2. **`get_context` only**
+2. `**get_context` only**
 3. **Smart Scan + all tools** (`get_context` + section summary/text tools)
 
 Evaluation is scored with an **LLM-as-judge** rubric (Haiku), using four metrics:
@@ -151,51 +174,133 @@ Judge outputs also include binary failure flags:
 - incomplete_response
 - imprecise_or_overbroad
 
-Presentation currently emphasizes **pooled plots** across the three books for condition-level comparison.
+
+## Evaluation Folder Overview (`eval/`)
+
+The `eval/` directory contains both benchmark inputs and generated outputs:
+
+- `eval/questions/` -> source prompt lists (`*.txt`) per book
+- `eval/gold/` -> gold annotations (`*.json`) and `schema.json`
+- `eval/config/` -> run mapping + source config (`book_sources.json`, `runset_to_book.json`, rubric config)
+- `eval/scripts/` -> pipeline scripts (`run_eval_pipeline.sh`, parsing, judging, scoring, reporting)
+- `eval/reports/` -> run artifacts and normalized report bundles
+- `eval/requirements-eval.txt` -> Python dependencies for evaluation scripts
+
+### Where Results Live For Each Book
+
+For each evaluated book, results appear under `eval/reports/` in two layers:
+
+1. **Run-level files** (raw step outputs):
+  - `<run_id>.judge.json`
+  - `<run_id>.score.json`
+2. **Report directory** (`<run_id>_report/`) with normalized artifacts:
+  - `report_bundle.json` (top-level bundled report)
+  - `per_book_summary.json`
+  - `cross_book_summary.json`
+  - `per_question.json`
+  - `per_question.csv`
+
+Current runs in this repo:
+
+- **Frankenstein**  
+  - Run prefix: `marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628`
+  - Raw files:
+    - `eval/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.judge.json`
+    - `eval/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628.score.json`
+  - Report bundle directory:
+    - `eval/reports/marginalia-eval-frankenstein_1-Frankenstein_Or_The_Modern_Prometheus-20260425-071628_report/`
+
+- **Pride and Prejudice**  
+  - Run prefix: `marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651`
+  - Raw files:
+    - `eval/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.judge.json`
+    - `eval/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651.score.json`
+  - Report bundle directory:
+    - `eval/reports/marginalia-eval-pnp_2-Pride_and_Prejudice-20260418-171651_report/`
+
+- **Walden**  
+  - Run prefix: `marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407`
+  - Raw files:
+    - `eval/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.judge.json`
+    - `eval/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407.score.json`
+  - Report bundle directory:
+    - `eval/reports/marginalia-eval-walden_2-Walden_and_On_The_Duty_Of_Civil_Disobedi-20260418-183407_report/`
 
 ## Platform + Model Constraints
 
 Current practical constraints:
 
 - **macOS-only** for development/testing at this stage.
-- **Claude-only** model stack (Haiku + Sonnet routing).  
+- **Claude-only** model stack; default chat model is **Haiku**, with **Sonnet** and **Opus** selectable in Settings.  
 Adding multi-provider support is possible, but not trivial in this architecture and timeline.
 
 ## Running The App (Dev)
-
-Deployment packaging/docs will follow soon. For now, run in local dev mode.
 
 ### Prerequisites
 
 - Node.js + npm
 - Rust toolchain
 - Tauri v2 prerequisites for macOS
-- Anthropic API key
+- Anthropic API key (entered in-app)
 
 ### Setup
 
 1. Install dependencies:
   - `npm install`
-2. Add your key to `.env`:
-  - `VITE_ANTHROPIC_API_KEY=your_key_here`
-3. Start app:
-  - `npm run tauri dev`
+2. Start the **dev** app (separate bundle id + data dir from installable builds; enables evaluation UI):
+  - `npm run tauri:dev`
+3. On first launch, paste your Anthropic API key in **Settings** (gear icon). The key is stored locally in the app database under the dev app support path below (not in the web bundle).
+
+### Installable macOS app (pre-release download)
+
+Use the published pre-release instead of building a local DMG:
+
+1. Open the `v0.1.0-alpha` tag release page: [Marginalia v0.1.0-alpha pre-release](https://github.com/aadpaguio/Marginalia/releases/tag/v0.1.0-alpha)
+2. In **Assets**, download the `.dmg` file for `v0.1.0-alpha`.
+3. Open the DMG and drag `Marginalia.app` to `Applications`.
+4. Launch the app and add your Anthropic API key in **Settings**.
+
+Installable releases use bundle id `app.marginalia.reader` and do **not** show benchmark evaluation UI.
+
+### Evaluation / benchmark UI (dev only)
+
+The hybrid evaluation panel is hidden unless `VITE_ENABLE_EVAL=1` is set at frontend build time. The `tauri:dev` script sets this for you.
 
 ## Local App Data Location (macOS)
 
-Marginalia stores local state under Tauri app data directories.  
-In this repo's current config, expect data under:
+Marginalia stores local state under Tauri app data directories.
+
+**Production / installable app** (`identifier` `app.marginalia.reader`):
 
 - `~/Library/Application Support/app.marginalia.reader/marginalia/`
+- Database: `~/Library/Application Support/app.marginalia.reader/marginalia/marginalia.db`
 
-SQLite database:
+**Dev** (`npm run tauri:dev`, `identifier` `app.marginalia.reader.dev`):
 
-- `~/Library/Application Support/app.marginalia.reader/marginalia/marginalia.db`
+- `~/Library/Application Support/app.marginalia.reader.dev/marginalia/`
+- Database: `~/Library/Application Support/app.marginalia.reader.dev/marginalia/marginalia.db`
+
+App settings (API key + preferred chat model) live in the SQLite `app_meta` table in that same database.
+
+## Uninstall / remove data (macOS)
+
+1. **Quit Marginalia** (Cmd+Q, or Force Quit if needed).
+2. **Remove the app from Applications** (optional but usual “uninstall”):
+  - Installable build: delete `**/Applications/Marginalia.app`**
+  - Dev build: delete `**/Applications/Marginalia Dev.app**` (only if you copied it there; dev often runs from the build output without installing)
+3. **Delete local data** (library, reading progress, threads, Smart Scan summaries, saved API key in `app_meta`, etc.):
+  - **Production / reviewer install** — remove the whole folder:
+    - `~/Library/Application Support/app.marginalia.reader/`
+  - **Dev** (`npm run tauri:dev`) — remove:
+    - `~/Library/Application Support/app.marginalia.reader.dev/`
+   In Finder: **Go → Go to Folder…** (Shift+Cmd+G), paste the path above, then move the folder to the Trash.
+4. **Empty Trash** if you want the space back immediately.
+
+Nothing else is required for a normal wipe; there is no separate system-wide “Marginalia service.” If you only delete the `.app` but keep the Application Support folder, your data remains and will reappear if you install Marginalia again.
 
 ## Repository Notes
 
 - `src/` -> React/TypeScript UI and orchestration
 - `src-tauri/` -> Rust commands, DB schema, tool proxying, local persistence
-- `eval/` -> evaluation scripts, configs, and output artifacts
+- `eval/` -> evaluation inputs (`questions/`, `gold/`, `config/`) and outputs (`reports/`)
 - `pngs/` -> README and product screenshot assets
-
