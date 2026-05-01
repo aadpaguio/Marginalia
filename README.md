@@ -306,3 +306,7 @@ Nothing else is required for a normal wipe; there is no separate system-wide “
 - `src-tauri/` -> Rust commands, DB schema, tool proxying, local persistence
 - `eval/` -> evaluation inputs (`questions/`, `gold/`, `config/`) and outputs (`reports/`)
 - `pngs/` -> README and product screenshot assets
+
+## License
+
+Marginalia is licensed under the GNU Affero General Public License v3.0. It incorporates components from Readest, which is also AGPL v3 licensed.
