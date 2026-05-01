@@ -1,6 +1,8 @@
 # Marginalia
 
-![Marginalia logo](pngs/Marginalia%20Logo_1.png)
+<p align="center">
+  <img src="pngs/Marginalia%20Logo_1.png" alt="Marginalia logo" width="180" />
+</p>
 
 Marginalia is a local-first EPUB reader with an AI partner built into the act of reading.  
 It is designed for close reading, not speed-reading: the model starts with the selected passage, then fetches more context only when needed.
