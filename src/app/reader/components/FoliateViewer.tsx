@@ -511,6 +511,8 @@ export default function FoliateViewer({
   void config;
   void isCurrentBookmarked;
   void onToggleBookmark;
+  void onThemeChange;
+  void onClose;
   const viewRef = useRef<FoliateView | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const hoverPromptRef = useRef<HTMLDivElement | null>(null);
@@ -1001,7 +1003,6 @@ export default function FoliateViewer({
           const startContainer = range.startContainer;
           const endContainer = range.endContainer;
           for (const { node, start } of textNodes) {
-            const len = node.length;
             if (node === startContainer) anchorStart = start + range.startOffset;
             if (node === endContainer) anchorEnd = start + range.endOffset;
           }

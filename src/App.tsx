@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FC } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
-import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { exists } from "@tauri-apps/plugin-fs";
 import { DocumentLoader } from "@/libs/document";
@@ -19,6 +18,7 @@ import type { ReaderTheme } from "@/app/reader/utils/readerStyles";
 import FoliateViewer from "@/app/reader/components/FoliateViewer";
 import { normalizeEvalAnchorForSearch } from "@/app/reader/utils/quoteMatch";
 import Library from "@/components/Library";
+import { SettingsModal } from "@/components/SettingsModal";
 import {
   dbArchiveThread,
   dbDeleteThread,
@@ -73,6 +73,9 @@ import { isMemoryItemVisibleForBookTransparency } from "@/services/memoryPrompt"
 import { evalCompleteRun, evalCreateRun, type EvalCondition, type EvalQuestionRow } from "@/services/eval";
 import { EvaluationPanel } from "@/components/EvaluationPanel";
 import { getFirstTurnMemoryPlan, hasUserHistory, shouldAcceptPreloadResult } from "@/services/threadMemory";
+import { appSettingsGet } from "@/services/appSettings";
+import { MISSING_ANTHROPIC_KEY_USER_MESSAGE } from "@/constants/anthropic";
+import { EVAL_UI_ENABLED } from "@/config/eval";
 import { ArrowRight, ArrowUp, BookMarked, Globe, LogOut, MoreVertical, NotepadText, PanelLeft, PanelLeftClose, Pencil, ScanText, Settings, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -80,8 +83,6 @@ import "@/components/ThreadsPanel/ThreadsPanel.css";
 import { ContextManifestDebug } from "@/components/ThreadsPanel/ContextManifestDebug";
 import readerChromeStyles from "@/app/reader/ReaderChrome.module.css";
 import tocPanelStyles from "@/app/reader/TocPanel.module.css";
-import appStyles from "@/App.module.css";
-
 function base64ToFile(base64: string, filename: string): File {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
@@ -157,19 +158,6 @@ function cleanThreadMessagesForArchive(messages: ThreadMessage[]): string {
     })
     .filter((line): line is string => Boolean(line))
     .join("\n\n");
-}
-
-function formatBookmarkTimestamp(timestamp: number): string {
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    }).format(new Date(timestamp));
-  } catch {
-    return "Recently saved";
-  }
 }
 
 function buildBookmarkLocationLabel(args: {
@@ -454,7 +442,6 @@ const WebSourceChips: FC<{ citations: WebCitation[] }> = ({ citations }) => (
 
 function App() {
   type PanelTab = "threads" | "highlights";
-  type NotesFilter = "all" | "highlights" | "ai";
   type HighlightColorFilter = "all" | "yellow" | "blue" | "green" | "pink";
   const HIGHLIGHT_COLOR_HEX: Record<Exclude<HighlightColorFilter, "all">, string> = {
     yellow: "#e0d26c",
@@ -481,8 +468,6 @@ function App() {
   const [standaloneHighlights, setStandaloneHighlights] = useState<Highlight[]>([]);
   const [bookmarks, setBookmarks] = useState<StoredBookmark[]>([]);
   const [panelTab, setPanelTab] = useState<PanelTab>("threads");
-  const [notesFilter, setNotesFilter] = useState<NotesFilter>("all");
-  const [highlightColorFilter, setHighlightColorFilter] = useState<HighlightColorFilter>("all");
   type HighlightAnnotationFilter = "all" | "annotated";
   const [highlightAnnotationFilter, setHighlightAnnotationFilter] =
     useState<HighlightAnnotationFilter>("all");
@@ -494,7 +479,7 @@ function App() {
   const [isTocOpen, setIsTocOpen] = useState(false);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [jumpToCfi, setJumpToCfi] = useState<string | null>(null);
-  const [backCfi, setBackCfi] = useState<string | null>(null);
+  const [, setBackCfi] = useState<string | null>(null);
   const currentCfiRef = useRef<string | null>(null);
   const [deleteHighlightCfi, setDeleteHighlightCfi] = useState<string | null>(null);
   const [currentCfi, setCurrentCfi] = useState<string | null>(null);
@@ -566,18 +551,65 @@ function App() {
   /** When rate limited, seconds left until next retry (0 = retrying now). null = not waiting. */
   const [scanRetryInSeconds, setScanRetryInSeconds] = useState<number | null>(null);
   const [showSmartScanBanner, setShowSmartScanBanner] = useState(false);
-  /** Hybrid evaluation mode: benchmark runs + export (see EVALUATION_PLAN.md). */
+  /** Hybrid evaluation mode: benchmark runs + export (see EVALUATION_PLAN.md). Hidden in installable builds unless VITE_ENABLE_EVAL=1. */
   const [evalModeEnabled, setEvalModeEnabled] = useState(
-    () => typeof localStorage !== "undefined" && localStorage.getItem("marginalia_eval_mode") === "1"
+    () =>
+      EVAL_UI_ENABLED &&
+      typeof localStorage !== "undefined" &&
+      localStorage.getItem("marginalia_eval_mode") === "1"
   );
   const [isEvalPanelOpen, setIsEvalPanelOpen] = useState(false);
   useEffect(() => {
+    if (!EVAL_UI_ENABLED) {
+      setEvalModeEnabled(false);
+      setIsEvalPanelOpen(false);
+      return;
+    }
     try {
       localStorage.setItem("marginalia_eval_mode", evalModeEnabled ? "1" : "0");
     } catch {
       /* ignore */
     }
   }, [evalModeEnabled]);
+  const [anthropicApiKey, setAnthropicApiKey] = useState<string | null>(null);
+  const [preferredClaudeModel, setPreferredClaudeModel] = useState<string | null>(null);
+  const [appSettingsLoaded, setAppSettingsLoaded] = useState(false);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const anthropicApiKeyRef = useRef<string | null>(null);
+
+  const loadAppSettings = useCallback(async () => {
+    try {
+      const s = await appSettingsGet();
+      const key = s.apiKey?.trim() ? s.apiKey.trim() : null;
+      anthropicApiKeyRef.current = key;
+      setAnthropicApiKey(key);
+      setPreferredClaudeModel(s.preferredModel?.trim() ? s.preferredModel.trim() : null);
+    } catch (e) {
+      console.error("[App settings]", e);
+      anthropicApiKeyRef.current = null;
+      setAnthropicApiKey(null);
+      setPreferredClaudeModel(null);
+    } finally {
+      setAppSettingsLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadAppSettings();
+  }, [loadAppSettings]);
+
+  useEffect(() => {
+    if (!appSettingsLoaded) return;
+    if (!anthropicApiKey) setSettingsModalOpen(true);
+  }, [appSettingsLoaded, anthropicApiKey]);
+
+  const onSettingsRequestClose = useCallback(() => {
+    setSettingsModalOpen(false);
+  }, []);
+
+  const onSettingsCloseAfterSave = useCallback(() => {
+    setSettingsModalOpen(false);
+  }, []);
   /** When true, open the next book and immediately trigger a Smart Scan. */
   const pendingScanAfterOpenRef = useRef(false);
   /** Book id whose Smart Scan promise is still running in this session (avoids treating that row as stale on reopen). */
@@ -925,7 +957,7 @@ function App() {
       // Auto-trigger scan if requested from library card
       if (pendingScanAfterOpenRef.current) {
         pendingScanAfterOpenRef.current = false;
-        const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+        const apiKey = anthropicApiKeyRef.current;
         if (apiKey) {
           activeSmartScanBookIdRef.current = bookId;
           void runSmartScan({
@@ -948,6 +980,8 @@ function App() {
           }).finally(() => {
             if (activeSmartScanBookIdRef.current === bookId) activeSmartScanBookIdRef.current = null;
           });
+        } else {
+          window.alert(MISSING_ANTHROPIC_KEY_USER_MESSAGE);
         }
       }
     } catch (e) {
@@ -1084,16 +1118,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const unlistenPromise = listen("marginalia-prepare-close", async () => {
-      // Compaction only runs when archiving a thread; no auto-compaction on close
-      await invoke("allow_window_close");
-    });
-    return () => {
-      void unlistenPromise.then((u) => u());
-    };
-  }, []);
-
-  useEffect(() => {
     if (!scrollToNoteCfi || !isNotesOpen) return;
     const node = highlightRefs.current[scrollToNoteCfi];
     if (node) {
@@ -1106,17 +1130,6 @@ function App() {
   }, [scrollToNoteCfi, isNotesOpen, highlights]);
 
   const tocEntries = useMemo(() => bookDoc?.toc ?? [], [bookDoc?.toc]);
-  const filteredHighlights = useMemo(() => {
-    const normalizeColor = (color: string | undefined): Exclude<HighlightColorFilter, "all"> => {
-      if (color === "blue" || color === "green" || color === "pink") return color;
-      return "yellow";
-    };
-    const applyColorFilter = (h: Highlight) =>
-      highlightColorFilter === "all" || normalizeColor(h.color) === highlightColorFilter;
-    if (notesFilter === "highlights") return highlights.filter(applyColorFilter);
-    if (notesFilter === "ai") return []; // No per-highlight AI in Phase 23; threads in Phase 24
-    return highlights.filter(applyColorFilter);
-  }, [highlights, notesFilter, highlightColorFilter]);
   const isCurrentBookmarked = useMemo(
     () => !!currentCfi && bookmarks.some((bookmark) => bookmark.cfi === currentCfi),
     [bookmarks, currentCfi]
@@ -1344,7 +1357,7 @@ function App() {
         setActiveThreadMessages(newMessages);
         const wasFirst = activeThreadMessages.length === 0;
         if (wasFirst && bookDoc) {
-          const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+          const apiKey = anthropicApiKey;
           if (apiKey) {
             generateThreadTitle(userContent.slice(0, 300), apiKey).then((raw) => {
               const firstLine = raw.split(/\n/)[0].trim();
@@ -1369,7 +1382,7 @@ function App() {
 
         const userTurns = newMessages.filter((m) => m.role === "user").length;
         const thread = threads.find((t) => t.id === threadId);
-        const apiKeyFlush = import.meta.env.VITE_ANTHROPIC_API_KEY;
+        const apiKeyFlush = anthropicApiKey;
         const shouldFlush =
           userTurns >= 5 &&
           thread &&
@@ -1427,7 +1440,7 @@ function App() {
   }) => {
     const { threadId, threadTitle, threadMessages, bookId, bookTitle, author, thread, attachedHighlights } = params;
     if (threadMessages.length === 0) return;
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+    const apiKey = anthropicApiKey;
     if (!apiKey || !thread || !attachedHighlights) return;
     try {
       const items = await extractMemoryItems({
@@ -1515,13 +1528,6 @@ function App() {
     }
   };
 
-  const handleUpdateThreadTitle = (threadId: string, title: string) => {
-    setThreads((prev) =>
-      prev.map((t) => (t.id === threadId ? { ...t, title } : t))
-    );
-    void dbUpdateThreadTitle(threadId, title);
-  };
-
   const handleThreadChatSend = async () => {
     const userMessage = threadChatInput.trim() || "What can you tell me about the passages I've highlighted?";
     if (!activeThreadId || !currentBookId || !bookDoc || isActiveThreadAsking) return;
@@ -1537,9 +1543,9 @@ function App() {
           }
         : undefined;
     activeThreadIdRef.current = activeThreadId;
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+    const apiKey = anthropicApiKey;
     if (!apiKey) {
-      setThreadChatError("Add VITE_ANTHROPIC_API_KEY to .env and restart.");
+      setThreadChatError(MISSING_ANTHROPIC_KEY_USER_MESSAGE);
       return;
     }
     setThreadChatAskingThreadId(requestThreadId);
@@ -1574,6 +1580,7 @@ function App() {
       const result = await askClaudeThread(
         {
           threadId: activeThreadId,
+          preferredModel: preferredClaudeModel,
           messages: activeThreadMessages,
           attachedHighlights: activeThreadHighlights.filter((h) => h.bookId === currentBookId),
           pendingExcerpt: excerpt
@@ -1681,9 +1688,9 @@ function App() {
       if (!currentBookId || !bookDoc) {
         throw new Error("Open a book before running evaluation.");
       }
-      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+      const apiKey = anthropicApiKey;
       if (!apiKey) {
-        throw new Error("Add VITE_ANTHROPIC_API_KEY to .env and restart.");
+        throw new Error(MISSING_ANTHROPIC_KEY_USER_MESSAGE);
       }
 
       const runId = `evalrun-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
@@ -1748,6 +1755,7 @@ function App() {
 
       const params: AskClaudeThreadParams = {
         threadId,
+        preferredModel: preferredClaudeModel,
         messages: [],
         attachedHighlights: [],
         pendingExcerpt,
@@ -1848,6 +1856,8 @@ function App() {
       }
     },
     [
+      anthropicApiKey,
+      preferredClaudeModel,
       bookDoc,
       bookStructureType,
       bookSummary,
@@ -1907,9 +1917,9 @@ function App() {
 
   const handleRunSmartScan = async () => {
     if (!currentBookId || !bookDoc || scanStatus === "in_progress") return;
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+    const apiKey = anthropicApiKey;
     if (!apiKey) {
-      alert("Add VITE_ANTHROPIC_API_KEY to .env and restart.");
+      window.alert(MISSING_ANTHROPIC_KEY_USER_MESSAGE);
       return;
     }
     const isRescan = scanStatus === "done";
@@ -1983,6 +1993,7 @@ function App() {
 
   if (bookDoc) {
     return (
+      <>
       <div
         data-theme={theme}
         style={{
@@ -2072,6 +2083,7 @@ function App() {
                   className={tocPanelStyles.actionButton}
                   title="Settings"
                   aria-label="Settings"
+                  onClick={() => setSettingsModalOpen(true)}
                 >
                   <Settings size={18} />
                 </button>
@@ -2190,7 +2202,6 @@ function App() {
           onDeleteNoteCfiHandled={() => setDeleteHighlightCfi(null)}
           onOpenNoteFromHighlight={(cfi) => {
             setIsNotesOpen(true);
-            setNotesFilter("all");
             setScrollToNoteCfi(cfi);
           }}
           onAddOrEditNoteFromHighlight={(cfi) => {
@@ -3092,11 +3103,29 @@ function App() {
                     </button>
                   </div>
                   {threadChatError && (
-                    <div className="thread-chat-error">{threadChatError}</div>
+                    <div className="thread-chat-error">
+                      {threadChatError}{" "}
+                      <button
+                        type="button"
+                        onClick={() => setSettingsModalOpen(true)}
+                        style={{
+                          marginLeft: 8,
+                          fontSize: "inherit",
+                          textDecoration: "underline",
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          color: "inherit",
+                          padding: 0,
+                        }}
+                      >
+                        Open Settings
+                      </button>
+                    </div>
                   )}
                 </div>
               )}
-              {panelTab === "threads" && bookDoc && currentBookId && (
+              {EVAL_UI_ENABLED && panelTab === "threads" && bookDoc && currentBookId && (
                 <div style={{ padding: "0 12px" }}>
                   <label
                     style={{
@@ -3205,7 +3234,7 @@ function App() {
             )}
           </div>
         )}
-        {bookDoc && currentBookId && evalModeEnabled && (
+        {EVAL_UI_ENABLED && bookDoc && currentBookId && evalModeEnabled && (
           <div
             aria-hidden={!isEvalPanelOpen}
             style={{
@@ -3329,6 +3358,15 @@ function App() {
           </div>
         </div>
       </div>
+      <SettingsModal
+        open={settingsModalOpen}
+        onRequestClose={onSettingsRequestClose}
+        onCloseAfterSave={onSettingsCloseAfterSave}
+        hasApiKey={!!anthropicApiKey}
+        preferredModel={preferredClaudeModel}
+        onSaved={loadAppSettings}
+      />
+    </>
     );
   }
 
@@ -3360,6 +3398,15 @@ function App() {
           await dbClearAllScanData();
           await refreshLibrary();
         }}
+        onSettingsClick={() => setSettingsModalOpen(true)}
+      />
+      <SettingsModal
+        open={settingsModalOpen}
+        onRequestClose={onSettingsRequestClose}
+        onCloseAfterSave={onSettingsCloseAfterSave}
+        hasApiKey={!!anthropicApiKey}
+        preferredModel={preferredClaudeModel}
+        onSaved={loadAppSettings}
       />
       {openingBookId && (
         <div

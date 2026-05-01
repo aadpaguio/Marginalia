@@ -2,7 +2,7 @@
  * Minimal Annotator: subscribes to the view's draw-annotation and draws highlight overlays.
  * No popups, sync, or tools — just CFI-based highlight drawing via foliate-js Overlayer.
  */
-import React, { useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { Overlayer } from "foliate-js/overlayer.js";
 import type { FoliateView } from "@/types/view";
 import type { Highlight } from "@/types/book";

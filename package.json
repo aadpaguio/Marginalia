@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "tauri": "tauri",
+    "tauri:dev": "VITE_ENABLE_EVAL=1 npm run tauri -- dev --config src-tauri/tauri.dev.conf.json",
+    "tauri:build:mac": "npm run tauri -- build --bundles dmg,app",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -27,6 +29,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
+    "@types/node": "^22.10.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.2.0",

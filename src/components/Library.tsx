@@ -26,8 +26,8 @@ export default function Library({
   onSelectBook,
   onDeleteBook,
   openingBookId,
-  onScanBook,
-  onClearScanData,
+  onScanBook: _onScanBook,
+  onClearScanData: _onClearScanData,
   onSettingsClick,
 }: Props) {
   const handleContextMenu = async (e: MouseEvent, book: LibraryBook) => {

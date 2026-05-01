@@ -7,7 +7,6 @@ out/
 
 # Tauri
 src-tauri/target/
-src-tauri/icons/
 # Local FastEmbed / ONNX model cache (large, machine-specific; do not commit)
 src-tauri/.fastembed_cache/
 

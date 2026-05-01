@@ -92,9 +92,28 @@ export interface AssembledThreadRequest {
   manifestDraft: Omit<ContextManifest, "toolCallsMade" | "finalAnswerChars">;
 }
 
-const DEFAULT_MODEL = "claude-haiku-4-5-20251001";
-const DEEP_ANALYSIS_MODEL = "claude-sonnet-4-6";
 const DEFAULT_PROMPT = "Explain this passage in context.";
+
+/** User-selectable chat models (IDs must match Anthropic API). */
+export const CLAUDE_CHAT_MODEL_PRESETS = [
+  { id: "claude-haiku-4-5-20251001", label: "Haiku (fast)" },
+  { id: "claude-sonnet-4-6", label: "Sonnet" },
+  { id: "claude-opus-4-20250514", label: "Opus" },
+] as const;
+
+export const DEFAULT_CHAT_MODEL_ID = CLAUDE_CHAT_MODEL_PRESETS[0].id;
+
+/** Thread titling and other lightweight calls stay on Haiku for cost/latency. */
+const TITLE_AND_LIGHTWEIGHT_MODEL = DEFAULT_CHAT_MODEL_ID;
+
+export function resolveChatModelId(preferredModelId: string | null | undefined): string {
+  const id = preferredModelId?.trim();
+  if (id) {
+    if (CLAUDE_CHAT_MODEL_PRESETS.some((p) => p.id === id)) return id;
+    return id;
+  }
+  return DEFAULT_CHAT_MODEL_ID;
+}
 
 /** Stable rules (behavior, style) — cached by the API. Rarely changes. */
 const STABLE_SYSTEM_RULES = [
@@ -118,29 +137,21 @@ function chooseModelAndMaxTokens(userMessage: string): { model: string; maxToken
     query.includes("in depth") ||
     query.includes("in-depth");
   return asksDeepAnalysis
-    ? { model: DEEP_ANALYSIS_MODEL, maxTokens: 1200 }
-    : { model: DEFAULT_MODEL, maxTokens: 600 };
+    ? { model: "claude-sonnet-4-6", maxTokens: 1200 }
+    : { model: DEFAULT_CHAT_MODEL_ID, maxTokens: 600 };
 }
 
-function getApiKey(): string {
-  const key = import.meta.env.VITE_ANTHROPIC_API_KEY;
-  if (!key) {
-    throw new Error(
-      "Missing Anthropic API key. Add VITE_ANTHROPIC_API_KEY to your .env file and restart the dev server."
-    );
-  }
-  return key;
-}
-
-export async function askClaude({
-  selectedText,
-  surroundingContext,
-  bookTitle,
-  author,
-  userMessage,
-  conversationHistory = [],
-}: ClaudeRequest): Promise<ClaudeResponse> {
-  const apiKey = getApiKey();
+export async function askClaude(
+  {
+    selectedText,
+    surroundingContext,
+    bookTitle,
+    author,
+    userMessage,
+    conversationHistory = [],
+  }: ClaudeRequest,
+  apiKey: string
+): Promise<ClaudeResponse> {
   const prompt = (userMessage ?? "").trim() || DEFAULT_PROMPT;
   const { model, maxTokens } = chooseModelAndMaxTokens(prompt);
 
@@ -190,7 +201,7 @@ export async function generateThreadTitle(topicOrQuestion: string, apiKey: strin
   const data = await invoke<{ answer: string }>("ask_claude_simple_proxy", {
     request: {
       apiKey,
-      model: DEFAULT_MODEL,
+      model: TITLE_AND_LIGHTWEIGHT_MODEL,
       systemPrompt: TITLE_SYSTEM_PROMPT,
       userMessage,
     },
@@ -385,12 +396,6 @@ export function assembleThreadContext(params: ThreadContextParams): AssembledThr
     "--- RETRIEVAL PATTERNS ---\n" +
     "- Close reading: answer from the attached passage and, when present, CURRENT TURN LEAD-UP CONTEXT. No retrieval tools.\n" +
     "- Spoiler boundary: do not assume the reader has read beyond the excerpt.";
-  const toolsOnlyRetrievalPatterns =
-    "--- RETRIEVAL PATTERNS ---\n" +
-    "- Close reading: answer from the passage when it already contains the answer. No tool needed.\n" +
-    "- Local expansion: use get_context for neighboring text (before / after / around / from_section_start) when the question needs immediate surroundings.\n" +
-    "- Spoiler boundary: do not assume the reader has read past the excerpt.\n" +
-    "Treat these as heuristics, not rigid pipelines. Start with the lightest strategy that fits the question. Escalate only when needed.";
   /** Stricter than production: eval runs comparing tool conditions should actually exercise get_context. */
   const toolsEvalRetrievalPatterns =
     "--- RETRIEVAL PATTERNS (BENCHMARK) ---\n" +
@@ -849,6 +854,8 @@ const REQUEST_WEB_SEARCH_TOOL = {
 } as const;
 
 export type AskClaudeThreadParams = ThreadContextParams & {
+  /** When set (e.g. from Settings), used as the chat model for this turn. */
+  preferredModel?: string | null;
   getContextAroundCfi: (
     cfi: string,
     direction: GetContextDirection,
@@ -1090,7 +1097,7 @@ export async function askClaudeThread(
     ...params,
     prefetchedLeadUpContext,
   });
-  const model = chooseModelAndMaxTokens(params.userMessage).model;
+  const model = resolveChatModelId(params.preferredModel);
   let messages: AssembledThreadRequest["messages"] = assembled.messages;
   const turnToolEvents: ThreadToolEvent[] = [];
   const emitToolEvent = (event: ThreadToolEvent) => {

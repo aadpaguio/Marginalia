@@ -7,7 +7,7 @@ use base64::Engine;
 use fastembed::{EmbeddingModel, InitOptions, TextEmbedding};
 use rusqlite::{params, Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Emitter, Manager, State};
+use tauri::{Manager, State};
 
 /// Read file at path and return contents as base64 (for EPUB bytes).
 #[tauri::command]
@@ -430,6 +430,84 @@ struct MemoryItemWithAnchors {
 
 fn open_db(state: &DbState) -> Result<Connection, String> {
     Connection::open(&state.db_path).map_err(|e| e.to_string())
+}
+
+const META_ANTHROPIC_API_KEY: &str = "anthropic_api_key";
+const META_PREFERRED_CLAUDE_MODEL: &str = "preferred_claude_model";
+
+fn app_meta_get(conn: &Connection, key: &str) -> Result<Option<String>, rusqlite::Error> {
+    conn.query_row("SELECT value FROM app_meta WHERE key = ?1", params![key], |row| {
+        row.get::<_, String>(0)
+    })
+    .optional()
+}
+
+fn app_meta_set(conn: &Connection, key: &str, value: &str) -> Result<(), rusqlite::Error> {
+    conn.execute(
+        "INSERT INTO app_meta (key, value) VALUES (?1, ?2) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+        params![key, value],
+    )?;
+    Ok(())
+}
+
+fn app_meta_delete(conn: &Connection, key: &str) -> Result<(), rusqlite::Error> {
+    conn.execute("DELETE FROM app_meta WHERE key = ?1", params![key])?;
+    Ok(())
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AppSettingsSnapshot {
+    api_key: Option<String>,
+    preferred_model: Option<String>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct AppSettingsPatch {
+    #[serde(default)]
+    api_key: Option<String>,
+    #[serde(default)]
+    clear_api_key: Option<bool>,
+    #[serde(default)]
+    preferred_model: Option<String>,
+}
+
+#[tauri::command]
+fn app_settings_get(state: State<DbState>) -> Result<AppSettingsSnapshot, String> {
+    let conn = open_db(&state)?;
+    let api_key = app_meta_get(&conn, META_ANTHROPIC_API_KEY)
+        .map_err(|e| e.to_string())?
+        .filter(|s| !s.trim().is_empty());
+    let preferred_model = app_meta_get(&conn, META_PREFERRED_CLAUDE_MODEL)
+        .map_err(|e| e.to_string())?
+        .filter(|s| !s.trim().is_empty());
+    Ok(AppSettingsSnapshot {
+        api_key,
+        preferred_model,
+    })
+}
+
+#[tauri::command]
+fn app_settings_set(state: State<DbState>, patch: AppSettingsPatch) -> Result<(), String> {
+    let conn = open_db(&state)?;
+    if patch.clear_api_key == Some(true) {
+        app_meta_delete(&conn, META_ANTHROPIC_API_KEY).map_err(|e| e.to_string())?;
+    } else if let Some(k) = patch.api_key {
+        let t = k.trim();
+        if !t.is_empty() {
+            app_meta_set(&conn, META_ANTHROPIC_API_KEY, t).map_err(|e| e.to_string())?;
+        }
+    }
+    if let Some(m) = patch.preferred_model {
+        let t = m.trim();
+        if t.is_empty() {
+            app_meta_delete(&conn, META_PREFERRED_CLAUDE_MODEL).map_err(|e| e.to_string())?;
+        } else {
+            app_meta_set(&conn, META_PREFERRED_CLAUDE_MODEL, t).map_err(|e| e.to_string())?;
+        }
+    }
+    Ok(())
 }
 
 fn init_db(db_path: &Path) -> Result<(), String> {
@@ -3175,14 +3253,6 @@ async fn ask_claude_thread_proxy(
     })
 }
 
-/// Called by frontend after compaction on close; actually closes the window.
-#[tauri::command]
-fn allow_window_close(app: AppHandle) {
-    if let Some(w) = app.get_webview_window("main") {
-        let _ = w.close();
-    }
-}
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -3190,10 +3260,11 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             read_file_base64,
+            app_settings_get,
+            app_settings_set,
             ask_claude_proxy,
             ask_claude_simple_proxy,
             ask_claude_thread_proxy,
-            allow_window_close,
             db_get_all_books,
             db_get_book,
             db_upsert_book,
@@ -3279,12 +3350,6 @@ pub fn run() {
                 window.open_devtools();
             }
             Ok(())
-        })
-        .on_window_event(|window, event| {
-            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                api.prevent_close();
-                let _ = window.emit("marginalia-prepare-close", ());
-            }
         })
         .run(tauri::generate_context!())
         .expect("error while running Marginalia");

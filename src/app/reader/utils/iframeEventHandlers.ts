@@ -5,7 +5,7 @@ const LONG_HOLD_THRESHOLD_MS = 500;
 let lastClickTime = 0;
 let longHoldTimeout: ReturnType<typeof setTimeout> | null = null;
 
-const getKeyStatus = (event?: MouseEvent | WheelEvent | TouchEvent) => {
+const getKeyStatus = (event?: MouseEvent | WheelEvent | TouchEvent | KeyboardEvent) => {
   if (event && "ctrlKey" in event) {
     return {
       ctrlKey: event.ctrlKey,
@@ -81,7 +81,6 @@ export function handleWheel(bookKey: string, event: WheelEvent) {
       bookKey,
       deltaY: event.deltaY,
       deltaX: event.deltaX,
-      ctrlKey: event.ctrlKey,
       ...getKeyStatus(event),
     },
     "*"
