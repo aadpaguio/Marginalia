@@ -147,7 +147,7 @@ The current benchmark is run on **3 public-domain books**:
 
 - Frankenstein
 - Pride and Prejudice
-- Walden
+- Walden, and On The Duty Of Civil Disobedience
 
 Each book uses a **15-prompt set** across four categories:
 
