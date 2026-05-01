@@ -159,7 +159,7 @@ Each book uses a **15-prompt set** across four categories:
 We compare 3 retrieval tiers:
 
 1. **Passage-only** (no retrieval tools)
-2. `**get_context` only**
+2. `get_context` **only**
 3. **Smart Scan + all tools** (`get_context` + section summary/text tools)
 
 Evaluation is scored with an **LLM-as-judge** rubric (Haiku), using four metrics:
